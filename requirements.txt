@@ -1,0 +1,5 @@
+validators
+pymisp
+dnspython
+requests-cache
+-e git+https://github.com/devhub/domaintools.git#egg=domaintools

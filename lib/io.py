@@ -1,0 +1,80 @@
+#!/usr/bin/python
+# Copyright (c) 2016-2017 Conix Cybersecurity
+#
+# This file is part of BTG.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+import config
+from platform import system
+from os.path import exists
+from os import chmod
+from datetime import datetime
+
+class display:
+    """
+        This function display prettily informations
+    """
+    def __init__(self, module="INIT", ioc="", message_type="DEBUG", string=""):
+        exec('colorize = colors.%s'%message_type)
+        if not config.debug and (message_type == "INFO" or message_type == "DEBUG"):
+            pass
+        else:
+            if ioc != "":
+                if len(ioc) >= 67:
+                    ioc = '%s%s...'%(ioc[:64], colors.NORMAL)
+                ioc_show = "{%s%s%s} "%(colors.INFO, ioc, colors.NORMAL)
+            else:
+                ioc_show = " "
+            output = "[%s][%s%s%s]%s%s%s%s"%(module, colorize, message_type,
+             colors.NORMAL, ioc_show, colors.BOLD, string, colors.NORMAL)
+            if message_type == "FOUND":
+                if not exists(config.log_found_file):
+                    open(config.log_found_file, 'a').close()
+                    chmod(config.log_found_file, 0o777)
+                f = open(config.log_found_file, 'a')
+                f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
+                f.close()
+            print output
+
+class logSearch:
+    def __init__(self, iocs):
+        if not exists(config.log_search_file):
+            open(config.log_search_file, 'a').close()
+            chmod(config.log_search_file, 0o777)
+        f = open(config.log_search_file, 'a')
+        for ioc in iocs:
+            f.write("%s %s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))
+        f.close()
+
+
+
+
+class colors:
+    if system() == "Windows":
+        DEBUG = ''
+        INFO = ''
+        FOUND = ''
+        WARNING = ''
+        ERROR = ''
+        NORMAL = ''
+        BOLD = ''
+    else:
+        DEBUG = '\033[95m'
+        INFO = '\033[94m'
+        FOUND = '\033[92m'
+        WARNING = '\033[93m'
+        ERROR = '\033[91m'
+        NORMAL = '\033[0m'
+        BOLD = '\033[1m'

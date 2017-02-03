@@ -22,7 +22,7 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
     Malwaredomainlist
     MalwareTeks
     MISP (Malware Information Sharing Platform)
-    Noeuds de sortie Tor
+    Tor exit nodes
     OpenPhish
     Palevo
     VirusTotal
@@ -36,7 +36,11 @@ vim config.py
 ```
 Activate and fill licence key for modules you need to use.
 
-#### Usage:
+#### Usage
 ```
 python BTG.py http://mydomain.com 1a72dca1f6a961f528007ef04b6959d8 45.34.191.173
 ```
+
+#### Authors
+Lancelot Bogard
+Robin Marsollier

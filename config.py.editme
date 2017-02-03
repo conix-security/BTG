@@ -1,0 +1,104 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# Description: Configuration file
+
+################################################################
+# BTG CONFIGURATION PARAMETERS
+################################################################
+
+debug = False
+display_motd = True
+offline = False # Force to use offline modules
+
+# Specify modules folder
+modules_folder = "./modules/"
+
+log_found_file = "./log.txt"
+log_search_file = "./search.txt"
+
+# User-Agent for http requests
+user_agent = {
+    'User-Agent': "Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0",
+}
+proxy_host = {
+    "http": "",
+    "https": ""
+}
+requests_timeout = 5 # seconds
+
+temporary_cache_path = "./dumps/"
+temporary_cache_update = 120 # Update cache every n minutes
+
+# SQlite3 path (for specific modules using requests_cache)
+sqlite_path = "/tmp/"
+
+# Specify maximum child process for BTG
+max_process = 4
+
+
+################################################################
+# Dshield - domains
+################################################################
+dshield_enabled = False
+
+################################################################
+# Lehigh - domains
+################################################################
+lehigh_enabled = False
+
+################################################################
+# Malekal - MD5/SHA1/SHA256/SHA512/URL/IPv4/IPv6/domain
+################################################################
+malekal_enabled = False
+malekal_local = False
+malekal_remote = False
+malekal_files_path = ""
+
+################################################################
+# Malwaredomains - domains
+################################################################
+malwaredomains_enabled = False
+
+################################################################
+# Malwareteks - domains
+################################################################
+# Too many trackers, useless for malware IOC
+malwareteks_enabled = False
+
+################################################################
+# MISP - MD5/SHA1/SHA256/URL/IPv4/domain/IPv6/SHA512
+################################################################
+misp_enabled = False
+misp_url = ""
+misp_key = ""
+misp_verifycert = True
+#this settings allows to display tags from the tlp namespace
+misp_tag_display = "tlp"  
+
+################################################################
+# TOR exits nodes - 
+################################################################
+tor_enabled = False
+
+################################################################
+# Openphish - URL
+################################################################
+openphish_enabled = False
+
+################################################################
+# Palevo - domains
+################################################################
+palevo_enabled = False
+
+################################################################
+# VirusTotal - MD5/SHA1/SHA256/URL/IPv4/domain
+################################################################
+virustotal_enabled = False
+virustotal_API_keys = [
+        ''
+]
+
+################################################################
+# Zeustracker - domains
+################################################################
+zeustracker_enabled = False
