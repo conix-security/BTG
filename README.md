@@ -1,9 +1,12 @@
 # BTG
+
+Not every IOC deserve to enter your internal MISP instance, for obvious quality reasons. But it may be usefull for you analyst to be able to do a broader research on IOC published online.
+
 ![BTG with TOR IP](http://pix.toile-libre.org/upload/original/1482330236.png)
 
 This tool allows you to qualify one or more potential malicious markers of different type (URL, MD5, SHA1, SHA256, SHA512, IPv4, IPv6, domain etc..). You can run this tool with a Gnu/Linux environement. The Windows compatibility is currently working in BETA version.
 
-BTG was born from a need for Conix's collaborators. During their activities, SOC and DFIR analysts have to face off a lot of information and metadatas of multiple nature that they must identify as malicious or not.
+BTG was born from a need for Conix's collaborators. During their activities, SOC and DFIR analysts face off a lot of information and metadata of multiple nature that they must identify as malicious or not.
 
 Many knowledge-bases of malicious known activity (aka [IOC](https://en.wikipedia.org/wiki/Indicator_of_compromise)) are accessible online on various website like [VirusTotal](https://virustotal.com), [ZeusTracker](https://zeustracker.abuse.ch) etc. SOC and CERT can also have their own internal database such as [MISP](http://www.misp-project.org).
 
@@ -42,5 +45,5 @@ python BTG.py http://mydomain.com 1a72dca1f6a961f528007ef04b6959d8 45.34.191.173
 ```
 
 #### Authors
-Lancelot Bogard
-Robin Marsollier
+- Lancelot Bogard
+- Robin Marsollier
