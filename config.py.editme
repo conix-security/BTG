@@ -60,6 +60,11 @@ malekal_files_path = ""
 malwaredomains_enabled = False
 
 ################################################################
+# Malwaredomainlist - domains
+################################################################
+malwaredomainlist_enabled = False
+
+################################################################
 # Malwareteks - domains
 ################################################################
 # Too many trackers, useless for malware IOC
