@@ -62,7 +62,7 @@ class logSearch:
 
 
 class colors:
-    if system() == "Windows":
+    if system() == "Windows" or config.terminal_color == False:
         DEBUG = ''
         INFO = ''
         FOUND = ''

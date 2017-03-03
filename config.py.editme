@@ -6,13 +6,22 @@
 # BTG CONFIGURATION PARAMETERS
 ################################################################
 
+# Display output as debug
 debug = False
+
+# Disable motd without using --silent option
 display_motd = True
-offline = False # Force to use offline modules
+
+# Force to use offline modules
+offline = False
+
+# Enable or disable color in terminal output
+terminal_color = True
 
 # Specify modules folder
 modules_folder = "./modules/"
 
+# Output logs file
 log_found_file = "./log.txt"
 log_search_file = "./search.txt"
 
@@ -35,6 +44,36 @@ sqlite_path = "/tmp/"
 # Specify maximum child process for BTG
 max_process = 4
 
+################################################################
+# Malekal - MD5/SHA1/SHA256/SHA512/URL/IPv4/IPv6/domain
+################################################################
+malekal_enabled = False
+malekal_local = False
+malekal_remote = False
+malekal_files_path = ""
+
+################################################################
+# MISP - MD5/SHA1/SHA256/URL/IPv4/domain/IPv6/SHA512
+################################################################
+misp_enabled = False
+misp_url = ""
+misp_key = ""
+misp_verifycert = False
+#this settings allows to display tags from the tlp namespace
+misp_tag_display = "tlp"
+
+################################################################
+# VirusTotal - MD5/SHA1/SHA256/URL/IPv4/domain
+################################################################
+virustotal_enabled = False
+virustotal_API_keys = [
+        ''
+]
+
+################################################################
+# TOR exits nodes - 
+################################################################
+tor_enabled = False
 
 ################################################################
 # Dshield - domains
@@ -47,17 +86,19 @@ dshield_enabled = False
 lehigh_enabled = False
 
 ################################################################
-# Malekal - MD5/SHA1/SHA256/SHA512/URL/IPv4/IPv6/domain
-################################################################
-malekal_enabled = False
-malekal_local = False
-malekal_remote = False
-malekal_files_path = ""
-
-################################################################
 # Malwaredomains - domains
 ################################################################
 malwaredomains_enabled = False
+
+################################################################
+# Palevo - domains
+################################################################
+palevo_enabled = False
+
+################################################################
+# Zeustracker - domains
+################################################################
+zeustracker_enabled = False
 
 ################################################################
 # Malwaredomainlist - domains
@@ -71,19 +112,9 @@ malwaredomainlist_enabled = False
 malwareteks_enabled = False
 
 ################################################################
-# MISP - MD5/SHA1/SHA256/URL/IPv4/domain/IPv6/SHA512
+# Cybercrimetracker - domains/URL/domains
 ################################################################
-misp_enabled = False
-misp_url = ""
-misp_key = ""
-misp_verifycert = True
-#this settings allows to display tags from the tlp namespace
-misp_tag_display = "tlp"  
-
-################################################################
-# TOR exits nodes - 
-################################################################
-tor_enabled = False
+cybercrimetracker_enabled = False
 
 ################################################################
 # Openphish - URL
@@ -91,19 +122,13 @@ tor_enabled = False
 openphish_enabled = False
 
 ################################################################
-# Palevo - domains
+# CuckooSandbox - MD5/SHA256
 ################################################################
-palevo_enabled = False
+cuckoosandbox_enabled = False
+cuckoosandbox_API_url = "" # Example: http://127.0.0.1:8090
+cuckoosandbox_WEB_url = ""
 
 ################################################################
-# VirusTotal - MD5/SHA1/SHA256/URL/IPv4/domain
-################################################################
-virustotal_enabled = False
-virustotal_API_keys = [
-        ''
-]
-
-################################################################
-# Zeustracker - domains
-################################################################
-zeustracker_enabled = False
+# vxvault
+###############################################################
+vxvault_enabled = False

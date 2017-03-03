@@ -62,11 +62,15 @@ class Virustotal:
     def searchReport(self):
         self.url = "https://www.virustotal.com/vtapi/v2/file/report"
         parameters = {"resource": self.ioc,
-                      "apikey": self.key}
+                      "apikey": self.key,
+                      "allinfo":1}
         data = urllib.urlencode(parameters)
         req = urllib2.Request(self.url, data)
         response = urllib2.urlopen(req)
-        json_content = loads(response.read())
+        try:
+            json_content = loads(response.read())
+        except:
+            display(self.module_name, self.ioc, "ERROR", "VirusTotal API seems to be down.")
         try:
             display(self.module_name, self.ioc, "FOUND", json_content["permalink"])
         except:

@@ -18,6 +18,7 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
 
 
 #### Module list:
+    Cuckoo sandbox
     DShield
     Lehigh
     Malekal
@@ -29,6 +30,7 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
     OpenPhish
     Palevo
     VirusTotal
+    Vxvault
     ZeusTracker
 
 #### Installation
