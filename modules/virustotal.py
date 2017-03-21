@@ -72,7 +72,8 @@ class Virustotal:
         except:
             display(self.module_name, self.ioc, "ERROR", "VirusTotal API seems to be down.")
         try:
-            display(self.module_name, self.ioc, "FOUND", json_content["permalink"])
+            if json_content["positives"]:
+                display(self.module_name, self.ioc, "FOUND", "Score: %s/%s | %s"%(json_content["positives"], json_content["total"], json_content["permalink"]))
         except:
             pass
 
@@ -93,6 +94,6 @@ class Virustotal:
                 pass
         try:
             if json_content["positives"]:
-                display(self.module_name, self.ioc, "FOUND", json_content["permalink"])
+                display(self.module_name, self.ioc, "FOUND", "Score: %s/%s | %s"%(json_content["positives"], json_content["total"], json_content["permalink"]))
         except:
             pass

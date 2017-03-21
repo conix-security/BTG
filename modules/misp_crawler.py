@@ -45,7 +45,7 @@ class Misp_Crawler:
             self.loginRequest(s)
             allEvents = self.searchAttribute(s)
             for event in allEvents:
-                display(self.module_name, self.ioc, "FOUND", "Event: %s"%event)
+                display(self.module_name, self.ioc, "FOUND", "Event: %s/events/view/%s"%(config.misp_crawler_url, event))
 
     def searchAttribute(self, s):
         response = s.get(

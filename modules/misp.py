@@ -68,7 +68,7 @@ class Misp:
                     pass
                 if len(tag_display) != 0:
                     tag_display = "%s]"%tag_display
-                display(self.module_name, self.ioc, "FOUND", "%s Event: %s"%(tag_display, event["Event"]["id"]))
+                display(self.module_name, self.ioc, "FOUND", "%s Event: %sevents/view/%s"%(tag_display, config.misp_url, event["Event"]["id"]))
         except:
             try:
                 if result['message'] == "No matches":
