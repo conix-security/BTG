@@ -18,18 +18,20 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
 
 
 #### Module list:
-    Cuckoo sandbox
+    CuckooSandbox API
     Cybercrime-tracker
     DShield
     Lehigh
     Malekal
-    Malwaredomains
     Malwaredomainlist
+    Malwaredomains
     MalwareTeks
     MISP (Malware Information Sharing Platform)
-    Tor exit nodes
+    MISP Crawler
     OpenPhish
     Palevo
+    SpamHaus
+    Tor exit nodes
     VirusTotal
     Vxvault
     ZeusTracker

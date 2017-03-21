@@ -63,6 +63,16 @@ misp_verifycert = False
 misp_tag_display = "tlp"
 
 ################################################################
+# MISP crawler - MD5/SHA1/SHA256/URL/IPv4/domain/IPv6/SHA512
+################################################################
+# Disclamer: Use this module only if you can't use the regular MISP module
+misp_crawler_enabled = True
+misp_crawler_url = ""
+misp_crawler_login = ""
+misp_crawler_password = ""
+misp_crawler_verifycert = True
+
+################################################################
 # VirusTotal - MD5/SHA1/SHA256/URL/IPv4/domain
 ################################################################
 virustotal_enabled = False
