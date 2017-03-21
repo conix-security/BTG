@@ -103,7 +103,7 @@ class Misp_Crawler:
 
     def getAllEvents(self, response):
         events = []
-        for event in re.findall(r"events\/view\/([0-9]+)+\" >", response):
+        for event in re.findall(r"events\/view\/([0-9]+)+\" ", response):
             if event not in events:
                 events.append(event)
         return events
