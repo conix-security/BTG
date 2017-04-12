@@ -146,3 +146,10 @@ vxvault_enabled = False
 # SpamHaus DROP
 ###############################################################
 spamhaus_enabled = False
+# sshblacklist
+###############################################################
+sslblacklist_enabled = False
+# Malshare
+###############################################################
+malshare_enabled = False
+malshare_API_key = ""
