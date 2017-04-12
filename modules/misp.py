@@ -27,8 +27,8 @@ try:
         warnings.simplefilter("ignore")
         from pymisp import PyMISP
 except:
-	if misp_enabled:
-		display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'pymisp' library (available here: https://github.com/MISP/PyMISP)")
+    if misp_enabled:
+	display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'pymisp' library (available here: https://github.com/MISP/PyMISP)")
     	exit()
 
 class Misp:
@@ -48,7 +48,9 @@ class Misp:
     def Search(self):
         display(self.module_name, self.ioc, "INFO", "Search in misp...")
         try:
-            m = PyMISP(config.misp_url, config.misp_key, config.misp_verifycert, 'json')
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                m = PyMISP(config.misp_url, config.misp_key, config.misp_verifycert, 'json')
         except Exception, e:
             display(self.module_name, self.ioc, "ERROR", e)
             return    
