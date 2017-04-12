@@ -146,3 +146,7 @@ vxvault_enabled = False
 # SpamHaus DROP
 ###############################################################
 spamhaus_enabled = False
+################################################################
+# ransomwaretracker URL
+###############################################################
+ransomwaretracker_enabled = False
