@@ -23,14 +23,18 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
     DShield
     Lehigh
     Malekal
+    Malshare
     Malwaredomainlist
     Malwaredomains
     MalwareTeks
     MISP (Malware Information Sharing Platform)
     MISP Crawler
+    Nothink
     OpenPhish
     Palevo
+    RansomwareTracker
     SpamHaus
+    SSLBlacklist
     Tor exit nodes
     VirusTotal
     Vxvault

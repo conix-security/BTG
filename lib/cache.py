@@ -36,12 +36,15 @@ class Cache:
         self.filename = self.new_filename = filename
         self.temp_folder = "%s%s/"%(config.temporary_cache_path, self.module_name)
         position = 0
+        filename_copy = self.filename
         if not self.filename.isalnum():
-            for pos, char in enumerate(self.filename):
+            filename_copy = self.filename.replace("_", "")
+            for pos, char in enumerate(filename_copy):
                 if not char.isalnum() and char != '.':
                     position = pos
-        self.new_filename = self.filename[position:]
+        self.new_filename = filename_copy[position:]
         self.temp_file = "%s%s"%(self.temp_folder, self.new_filename)
+
         self.createModuleFolder()
         if self.checkIfUpdate():
             if BTG.allowedToSearch(search_method):
