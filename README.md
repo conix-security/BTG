@@ -31,6 +31,7 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
     MISP Crawler
     Nothink
     OpenPhish
+    OTX
     Palevo
     RansomwareTracker
     SpamHaus
