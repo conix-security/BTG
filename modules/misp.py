@@ -27,7 +27,7 @@ try:
         warnings.simplefilter("ignore")
         from pymisp import PyMISP
 except:
-    if misp_enabled:
+    if config.misp_enabled:
 	display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'pymisp' library (available here: https://github.com/MISP/PyMISP)")
     	exit()
 

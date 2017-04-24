@@ -26,7 +26,7 @@ try:
     from OTXv2 import OTXv2
     import IndicatorTypes
 except:
-    if otx_enabled:
+    if config.otx_enabled:
 	display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'OTXv2' library (available here: https://github.com/AlienVault-Labs/OTX-Python-SDK)")
     	exit()
 
