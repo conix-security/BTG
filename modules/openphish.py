@@ -20,7 +20,7 @@
 from lib.cache import Cache
 from lib.io import display
 from lib.argument_parse import parse
-import BTG
+import validators
 
 class Openphish:
     def __init__(self, ioc, type,config):
@@ -54,7 +54,7 @@ class Openphish:
                     if self.ioc in line:
                         display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return
-                elif self.type == "IPv4" and parse.is_valid_ipv4_address(midle):
+                elif self.type == "IPv4" and validators.ipv4(midle):
                     if self.ioc == midle:
                         display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return

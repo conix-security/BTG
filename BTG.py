@@ -23,11 +23,6 @@
 version = "1.1" # BTG version
 
 # Import python modules
-# try:
-#     import config
-# except:
-#     print "[ERROR] Unable to load configuration file."
-#     exit()
 from lib.io import display, logSearch
 from lib.argument_parse import parse
 try:
@@ -60,9 +55,6 @@ class BTG:
         # Import modules
         if config["debug"]:
             display(string="Load modules from %s"%config["modules_folder"])
-        # char = '/'
-        # if system() == "Windows":
-        #     char = '\\'
         all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
         modules = []
         for file in all_files:
@@ -122,9 +114,9 @@ class BTG:
             return "SHA256"
         elif len(findall(r"^\w{128}$", argument)):
             return "SHA512"
-        elif parse.is_valid_ipv4_address(argument):
+        elif validators.ipv4(argument):
             return "IPv4"
-        elif parse.is_valid_ipv6_address(argument):
+        elif validators.ipv6(argument):
             return "IPv6"
         elif len(findall(r"^(?=.{4,255}$)([a-zA-Z0-9][a-zA-Z0-9-]{,61}[a-zA-Z0-9]\.)+[a-zA-Z0-9]{2,5}$", argument)) or parse.is_valid_domain(argument):
             return "domain"
