@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import config
+
 from BTG import BTG
 from lib.io import display
 import urllib
@@ -30,8 +30,9 @@ class Virustotal:
     """
         This module allow you to search IOC in Virustotal 
     """
-    def __init__(self, ioc, type):
-        if config.virustotal_enabled:
+    def __init__(self, ioc, type, config):
+        self.config = config
+        if self.config["virustotal_enabled"]:
             self.module_name = __name__.split(".")[1]
             self.types = ["MD5", "SHA1", "SHA256", "URL", "IPv4", "domain"]
             self.search_method = "Online"
@@ -41,14 +42,14 @@ class Virustotal:
             self.type = type
             self.ioc = ioc
             if type in self.types and BTG.allowedToSearch(self.search_method):
-                if len(config.proxy_host["https"]) > 0:
-                    proxy = urllib2.ProxyHandler({'https': config.proxy_host["https"]})
+                if len(self.config["proxy_host"]["https"]) > 0:
+                    proxy = urllib2.ProxyHandler({'https': self.config["proxy_host"]["https"]})
                     opener = urllib2.build_opener(proxy)
                 else:
                     opener = urllib2.build_opener()
                 urllib2.install_opener(opener)
                 try:
-                    self.key = choice(config.virustotal_API_keys)
+                    self.key = choice(self.config["virustotal_api_keys"])
                 except:
                     display(self.module_name, self.ioc, "ERROR", "Please provide your authorization key.")
                     return

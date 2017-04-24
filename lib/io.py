@@ -16,19 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import config
+
 from platform import system
 from os.path import exists
 from os import chmod
 from datetime import datetime
+from config_parser import Config
 
 class display:
     """
         This function display prettily informations
     """
     def __init__(self, module="INIT", ioc="", message_type="DEBUG", string=""):
+
         exec('colorize = colors.%s'%message_type)
-        if not config.debug and (message_type == "INFO" or message_type == "DEBUG"):
+        config = Config.get_instance()
+        if not config["debug"] and (message_type == "INFO" or message_type == "DEBUG"):
             pass
         else:
             if ioc != "":
@@ -40,20 +43,21 @@ class display:
             output = "[%s][%s%s%s]%s%s%s%s"%(module, colorize, message_type,
              colors.NORMAL, ioc_show, colors.BOLD, string, colors.NORMAL)
             if message_type == "FOUND":
-                if not exists(config.log_found_file):
-                    open(config.log_found_file, 'a').close()
-                    chmod(config.log_found_file, 0o777)
-                f = open(config.log_found_file, 'a')
+                if not exists(config["log_found_file"]):
+                    open(config["log_found_file"], 'a').close()
+                    chmod(config["log_found_file"], 0o777)
+                f = open(config["log_found_file"], 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
             print output
 
 class logSearch:
     def __init__(self, iocs):
-        if not exists(config.log_search_file):
-            open(config.log_search_file, 'a').close()
-            chmod(config.log_search_file, 0o777)
-        f = open(config.log_search_file, 'a')
+        config = Config.get_instance()
+        if not exists(config["log_search_file"]):
+            open(config["log_search_file"], 'a').close()
+            chmod(config["log_search_file"], 0o777)
+        f = open(config["log_search_file"], 'a')
         for ioc in iocs:
             f.write("%s %s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))
         f.close()
@@ -62,7 +66,8 @@ class logSearch:
 
 
 class colors:
-    if system() == "Windows" or config.terminal_color == False:
+    config = Config.get_instance()
+    if system() == "Windows" or config["terminal_color"] == False:
         DEBUG = ''
         INFO = ''
         FOUND = ''

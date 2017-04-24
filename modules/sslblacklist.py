@@ -19,14 +19,13 @@
 
 from lib.io import display
 from lib.cache import Cache
-import config
 
 class Sslblacklist():
 
 
-    def __init__(self,ioc,type):
-
-        if config.sslblacklist_enabled:
+    def __init__(self,ioc,type,config):
+        self.config = config
+        if self.config["sslblacklist_enabled"]:
             self.module_name = __name__.split(".")[1]
             self.types = ["SHA1"]
             self.search_method = "Online"

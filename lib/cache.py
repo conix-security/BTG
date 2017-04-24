@@ -24,17 +24,18 @@ from lib.io import display
 from BTG import BTG
 from time import mktime
 import datetime
-import config
-import time
+import sys
 import requests
+from config_parser import Config
 
 
 class Cache:
     def __init__(self, module_name, url, filename, search_method):
+        self.config = Config.get_instance()
         self.module_name = module_name
         self.url = url
         self.filename = self.new_filename = filename
-        self.temp_folder = "%s%s/"%(config.temporary_cache_path, self.module_name)
+        self.temp_folder = "%s%s/"%(self.config["temporary_cache_path"], self.module_name)
         position = 0
         filename_copy = self.filename
         if not self.filename.isalnum():
@@ -67,9 +68,9 @@ class Cache:
         try:
             r = requests.get(
                 full_url,
-                stream=True, headers=config.user_agent,
-                proxies=config.proxy_host,
-                timeout=config.requests_timeout
+                stream=True, headers=self.config["user_agent"],
+                proxies=self.config["proxy_host"],
+                timeout=self.config["requests_timeout"]
             )
         except ConnectionError as e:
             display("%s.cache"%self.module_name, message_type="ERROR", 
@@ -113,9 +114,9 @@ class Cache:
         """
             Compare date now and edited date
         """
-        if config.temporary_cache_update <= 0:
+        if self.config["temporary_cache_update"] <= 0:
             return False
-        date_to_compare = datetime.datetime.now() - datetime.timedelta(seconds=config.temporary_cache_update*60)
+        date_to_compare = datetime.datetime.now() - datetime.timedelta(seconds=self.config["temporary_cache_update"]*60)
         last_update = stat(self.temp_file).st_mtime        
         if last_update < int(mktime(date_to_compare.timetuple())):
             # Need to update
@@ -125,14 +126,14 @@ class Cache:
             return False 
 
     def createModuleFolder(self):
-        if not isdir(config.temporary_cache_path):
+        if not isdir(self.config["temporary_cache_path"]):
             try:
-                mkdir(config.temporary_cache_path)
+                mkdir(self.config["temporary_cache_path"])
             except:
                 display("%s.cache"%self.module_name, message_type="ERROR", 
-                    string="Unable to create %s directory. (Permission denied)"%config.temporary_cache_path)
+                    string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
                 sys.exit()
-            chmod(config.temporary_cache_path, 0o777)
+            chmod(self.config["temporary_cache_path"], 0o777)
         if not isdir(self.temp_folder):
             mkdir(self.temp_folder)
             chmod(self.temp_folder, 0o777)

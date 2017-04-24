@@ -19,13 +19,14 @@
 
 from lib.io import display
 from lib.cache import Cache
-import config
+# import config
 import json
 class Malshare():
 
 
-    def __init__(self,ioc,type):
-        if config.malshare_enabled :
+    def __init__(self,ioc,type,config):
+        self.config = config
+        if self.config["malshare_enabled"] :
             self.module_name = __name__.split(".")[1]
             self.types = ["MD5","SHA256","SHA1"]
             self.search_method = "Online"
@@ -42,9 +43,9 @@ class Malshare():
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")
         url = "http://malshare.com/"
-        if config.malshare_API_key :
+        if self.config["malshare_api_key"] :
             paths = [
-                "api.php?api_key=%s&action=details&hash=%s" %(config.malshare_API_key,self.ioc)
+                "api.php?api_key=%s&action=details&hash=%s" %(self.config["malshare_api_key"],self.ioc)
             ]
             for path in paths:
                 try :

@@ -23,11 +23,11 @@
 version = "1.1" # BTG version
 
 # Import python modules
-try:
-    import config
-except:
-    print "[ERROR] Unable to load configuration file."
-    exit()
+# try:
+#     import config
+# except:
+#     print "[ERROR] Unable to load configuration file."
+#     exit()
 from lib.io import display, logSearch
 from lib.argument_parse import parse
 try:
@@ -47,31 +47,34 @@ except:
     print "[ERROR] Please install externals modules from 'requirements.txt': pip install -r requirements.txt"
     exit()
 
+from config_parser import Config
+import importlib
 
+config = Config.get_instance()
 class BTG:
     """
         BTG Main class
     """
     def __init__(self, args):
+
         # Import modules
-        if config.debug:
-            display(string="Load modules from %s"%config.modules_folder)
-        char = '/'
-        if system() == "Windows":
-            char = '\\'
-        all_files = [f for f in listdir(config.modules_folder) if isfile(join(config.modules_folder, f))]
+        if config["debug"]:
+            display(string="Load modules from %s"%config["modules_folder"])
+        # char = '/'
+        # if system() == "Windows":
+        #     char = '\\'
+        all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
         modules = []
         for file in all_files:
             if file[-3:] == ".py" and file[:-3] != "__init__":                
                 modules.append(file[:-3])
         jobs = []
-
         # Start BTG process
         i = 0
         for argument in args:
             i+=1
             p = multiprocessing.Process(target=self.run, args=(argument, modules,))
-            while len(jobs) > config.max_process:
+            while len(jobs) > config["max_process"]:
                 for job in jobs:
                     if not job.is_alive():
                         jobs.remove(job)
@@ -99,9 +102,11 @@ class BTG:
         """
             Load modules in python instance
         """
-        display(string="Load: %s/%s.py"%(config.modules_folder, module))
-        exec("from modules.%s import %s"%(module, module.title()))
-        exec("event = %s('%s', '%s')"%(module.title(), argument, type))
+        display(string="Load: %s/%s.py"%(config["modules_folder"], module))
+        obj = importlib.import_module("modules."+module)
+        for c in dir(obj):
+            if module == c.lower():
+                getattr(obj, c)(argument,type,config)
 
     def checkType(self, argument):
         """
@@ -134,7 +139,7 @@ class BTG:
         """
         if status == "Offline":
             return True
-        elif status == "Online" and not config.offline:
+        elif status == "Online" and not config["offline"]:
             return True
         return False
 
@@ -170,23 +175,25 @@ def cleanups_lock_cache(real_path):
                 cleanups_lock_cache(file_path)
 
 if __name__ == '__main__':
+
     args = parse_args()
-    dir_path = '%s/'%path.dirname(path.realpath(__file__))
-    config.modules_folder = dir_path+config.modules_folder
-    config.temporary_cache_path = dir_path+config.temporary_cache_path
-    if config.display_motd and not args.silent:
+    dir_path = path.dirname(path.realpath(__file__))
+    config["modules_folder"] = path.join(dir_path, config["modules_folder"])
+    config["temporary_cache_path"] = path.join(dir_path,config["temporary_cache_path"])
+    if config["display_motd"] and not args.silent:
         motd()
     # Check if debug
     if args.debug:
-        config.debug = True
+        config["debug"] = True
     if args.offline:
-        config.offline = True
+        config["offline"] = True
     try:
-        if path.exists(config.temporary_cache_path):
-            cleanups_lock_cache(config.temporary_cache_path)
+        if path.exists(config["temporary_cache_path"]):
+            cleanups_lock_cache(config["temporary_cache_path"])
         logSearch(args.iocs)
         BTG(args.iocs)
     except (KeyboardInterrupt, SystemExit):
         # Exit if user press CTRL+C
         print "\n"
         sys.exit()
+

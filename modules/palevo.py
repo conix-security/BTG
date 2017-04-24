@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import config
 from lib.cache import Cache
 from lib.io import display
 
 class Palevo:
-    def __init__(self, ioc, type):
-        if config.palevo_enabled:
+    def __init__(self, ioc, type, config):
+        self.config = config
+        if self.config["palevo_enabled"]:
             self.module_name = __name__.split(".")[1]
             self.types = ["domain"]
             self.search_method = "Offline"
@@ -43,8 +43,7 @@ class Palevo:
         ]
         for path in paths:
             content = Cache(self.module_name, url, path, self.search_method).content
-            for line in content:
-                if line == self.ioc:
-                    display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+            if self.ioc in content :
+                display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
 
 
