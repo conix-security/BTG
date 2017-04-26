@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import config
 from lib.cache import Cache
 from lib.io import display
 
 class Nothink:
-    def __init__(self, ioc, type):
-        if config.nothink_enabled:
+    def __init__(self, ioc, type,config):
+        self.config = config
+        if self.config["nothink_enabled"]:
             self.module_name = __name__.split(".")[1]
             self.types = ["IPv4"]
             self.search_method = "Online"

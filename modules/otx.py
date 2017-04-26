@@ -19,20 +19,22 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from lib.io import display
-import config
 import warnings
+from config_parser import Config
+config = Config.get_instance()
 
 try:
     from OTXv2 import OTXv2
     import IndicatorTypes
 except:
-    if config.otx_enabled:
-	display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'OTXv2' library (available here: https://github.com/AlienVault-Labs/OTX-Python-SDK)")
-    	exit()
+    if config["otx_enabled"]:
+        display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'OTXv2' library (available here: https://github.com/AlienVault-Labs/OTX-Python-SDK)")
+        exit()
 
 class Otx:
-    def __init__(self, ioc, type):
-    	if config.otx_enabled:
+    def __init__(self, ioc, type,config):
+        self.config = config
+        if self.config["otx_enabled"]:
             self.module_name = __name__.split(".")[1]
             self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6","URL", "SHA256"]
             self.search_method = "Online"
@@ -47,7 +49,7 @@ class Otx:
     def Search(self):
         display(self.module_name, self.ioc, "INFO", "Search in Alienvault...")
         try:
-            otx = OTXv2(config.otx_API_keys)
+            otx = OTXv2(self.config["otx_api_keys"])
 
             if self.type == "IPv4":
                indicator = IndicatorTypes.IPv4

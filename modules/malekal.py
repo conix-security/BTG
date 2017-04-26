@@ -21,22 +21,24 @@ from BTG import BTG
 from lib.io import display
 from requests import get
 from re import findall
-import config
 import os
 from platform import system
+from config_parser import Config
+cfg = Config.get_instance()
 if system() != "Windows":
     import requests_cache 
-    requests_cache.install_cache('%sBTG'%config.sqlite_path)
+    requests_cache.install_cache('%sBTG'%cfg["sqlite_path"])
 
 class Malekal:
     """
         This module allow you to search IOC in Malekal website (HTTP Requests)
         or local directory specified in BTG configuration file.
     """
-    def __init__(self, ioc, type):
-        if config.malekal_enabled:
+    def __init__(self, ioc, type,config):
+        self.config = config
+        if self.config["malekal_enabled"]:
             self.module_name = __name__.split(".")[1]
-            if config.malekal_local and not config.malekal_remote:
+            if self.config["malekal_local"] and not self.config["malekal_remote"]:
                 self.types = ["MD5"]
             else:
                 self.types = [
@@ -54,9 +56,9 @@ class Malekal:
 
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")
-        if config.malekal_local:
+        if self.config["malekal_local"]:
             self.localSearch()
-        if config.malekal_remote and BTG.allowedToSearch(self.search_method):
+        if self.config["malekal_remote"] and BTG.allowedToSearch(self.search_method):
             self.remoteSearch()
 
     def remoteSearch(self):
@@ -74,9 +76,9 @@ class Malekal:
         try:
             page = get(
                 "%s%s%s"%(url, base, self.ioc), 
-                headers=config.user_agent,
-                proxies=config.proxy_host,
-                timeout=config.requests_timeout
+                headers=self.config["user_agent"],
+                proxies=self.config["proxy_host"],
+                timeout=self.config["requests_timeout"]
             ).text
             if len(findall("hash=([a-z0-9]{32})\"", page)) > 1:
                 display("%s_remote"%self.module_name, self.ioc, "FOUND", "%s%s%s"%(
@@ -89,14 +91,14 @@ class Malekal:
     def localSearch(self):
         """ Search in local directory """
         display("%s_local"%self.module_name, string="Browsing in local directory")
-        for root, dirs, files in os.walk(config.malekal_files_path):
+        for root, dirs, files in os.walk(self.config["malekal_files_path"]):
             path = root.split('/')
             folder = os.path.basename(root)
             for file in files:
                 if file == self.ioc:
                     display(
                         "%s_local"%self.module_name, self.ioc, "FOUND", "%s%s/%s"%(
-                            config.malekal_files_path,
+                            self.config["malekal_files_path"],
                             folder,
                             file
                         )

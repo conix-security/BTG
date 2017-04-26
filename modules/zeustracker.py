@@ -17,14 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import config
 from lib.cache import Cache
 from lib.io import display
 from lib.argument_parse import parse
+import validators
 
 class Zeustracker:
-    def __init__(self, ioc, type):
-        if config.zeustracker_enabled:
+    def __init__(self, ioc, type, config):
+        self.config = config
+        if self.config["zeustracker_enabled"]:
             self.module_name = __name__.split(".")[1]
             self.types = ["domain", "IPv4", "URL"]
             self.search_method = "Online"
@@ -67,7 +68,7 @@ class Zeustracker:
                     if line.strip() == self.ioc:
                         display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return
-                elif self.type == "IPv4" and parse.is_valid_ipv4_address(line.strip()):
+                elif self.type == "IPv4" and validators.ipv4(line.strip()):
                     if line.strip() == self.ioc:
                         display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return

@@ -22,18 +22,20 @@ from lib.io import display
 from requests import get
 from re import findall
 import json
-import config
 from platform import system
+from config_parser import Config
+cfg = Config.get_instance()
 if system() != "Windows":
     import requests_cache 
-    requests_cache.install_cache('%sBTG'%config.sqlite_path)
+    requests_cache.install_cache('%sBTG'%cfg["sqlite_path"])
 
 class Cuckoosandbox:
     """
         This module allow you to search IOC in CuckooSandbox database
     """
-    def __init__(self, ioc, type):
-        if config.cuckoosandbox_enabled:
+    def __init__(self, ioc, type,config):
+        self.config = config
+        if config["cuckoosandbox_enabled"]:
             self.module_name = __name__.split(".")[1]
             self.types = [
                 "MD5", "SHA256"
@@ -51,18 +53,18 @@ class Cuckoosandbox:
         display(self.module_name, self.ioc, "INFO", "Searching...")
         if BTG.allowedToSearch(self.search_method):
 	        if self.type in ["MD5"]:
-	            url = "%s/files/view/md5/%s"%(config.cuckoosandbox_API_url, self.ioc)
+	            url = "%s/files/view/md5/%s"%(self.config["cuckoosandbox_api_url"], self.ioc)
 	        elif self.type in ["SHA256"]:
-	            url = "%s/files/view/sha256/%s"%(config.cuckoosandbox_API_url, self.ioc)
+	            url = "%s/files/view/sha256/%s"%(self.config["cuckoosandbox_api_url"], self.ioc)
 	        page = get(
 	            url, 
-	            headers=config.user_agent,
-	            proxies=config.proxy_host,
-	            timeout=config.requests_timeout
+	            headers=self.config["user_agent"],
+	            proxies=self.config["proxy_host"],
+	            timeout=self.config["requests_timeout"]
 	        ).text
 	        if not "Error: 404 Not Found" in page:
 	        	id_analysis = json.loads(page)["sample"]["id"]
-	        	display("%s_remote"%self.module_name, self.ioc, "FOUND", "%s/view/%s"%(config.cuckoosandbox_WEB_url, id_analysis))
+	        	display("%s_remote"%self.module_name, self.ioc, "FOUND", "%s/view/%s"%(self.config["cuckoosandbox_web_url"], id_analysis))
 	        #except:
 	        #    display("%s"%self.module_name, self.ioc, "INFO", "MalekalTimeout")
 	           

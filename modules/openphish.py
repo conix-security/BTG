@@ -17,15 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import config
 from lib.cache import Cache
 from lib.io import display
 from lib.argument_parse import parse
-import BTG
+import validators
 
 class Openphish:
-    def __init__(self, ioc, type):
-        if config.openphish_enabled:
+    def __init__(self, ioc, type,config):
+        self.config = config
+        if self.config["openphish_enabled"]:
             self.module_name = __name__.split(".")[1]
             self.types = ["domain", "URL", "IPv4"]
             self.search_method = "Online"
@@ -54,7 +54,7 @@ class Openphish:
                     if self.ioc in line:
                         display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return
-                elif self.type == "IPv4" and parse.is_valid_ipv4_address(midle):
+                elif self.type == "IPv4" and validators.ipv4(midle):
                     if self.ioc == midle:
                         display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return

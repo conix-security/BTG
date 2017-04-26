@@ -19,21 +19,23 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from lib.io import display
-import config, json
 import warnings
 
+from config_parser import Config
+cfg = Config.get_instance()
 try:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         from pymisp import PyMISP
 except:
-    if config.misp_enabled:
-	display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'pymisp' library (available here: https://github.com/MISP/PyMISP)")
-    	exit()
+  if cfg["misp_enabled"]:
+        display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'pymisp' library (available here: https://github.com/MISP/PyMISP)")
+        exit()
 
 class Misp:
-    def __init__(self, ioc, type):
-    	if config.misp_enabled:
+    def __init__(self, ioc, type, config):
+        self.config = config
+        if self.config["misp_enabled"]:
             self.module_name = __name__.split(".")[1]
             self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
             self.search_method = "Offline"
@@ -50,7 +52,7 @@ class Misp:
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                m = PyMISP(config.misp_url, config.misp_key, config.misp_verifycert, 'json')
+                m = PyMISP(self.config["misp_url"], self.config["misp_key"], self.config["misp_verifycert"], 'json')
         except Exception, e:
             display(self.module_name, self.ioc, "ERROR", e)
             return    
@@ -60,7 +62,7 @@ class Misp:
                 tag_display = ""
                 try:
                     for tag in event["Event"]["Tag"]:
-                        if tag["name"].split(":")[0] in config.misp_tag_display:
+                        if tag["name"].split(":")[0] in self.config["misp_tag_display"]:
                             if len(tag_display) == 0:
                                 tag_display = "["
                             else:
@@ -70,7 +72,7 @@ class Misp:
                     pass
                 if len(tag_display) != 0:
                     tag_display = "%s]"%tag_display
-                display(self.module_name, self.ioc, "FOUND", "%s Event: %sevents/view/%s"%(tag_display, config.misp_url, event["Event"]["id"]))
+                display(self.module_name, self.ioc, "FOUND", "%s Event: %sevents/view/%s"%(tag_display, self.config["misp_url"], event["Event"]["id"]))
         except:
             try:
                 if result['message'] == "No matches":
