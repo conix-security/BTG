@@ -4,3 +4,4 @@ dnspython
 requests-cache
 netaddr
 -e git+https://github.com/devhub/domaintools.git#egg=domaintools
+otxv2
