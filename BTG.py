@@ -20,7 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
-version = "1.1" # BTG version
+version = "1.5" # BTG version
 
 # Import python modules
 from lib.io import display, logSearch
