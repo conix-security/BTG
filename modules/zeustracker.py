@@ -19,7 +19,6 @@
 
 from lib.cache import Cache
 from lib.io import display
-from lib.argument_parse import parse
 import validators
 
 class Zeustracker:
@@ -64,7 +63,7 @@ class Zeustracker:
                             line = line.split(":")[0]
                         except:
                             pass
-                if self.type == "domain" and parse.is_valid_domain(line.strip()):
+                if self.type == "domain" and validators.domain(line.strip()):
                     if line.strip() == self.ioc:
                         display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return
