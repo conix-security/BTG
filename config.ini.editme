@@ -1,6 +1,5 @@
 # Description: Configuration file
-# All strings must be between quotes
-
+# All strings must be between quoted
 
 [Btg]
 debug = False
@@ -27,14 +26,14 @@ max_process = 4
 
 
 [Malekal]
-malekal_enabled = False
+malekal_enabled = True
 malekal_local = False
 malekal_remote = True
 malekal_files_path = None
 
 [Misp]
 misp_enabled = False
-misp_url = None
+misp_url = None         # http/https is required, string must be quoted
 misp_key = None
 misp_verifycert = False
 misp_tag_display = "tlp"
@@ -55,32 +54,32 @@ virustotal_API_keys = []
 torips_enabled = False
 
 [Dshield]
-dshield_enabled = False
+dshield_enabled = True
 
 [Lehigh]
-lehigh_enabled = False
+lehigh_enabled = True
 
 [Malwaredomains]
-malwaredomains_enabled = False
+malwaredomains_enabled = True
 
 [Palevo]
-palevo_enabled = False
+palevo_enabled = True
 
 [Zeustracker]
-zeustracker_enabled = False
+zeustracker_enabled = True
 
 [Malwaredomainlist]
-malwaredomainlist_enabled = False
+malwaredomainlist_enabled = True
 
 [Malwareteks]
 # Too many trackers, useless for malware IOC
-malwareteks_enabled = False
+malwareteks_enabled = True
 
 [Cybercrimetracker]
-cybercrimetracker_enabled = False
+cybercrimetracker_enabled = True
 
 [Openphish]
-openphish_enabled = False
+openphish_enabled = True
 
 [Cuckoosandbox]
 cuckoosandbox_enabled = False
@@ -91,10 +90,10 @@ cuckoosandbox_web_url = None
 vxvault_enabled = False
 
 [Spamhaus]
-spamhaus_enabled = False
+spamhaus_enabled = True
 
 [Sslblacklist]
-sslblacklist_enabled = False
+sslblacklist_enabled = True
 
 [Malshare]
 malshare_enabled = False
@@ -105,8 +104,8 @@ otx_enabled = False
 otx_api_keys = None
 
 [Nothink]
-nothink_enabled = False
+nothink_enabled = True
 
 [RansomwareTracker]
-ransomwaretracker_enabled = False
+ransomwaretracker_enabled = True
 

@@ -41,11 +41,19 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
     Vxvault
     ZeusTracker
 
+#### Adding your module
+```
+cp modules/template.module modules/yourModuleName.py
+vim modules/yourModuleName.py
+```
+Change every CHANGEME in the template
+Then polulate the __init__ method with basic information and fill search() method with the logic needed to check self.ioc against the data provided by your database (basic logic is provided to guide you). Call to display() must be done to print results prettily.
+
 #### Installation
 ```
 sudo pip install -r requirements.txt
-cp config.py.editme config.py
-vim config.py 
+cp config.ini.editme config.ini
+vim config.ini
 ```
 Activate and fill licence key for modules you need to use.
 

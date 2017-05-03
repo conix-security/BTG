@@ -19,7 +19,6 @@
 
 from lib.cache import Cache
 from lib.io import display
-from lib.argument_parse import parse
 import validators
 
 class Openphish:
@@ -57,7 +56,7 @@ class Openphish:
                     if self.ioc == midle:
                         display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return
-                elif self.type == "domain" and parse.is_valid_domain(midle):
+                elif self.type == "domain" and validators.domain(midle):
                     if midle == self.ioc:
                         display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return

@@ -20,11 +20,10 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
-version = "1.1" # BTG version
+version = "1.5" # BTG version
 
 # Import python modules
 from lib.io import display, logSearch
-from lib.argument_parse import parse
 try:
     import sys
     import validators
@@ -123,7 +122,7 @@ class BTG:
             return "IPv4"
         elif validators.ipv6(argument):
             return "IPv6"
-        elif len(findall(r"^(?=.{4,255}$)([a-zA-Z0-9][a-zA-Z0-9-]{,61}[a-zA-Z0-9]\.)+[a-zA-Z0-9]{2,5}$", argument)) or parse.is_valid_domain(argument):
+        elif validators.domain(argument):
             return "domain"
         else:
             display("MAIN", argument, "ERROR", "Unable to retrieve IOC type")
