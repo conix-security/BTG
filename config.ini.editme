@@ -51,7 +51,7 @@ virustotal_enabled = False
 virustotal_API_keys = []
 
 [Tor]
-tor_enabled = False
+torips_enabled = False
 
 [Dshield]
 dshield_enabled = False
