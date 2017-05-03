@@ -31,6 +31,7 @@ except:
     display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'pymisp' library (available here: https://github.com/MISP/PyMISP)")
     exit()
 
+    
 class Misp:
     def __init__(self, ioc, type, config):
         self.config = config
