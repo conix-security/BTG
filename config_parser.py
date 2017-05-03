@@ -20,5 +20,3 @@ class Config():
         conf = ConfigParser()
         conf.read("config.ini")
         Config.__args = {option : ast.literal_eval(conf.get(section,option)) for section in conf.sections() for option in conf.options(section)}
-
-
