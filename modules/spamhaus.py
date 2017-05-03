@@ -25,17 +25,16 @@ from netaddr import IPNetwork, IPAddress
 class Spamhaus:
     def __init__(self, ioc, type, config):
         self.config = config
-        if config["spamhaus_enabled"]:
-            self.module_name = __name__.split(".")[1]
-            self.types = ["IPv4", "IPv6"]
-            self.search_method = "Online"
-            self.description = "Search IP in SpamHaus feeds"
-            self.author = "Robin Marsollier"
-            self.creation_date = "20-03-2017"
-            self.type = type
-            self.ioc = ioc
-            if type in self.types:
-                self.search()
+        self.module_name = __name__.split(".")[1]
+        self.types = ["IPv4", "IPv6"]
+        self.search_method = "Online"
+        self.description = "Search IP in SpamHaus feeds"
+        self.author = "Robin Marsollier"
+        self.creation_date = "20-03-2017"
+        self.type = type
+        self.ioc = ioc
+        if type in self.types:
+            self.search()
 
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")

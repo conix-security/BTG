@@ -37,6 +37,7 @@ misp_enabled = False
 misp_url = None
 misp_key = None
 misp_verifycert = False
+misp_tag_display = "tlp"
 
 [MispCrawler]
 # Disclamer: Use this module only if you can't use the regular MISP module

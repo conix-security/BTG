@@ -20,39 +20,41 @@
 
 from lib.io import display
 import warnings
+import sys
 
 from config_parser import Config
-cfg = Config.get_instance()
 try:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         from pymisp import PyMISP
 except:
-    if cfg["misp_enabled"]:
-        display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'pymisp' library (available here: https://github.com/MISP/PyMISP)")
-        exit()
+    display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'pymisp' library (available here: https://github.com/MISP/PyMISP)")
+    exit()
 
 class Misp:
     def __init__(self, ioc, type, config):
         self.config = config
-        if self.config["misp_enabled"]:
-            self.module_name = __name__.split(".")[1]
-            self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
-            self.search_method = "Offline"
-            self.description = "Search IOC in MISP database"
-            self.author = "Conix"
-            self.creation_date = "07-10-2016"
-            self.type = type
-            self.ioc = ioc
-            if type in self.types:
-                self.Search()
+        self.module_name = __name__.split(".")[1]
+        self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
+        self.search_method = "Offline"
+        self.description = "Search IOC in MISP database"
+        self.author = "Conix"
+        self.creation_date = "07-10-2016"
+        self.type = type
+        self.ioc = ioc
+        if type in self.types:
+            self.Search()
 
     def Search(self):
         display(self.module_name, self.ioc, "INFO", "Search in misp...")
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                m = PyMISP(self.config["misp_url"], self.config["misp_key"], self.config["misp_verifycert"], 'json')
+                if "misp_url" in self.config and "misp_key" in self.config and "misp_verifycert" in self.config:
+                    m = PyMISP(self.config["misp_url"], self.config["misp_key"], self.config["misp_verifycert"], 'json')
+                else :
+                    display(self.module_name, message_type="ERROR", string="Please check if you have misp_url, misp_key and misp_verifycert fields in config.ini")
+                    sys.exit()
         except Exception, e:
             display(self.module_name, self.ioc, "ERROR", e)
             return    
@@ -62,12 +64,15 @@ class Misp:
                 tag_display = ""
                 try:
                     for tag in event["Event"]["Tag"]:
-                        if tag["name"].split(":")[0] in self.config["misp_tag_display"]:
-                            if len(tag_display) == 0:
-                                tag_display = "["
-                            else:
-                                tag_display = "%s|"%tag_display
-                            tag_display = "%s%s"%(tag_display, tag["name"])
+                        if "misp_tag_display" in self.config :
+                            if tag["name"].split(":")[0] in self.config["misp_tag_display"]:
+                                if len(tag_display) == 0:
+                                    tag_display = "["
+                                else:
+                                    tag_display = "%s|"%tag_display
+                                tag_display = "%s%s"%(tag_display, tag["name"])
+                        else :
+                            display(self.module_name, message_type="ERROR",string="Please check if you have misp_tag_display fields in config.ini")
                 except:
                     pass
                 if len(tag_display) != 0:

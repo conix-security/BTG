@@ -27,17 +27,16 @@ warnings.filterwarnings("ignore")
 class Misp_Crawler:
     def __init__(self, ioc, type,config):
         self.config = config
-        if self.config["misp_crawler_enabled"]:
-            self.module_name = __name__.split(".")[1]
-            self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
-            self.search_method = "Online"
-            self.description = "Crawl MISP searching for IOC"
-            self.author = "Conix"
-            self.creation_date = "21-03-2017"
-            self.type = type
-            self.ioc = ioc
-            if type in self.types:
-                self.Search()
+        self.module_name = __name__.split(".")[1]
+        self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
+        self.search_method = "Online"
+        self.description = "Crawl MISP searching for IOC"
+        self.author = "Conix"
+        self.creation_date = "21-03-2017"
+        self.type = type
+        self.ioc = ioc
+        if type in self.types:
+            self.Search()
 
     def Search(self):
         display(self.module_name, self.ioc, "INFO", "Search in misp...")
@@ -45,61 +44,70 @@ class Misp_Crawler:
             self.loginRequest(s)
             allEvents = self.searchAttribute(s)
             for event in allEvents:
-                display(self.module_name, self.ioc, "FOUND", "Event: %s/events/view/%s"%(self.config["misp_crawler_url"], event))
+                if "misp_crawler_url" in self.config:
+                    display(self.module_name, self.ioc, "FOUND", "Event: %s/events/view/%s"%(self.config["misp_crawler_url"], event))
+                else :
+                    display(self.module_name, message_type="ERROR", string= "Please check if you have misp_crawler_url field in config.ini")
 
     def searchAttribute(self, s):
-        response = s.get(
-            "%s/attributes/search"%self.config["misp_crawler_url"],
-            headers=self.config["user_agent"],
-            verify=self.config["misp_crawler_verifycert"]
-        )
-        token_key, token_fields = self.getTokens(response.text)
-        data = {
-            '_method': 'POST',
-            'data[_Token][key]': token_key,
-            'data[Attribute][keyword]': self.ioc,
-            'data[Attribute][attributetags]': '',
-            'data[Attribute][keyword2]': '',
-            'data[Attribute][tags]': '',
-            'data[Attribute][org]': '',
-            'data[Attribute][type]': 'ALL',
-            'data[Attribute][category]': 'ALL',
-            'data[Attribute][ioc]': '0',
-            'data[Attribute][alternate]': '0',
-            'data[_Token][fields]': token_fields,
-            'data[_Token][unlocked]': ''
-        }
-        s.headers.update(
-            {'referer': "%s/attributes/search"%self.config["misp_crawler_url"]}
-        )
-        response = s.post(
-            "%s/attributes/search"%self.config["misp_crawler_url"],
-            data=data, headers=self.config["user_agent"],
-            verify=self.config["misp_crawler_verifycert"]
-        )
-        return self.getAllEvents(response.text)
+        if "misp_crawler_url" in self.config and "user_agent" in self.config and "misp_crawler_verifycert" in self.config:
+            response = s.get(
+                "%s/attributes/search"%self.config["misp_crawler_url"],
+                headers=self.config["user_agent"],
+                verify=self.config["misp_crawler_verifycert"]
+            )
+            token_key, token_fields = self.getTokens(response.text)
+            data = {
+                '_method': 'POST',
+                'data[_Token][key]': token_key,
+                'data[Attribute][keyword]': self.ioc,
+                'data[Attribute][attributetags]': '',
+                'data[Attribute][keyword2]': '',
+                'data[Attribute][tags]': '',
+                'data[Attribute][org]': '',
+                'data[Attribute][type]': 'ALL',
+                'data[Attribute][category]': 'ALL',
+                'data[Attribute][ioc]': '0',
+                'data[Attribute][alternate]': '0',
+                'data[_Token][fields]': token_fields,
+                'data[_Token][unlocked]': ''
+            }
+            s.headers.update(
+                {'referer': "%s/attributes/search"%self.config["misp_crawler_url"]}
+            )
+            response = s.post(
+                "%s/attributes/search"%self.config["misp_crawler_url"],
+                data=data, headers=self.config["user_agent"],
+                verify=self.config["misp_crawler_verifycert"]
+            )
+            return self.getAllEvents(response.text)
+        else :
+            display(self.module_name, message_type="ERROR", string="Please check if you have misp_crawler_url, user_agent and misp_crawler_verifycert fields in config.ini")
 
     def loginRequest(self, s):
-        response = s.get(
-            "%s/users/login"%self.config["misp_crawler_url"],
-            headers=self.config["user_agent"],
-            verify=self.config["misp_crawler_verifycert"]
-        )
-        token_key, token_fields = self.getTokens(response.text)
-        data = {
-            '_method': 'POST',
-            'data[_Token][key]': token_key,
-            'data[User][email]': self.config["misp_crawler_login"],
-            'data[User][password]': self.config["misp_crawler_password"],
-            'data[_Token][fields]': token_fields,
-            'data[_Token][unlocked]': ''
-        }
-        response = s.post(
-            "%s/users/login"%self.config["misp_crawler_url"],
-            data=data,
-            headers=self.config["user_agent"],
-            verify=self.config["misp_crawler_verifycert"]
-        )
+        if "misp_crawler_url" in self.config and "user_agent" in self.config and "misp_crawler_verifycert" in self.config:
+            response = s.get(
+                "%s/users/login"%self.config["misp_crawler_url"],
+                headers=self.config["user_agent"],
+                verify=self.config["misp_crawler_verifycert"]
+            )
+            token_key, token_fields = self.getTokens(response.text)
+            data = {
+                '_method': 'POST',
+                'data[_Token][key]': token_key,
+                'data[User][email]': self.config["misp_crawler_login"],
+                'data[User][password]': self.config["misp_crawler_password"],
+                'data[_Token][fields]': token_fields,
+                'data[_Token][unlocked]': ''
+            }
+            response = s.post(
+                "%s/users/login"%self.config["misp_crawler_url"],
+                data=data,
+                headers=self.config["user_agent"],
+                verify=self.config["misp_crawler_verifycert"]
+            )
+        else:
+            display(self.module_name, message_type="ERROR", string="Please check if you have misp_crawler_url, user_agent and misp_crawler_verifycert fields in config.ini")
 
     def getAllEvents(self, response):
         events = []
