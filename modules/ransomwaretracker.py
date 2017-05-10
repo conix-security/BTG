@@ -25,17 +25,16 @@ from lib.io import display
 class Ransomwaretracker:
     def __init__(self, ioc, type, config):
         self.config = config
-        if self.config["ransomwaretracker_enabled"]:
-            self.module_name = __name__.split(".")[1]
-            self.types = ["domain","URL","IPv4","IPv6"]
-            self.search_method = "Online"
-            self.description = "Search in ransomwaretracker feeds"
-            self.author = "Hicham Megherbi"
-            self.creation_date = "12-04-2017"
-            self.type = type
-            self.ioc = ioc
-            if type in self.types:
-                self.search()
+        self.module_name = __name__.split(".")[1]
+        self.types = ["domain","URL","IPv4","IPv6"]
+        self.search_method = "Online"
+        self.description = "Search in ransomwaretracker feeds"
+        self.author = "Hicham Megherbi"
+        self.creation_date = "12-04-2017"
+        self.type = type
+        self.ioc = ioc
+        if type in self.types:
+            self.search()
 
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")

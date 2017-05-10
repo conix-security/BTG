@@ -36,6 +36,7 @@ misp_enabled = False
 misp_url = None         # http/https is required, string must be quoted
 misp_key = None
 misp_verifycert = False
+misp_tag_display = "tlp"
 
 [MispCrawler]
 # Disclamer: Use this module only if you can't use the regular MISP module
@@ -50,7 +51,7 @@ virustotal_enabled = False
 virustotal_API_keys = []
 
 [Tor]
-tor_enabled = True
+torips_enabled = False
 
 [Dshield]
 dshield_enabled = True

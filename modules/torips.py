@@ -23,17 +23,16 @@ from lib.io import display
 class Torips:
     def __init__(self, ioc, type,config):
         self.config = config
-        if self.config["tor_enabled"]:
-            self.module_name = __name__.split(".")[1]
-            self.types = ["IPv4"]
-            self.search_method = "Online"
-            self.description = "Search an IPv4 in tor exits nodes"
-            self.author = "Conix"
-            self.creation_date = "13-09-2016"
-            self.type = type
-            self.ioc = ioc
-            if type in self.types:
-                self.search()
+        self.module_name = __name__.split(".")[1]
+        self.types = ["IPv4"]
+        self.search_method = "Online"
+        self.description = "Search an IPv4 in tor exits nodes"
+        self.author = "Conix"
+        self.creation_date = "13-09-2016"
+        self.type = type
+        self.ioc = ioc
+        if type in self.types:
+            self.search()
 
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")

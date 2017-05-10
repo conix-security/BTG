@@ -45,6 +45,7 @@ from config_parser import Config
 import importlib
 
 config = Config.get_instance()
+
 class BTG:
     """
         BTG Main class
@@ -65,12 +66,15 @@ class BTG:
         for argument in args:
             i+=1
             p = multiprocessing.Process(target=self.run, args=(argument, modules,))
-            while len(jobs) > config["max_process"]:
-                for job in jobs:
-                    if not job.is_alive():
-                        jobs.remove(job)
-                    else:
-                        sleep(3)
+            if "max_process" in config :
+                while len(jobs) > config["max_process"]:
+                    for job in jobs:
+                        if not job.is_alive():
+                            jobs.remove(job)
+                        else:
+                            sleep(3)
+            else :
+                display(message_type="ERROR", string="Please check if you have max_process field in config.ini")
             jobs.append(p)
             p.start()
 
@@ -96,8 +100,9 @@ class BTG:
         display(string="Load: %s/%s.py"%(config["modules_folder"], module))
         obj = importlib.import_module("modules."+module)
         for c in dir(obj):
-            if module == c.lower():
-                getattr(obj, c)(argument,type,config)
+            if module+"_enabled" in config :
+                if module == c.lower() and config[module+"_enabled"]:
+                    getattr(obj, c)(argument,type,config)
 
     def checkType(self, argument):
         """
@@ -168,16 +173,19 @@ def cleanups_lock_cache(real_path):
 if __name__ == '__main__':
 
     args = parse_args()
-    dir_path = path.dirname(path.realpath(__file__))
-    config["modules_folder"] = path.join(dir_path, config["modules_folder"])
-    config["temporary_cache_path"] = path.join(dir_path,config["temporary_cache_path"])
-    if config["display_motd"] and not args.silent:
-        motd()
     # Check if debug
     if args.debug:
         config["debug"] = True
     if args.offline:
         config["offline"] = True
+    dir_path = path.dirname(path.realpath(__file__))
+    if "modules_folder" in config and "temporary_cache_path" in config:
+        config["modules_folder"] = path.join(dir_path, config["modules_folder"])
+        config["temporary_cache_path"] = path.join(dir_path, config["temporary_cache_path"])
+    else :
+        display(message_type="ERROR", string="Please check if you have modules_folder and temporary_cache_path field in config.ini")
+    if config["display_motd"] and not args.silent:
+        motd()
     try:
         if path.exists(config["temporary_cache_path"]):
             cleanups_lock_cache(config["temporary_cache_path"])

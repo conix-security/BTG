@@ -25,17 +25,16 @@ class Sslblacklist():
 
     def __init__(self,ioc,type,config):
         self.config = config
-        if self.config["sslblacklist_enabled"]:
-            self.module_name = __name__.split(".")[1]
-            self.types = ["SHA1"]
-            self.search_method = "Online"
-            self.description = "Search IOC in SslBlacklist database"
-            self.author = "Conix"
-            self.creation_date = "12-04-2017"
-            self.type = type
-            self.ioc = ioc
-            if type in self.types:
-                self.search()
+        self.module_name = __name__.split(".")[1]
+        self.types = ["SHA1"]
+        self.search_method = "Online"
+        self.description = "Search IOC in SslBlacklist database"
+        self.author = "Conix"
+        self.creation_date = "12-04-2017"
+        self.type = type
+        self.ioc = ioc
+        if type in self.types:
+            self.search()
 
 
 

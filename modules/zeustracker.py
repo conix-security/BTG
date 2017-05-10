@@ -24,17 +24,16 @@ import validators
 class Zeustracker:
     def __init__(self, ioc, type, config):
         self.config = config
-        if self.config["zeustracker_enabled"]:
-            self.module_name = __name__.split(".")[1]
-            self.types = ["domain", "IPv4", "URL"]
-            self.search_method = "Online"
-            self.description = "Search domain in Lehigh feeds"
-            self.author = "Conix"
-            self.creation_date = "15-09-2016"
-            self.type = type
-            self.ioc = ioc
-            if type in self.types:
-                self.search()
+        self.module_name = __name__.split(".")[1]
+        self.types = ["domain", "IPv4", "URL"]
+        self.search_method = "Online"
+        self.description = "Search domain in Lehigh feeds"
+        self.author = "Conix"
+        self.creation_date = "15-09-2016"
+        self.type = type
+        self.ioc = ioc
+        if type in self.types:
+            self.search()
 
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")

@@ -21,7 +21,7 @@ from lib.cache import Cache
 from lib.io import display
 
 class Nothink:
-    def __init__(self, ioc, type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         if self.config["nothink_enabled"]:
             self.module_name = __name__.split(".")[1]
@@ -34,6 +34,9 @@ class Nothink:
             self.ioc = ioc
             if type in self.types:
                 self.search()
+        else :
+            display(self.module_name, ioc=None, message_type="ERROR",
+                    string="You must have nothink_enabled in your configuration file. If you want to use Nothink, put its value to True else put it to False")
 
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")

@@ -32,33 +32,38 @@ class Virustotal:
     """
     def __init__(self, ioc, type, config):
         self.config = config
-        if self.config["virustotal_enabled"]:
-            self.module_name = __name__.split(".")[1]
-            self.types = ["MD5", "SHA1", "SHA256", "URL", "IPv4", "domain"]
-            self.search_method = "Online"
-            self.description = "Search IOC in VirusTotal database"
-            self.author = "Conix"
-            self.creation_date = "13-09-2016"
-            self.type = type
-            self.ioc = ioc
-            if type in self.types and BTG.allowedToSearch(self.search_method):
+        self.module_name = __name__.split(".")[1]
+        self.types = ["MD5", "SHA1", "SHA256", "URL", "IPv4", "domain"]
+        self.search_method = "Online"
+        self.description = "Search IOC in VirusTotal database"
+        self.author = "Conix"
+        self.creation_date = "13-09-2016"
+        self.type = type
+        self.ioc = ioc
+        if type in self.types and BTG.allowedToSearch(self.search_method):
+            if "proxy_host" in self.config :
                 if len(self.config["proxy_host"]["https"]) > 0:
                     proxy = urllib2.ProxyHandler({'https': self.config["proxy_host"]["https"]})
                     opener = urllib2.build_opener(proxy)
                 else:
                     opener = urllib2.build_opener()
-                urllib2.install_opener(opener)
-                try:
+            else :
+                display(self.module_name, message_type="ERROR", string="Please check if you have proxy_host field in config.ini")
+            urllib2.install_opener(opener)
+            try:
+                if "virustotal_api_keys" in self.config :
                     self.key = choice(self.config["virustotal_api_keys"])
-                except:
-                    display(self.module_name, self.ioc, "ERROR", "Please provide your authorization key.")
-                    return
-                display(self.module_name, self.ioc, "INFO", "Searching...")
-                
-                if self.type in ["URL", "domain", "IPv4"]:
-                    self.searchURL()
-                else:
-                    self.searchReport()
+                else :
+                    display(self.module_name, message_type="ERROR", string="Please check if you have virustotal_api_keys field in config.ini")
+            except:
+                display(self.module_name, self.ioc, "ERROR", "Please provide your authorization key.")
+                return
+            display(self.module_name, self.ioc, "INFO", "Searching...")
+
+            if self.type in ["URL", "domain", "IPv4"]:
+                self.searchURL()
+            else:
+                self.searchReport()
                 
     def searchReport(self):
         self.url = "https://www.virustotal.com/vtapi/v2/file/report"
