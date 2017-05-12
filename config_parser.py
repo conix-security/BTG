@@ -1,5 +1,6 @@
 from multiprocessing import Manager
 import ast
+import os
 from ConfigParser import ConfigParser
 
 class Config():
@@ -18,5 +19,6 @@ class Config():
     @staticmethod
     def _parse_config():
         conf = ConfigParser()
-        conf.read("config.ini")
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        conf.read("%s/config.ini"%dir_path)
         Config.__args = {option : ast.literal_eval(conf.get(section,option)) for section in conf.sections() for option in conf.options(section)}
