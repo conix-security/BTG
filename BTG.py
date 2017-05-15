@@ -110,11 +110,11 @@ class BTG:
         """
         if validators.url(argument):
             return "URL"
-        elif len(findall(r"^([a-fA-F\d]{32}$)", argument)):
+        elif len(findall(r"^([a-f\d]{32}$)", argument)):
             return "MD5"
-        elif len(findall(r"^[0-9a-f]{5,40}$", argument)):
+        elif len(findall(r"^[0-9a-fA-F]{40}$", argument)):
             return "SHA1"
-        elif len(findall(r"^[A-Fa-f0-9]{64}$", argument)):
+        elif len(findall(r"^[0-9a-fA-F]{64}$", argument)):
             return "SHA256"
         elif len(findall(r"^\w{128}$", argument)):
             return "SHA512"
