@@ -23,26 +23,19 @@
 version = "1.5" # BTG version
 
 # Import python modules
-from lib.io import display, logSearch
-try:
-    import sys
-    import validators
-    import multiprocessing
-    import argparse
-    from re import findall
-    from os import listdir, path, remove
-    from os.path import isfile, join
-    from platform import system
-    from base64 import b64decode
-    from time import sleep
-    if system() == "Windows":
-        import win_inet_pton
-except:
-    print("[ERROR] Please install externals modules from 'requirements.txt': pip install -r requirements.txt")
-    exit()
-
-from config_parser import Config
+import sys
+import multiprocessing
+import argparse
+from re import findall
+from os import listdir, path, remove
+from os.path import isfile, join
+from platform import system
+from base64 import b64decode
+from time import sleep
 import importlib
+import validators
+from config_parser import Config
+from lib.io import display, logSearch
 
 config = Config.get_instance()
 
@@ -58,22 +51,22 @@ class BTG:
         all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
         modules = []
         for file in all_files:
-            if file[-3:] == ".py" and file[:-3] != "__init__":                
+            if file[-3:] == ".py" and file[:-3] != "__init__":
                 modules.append(file[:-3])
         jobs = []
         # Start BTG process
         i = 0
         for argument in args:
-            i+=1
+            i += 1
             p = multiprocessing.Process(target=self.run, args=(argument, modules,))
-            if "max_process" in config :
+            if "max_process" in config:
                 while len(jobs) > config["max_process"]:
                     for job in jobs:
                         if not job.is_alive():
                             jobs.remove(job)
                         else:
                             sleep(3)
-            else :
+            else:
                 display(message_type="ERROR", string="Please check if you have max_process field in config.ini")
             jobs.append(p)
             p.start()
@@ -84,12 +77,12 @@ class BTG:
         """
         type = self.checkType(argument)
         display(ioc=argument, string="IOC type: %s"%type)
-        if type == None:
+        if type is None:
             sys.exit()
         workers = []
         for module in modules:
-            worker = multiprocessing.Process(target = self.module_worker, 
-                args = (module, argument, type,))
+            worker = multiprocessing.Process(target=self.module_worker,
+                                             args=(module, argument, type,))
             workers.append(worker)
             worker.start()
 
@@ -100,9 +93,9 @@ class BTG:
         display(string="Load: %s/%s.py"%(config["modules_folder"], module))
         obj = importlib.import_module("modules."+module)
         for c in dir(obj):
-            if module+"_enabled" in config :
+            if module+"_enabled" in config:
                 if module == c.lower() and config[module+"_enabled"]:
-                    getattr(obj, c)(argument,type,config)
+                    getattr(obj, c)(argument, type, config)
 
     def checkType(self, argument):
         """
@@ -171,7 +164,6 @@ def cleanups_lock_cache(real_path):
                 cleanups_lock_cache(file_path)
 
 if __name__ == '__main__':
-
     args = parse_args()
     # Check if debug
     if args.debug:
@@ -182,7 +174,7 @@ if __name__ == '__main__':
     if "modules_folder" in config and "temporary_cache_path" in config:
         config["modules_folder"] = path.join(dir_path, config["modules_folder"])
         config["temporary_cache_path"] = path.join(dir_path, config["temporary_cache_path"])
-    else :
+    else:
         display(message_type="ERROR", string="Please check if you have modules_folder and temporary_cache_path field in config.ini")
     if config["display_motd"] and not args.silent:
         motd()
@@ -195,4 +187,3 @@ if __name__ == '__main__':
         # Exit if user press CTRL+C
         print("\n")
         sys.exit()
-
