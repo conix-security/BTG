@@ -22,7 +22,7 @@ from lib.io import display
 import validators
 
 class Openphish:
-    def __init__(self, ioc, type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["domain", "URL", "IPv4"]
@@ -39,7 +39,7 @@ class Openphish:
         display(self.module_name, self.ioc, "INFO", "Searching...")
         url = "https://openphish.com/"
         paths = [
-            "feed.txt"  
+            "feed.txt"
         ]
         for path in paths:
             content = Cache(self.module_name, url, path, self.search_method).content

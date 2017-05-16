@@ -51,4 +51,3 @@ class Dshield:
                             display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                 except:
                     pass
-

@@ -17,18 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-
-from BTG import BTG
-from lib.io import display
 import urllib
 import urllib2
 from json import loads
 from time import sleep
 from random import randint, choice
+from BTG import BTG
+from lib.io import display
 
 class Virustotal:
     """
-        This module allow you to search IOC in Virustotal 
+        This module allow you to search IOC in Virustotal
     """
     def __init__(self, ioc, type, config):
         self.config = config
@@ -41,19 +40,19 @@ class Virustotal:
         self.type = type
         self.ioc = ioc
         if type in self.types and BTG.allowedToSearch(self.search_method):
-            if "proxy_host" in self.config :
+            if "proxy_host" in self.config:
                 if len(self.config["proxy_host"]["https"]) > 0:
                     proxy = urllib2.ProxyHandler({'https': self.config["proxy_host"]["https"]})
                     opener = urllib2.build_opener(proxy)
                 else:
                     opener = urllib2.build_opener()
-            else :
+            else:
                 display(self.module_name, message_type="ERROR", string="Please check if you have proxy_host field in config.ini")
             urllib2.install_opener(opener)
             try:
-                if "virustotal_api_keys" in self.config :
+                if "virustotal_api_keys" in self.config:
                     self.key = choice(self.config["virustotal_api_keys"])
-                else :
+                else:
                     display(self.module_name, message_type="ERROR", string="Please check if you have virustotal_api_keys field in config.ini")
             except:
                 display(self.module_name, self.ioc, "ERROR", "Please provide your authorization key.")
@@ -64,7 +63,7 @@ class Virustotal:
                 self.searchURL()
             else:
                 self.searchReport()
-                
+
     def searchReport(self):
         self.url = "https://www.virustotal.com/vtapi/v2/file/report"
         parameters = {"resource": self.ioc,
@@ -84,7 +83,7 @@ class Virustotal:
             pass
 
     def searchURL(self):
-        self.url =  "http://www.virustotal.com/vtapi/v2/url/report"
+        self.url = "http://www.virustotal.com/vtapi/v2/url/report"
         parameters = {"resource": self.ioc,
                       "apikey": self.key}
         data = urllib.urlencode(parameters)

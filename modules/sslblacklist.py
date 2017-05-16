@@ -21,9 +21,7 @@ from lib.io import display
 from lib.cache import Cache
 
 class Sslblacklist():
-
-
-    def __init__(self,ioc,type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["SHA1"]
@@ -36,8 +34,6 @@ class Sslblacklist():
         if type in self.types:
             self.search()
 
-
-
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")
         url = "https://sslbl.abuse.ch/blacklist/"
@@ -49,6 +45,6 @@ class Sslblacklist():
             content = Cache(self.module_name, url, path, self.search_method).content
             for line in content.split("\n"):
                 if self.ioc in line:
-                    infos=line.split(',')
-                    display(self.module_name, self.ioc, "FOUND", "%s | %s%s" % (infos[2],url,path))
+                    infos = line.split(',')
+                    display(self.module_name, self.ioc, "FOUND", "%s | %s%s" % (infos[2], url, path))
                     return

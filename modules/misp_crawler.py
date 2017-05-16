@@ -25,7 +25,7 @@ import requests
 warnings.filterwarnings("ignore")
 
 class Misp_Crawler:
-    def __init__(self, ioc, type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
@@ -46,8 +46,8 @@ class Misp_Crawler:
             for event in allEvents:
                 if "misp_crawler_url" in self.config:
                     display(self.module_name, self.ioc, "FOUND", "Event: %s/events/view/%s"%(self.config["misp_crawler_url"], event))
-                else :
-                    display(self.module_name, message_type="ERROR", string= "Please check if you have misp_crawler_url field in config.ini")
+                else:
+                    display(self.module_name, message_type="ERROR", string="Please check if you have misp_crawler_url field in config.ini")
 
     def searchAttribute(self, s):
         if "misp_crawler_url" in self.config and "user_agent" in self.config and "misp_crawler_verifycert" in self.config:
@@ -81,7 +81,7 @@ class Misp_Crawler:
                 verify=self.config["misp_crawler_verifycert"]
             )
             return self.getAllEvents(response.text)
-        else :
+        else:
             display(self.module_name, message_type="ERROR", string="Please check if you have misp_crawler_url, user_agent and misp_crawler_verifycert fields in config.ini")
 
     def loginRequest(self, s):

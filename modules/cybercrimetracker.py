@@ -21,8 +21,8 @@ from lib.cache import Cache
 from lib.io import display
 
 class Cybercrimetracker:
-    def __init__(self, ioc, type,config):
-        self.config=config
+    def __init__(self, ioc, type, config):
+        self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["domain", "IPv4", "URL"]
         self.search_method = "Online"
@@ -38,7 +38,7 @@ class Cybercrimetracker:
         display(self.module_name, self.ioc, "INFO", "Searching...")
         url = "http://cybercrime-tracker.net/"
         paths = [
-            "all.php"  
+            "all.php"
         ]
         if self.type == "URL":
             self.ioc = self.ioc.split("//")[1]
@@ -47,6 +47,3 @@ class Cybercrimetracker:
             for line in content.split("\n"):
                 if self.ioc in line:
                     display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-
-
-

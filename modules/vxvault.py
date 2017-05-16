@@ -21,7 +21,7 @@ from lib.cache import Cache
 from lib.io import display
 
 class Vxvault:
-    def __init__(self, ioc, type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["IPv4", "domain", "URL"]
@@ -33,7 +33,7 @@ class Vxvault:
         self.ioc = ioc
         if type in self.types:
             self.search()
-                
+
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")
         url = "http://vxvault.net/"

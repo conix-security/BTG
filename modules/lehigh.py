@@ -22,7 +22,7 @@ from lib.cache import Cache
 from lib.io import display
 
 class Lehigh:
-    def __init__(self, ioc, type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["domain"]
@@ -48,4 +48,3 @@ class Lehigh:
                     base = line.split("\t\t")[1]
                     if self.ioc == base.split("\t")[0]:
                         display(self.module_name, self.ioc, "FOUND", "[%s] %s%s"%(base.split("\t")[1], url, path))
-

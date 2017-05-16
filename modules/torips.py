@@ -21,7 +21,7 @@ from lib.cache import Cache
 from lib.io import display
 
 class Torips:
-    def __init__(self, ioc, type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["IPv4"]
@@ -45,5 +45,3 @@ class Torips:
         for path in paths:
             if self.ioc in Cache(self.module_name, url, path, self.search_method).content:
                 display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-
-
