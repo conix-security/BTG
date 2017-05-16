@@ -49,7 +49,7 @@ class display:
                 f = open(config["log_found_file"], 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
-            print output
+            print(output)
 
 class logSearch:
     def __init__(self, iocs):

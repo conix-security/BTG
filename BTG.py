@@ -38,7 +38,7 @@ try:
     if system() == "Windows":
         import win_inet_pton
 except:
-    print "[ERROR] Please install externals modules from 'requirements.txt': pip install -r requirements.txt"
+    print("[ERROR] Please install externals modules from 'requirements.txt': pip install -r requirements.txt")
     exit()
 
 from config_parser import Config
@@ -110,7 +110,7 @@ class BTG:
         """
         if validators.url(argument):
             return "URL"
-        elif len(findall(r"^([a-f\d]{32}$)", argument)):
+        elif len(findall(r"^[0-9a-fA-F]{32}$", argument)):
             return "MD5"
         elif len(findall(r"^[0-9a-fA-F]{40}$", argument)):
             return "SHA1"
@@ -143,10 +143,10 @@ def motd():
     """
         Display Message Of The Day in console
     """
-    print "%s v%s\n"%(b64decode("""
+    print("%s v%s\n"%(b64decode("""
         ICAgIF9fX18gX19fX19fX19fX19fCiAgIC8gX18gKV8gIF9fLyBfX19fLwogIC8gX18gIHw\
         vIC8gLyAvIF9fICAKIC8gL18vIC8vIC8gLyAvXy8gLyAgCi9fX19fXy8vXy8gIFxfX19fLw\
-        ==""".strip()), version)
+        ==""".strip()), version))
 
 def parse_args():
     """
@@ -193,6 +193,6 @@ if __name__ == '__main__':
         BTG(args.iocs)
     except (KeyboardInterrupt, SystemExit):
         # Exit if user press CTRL+C
-        print "\n"
+        print("\n")
         sys.exit()
 
