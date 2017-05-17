@@ -42,7 +42,5 @@ class Palevo:
         ]
         for path in paths:
             content = Cache(self.module_name, url, path, self.search_method).content
-            if self.ioc in content :
+            if self.ioc in content:
                 display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-
-

@@ -41,7 +41,7 @@ class display:
             else:
                 ioc_show = " "
             output = "[%s][%s%s%s]%s%s%s%s"%(module, colorize, message_type,
-             colors.NORMAL, ioc_show, colors.BOLD, string, colors.NORMAL)
+                                             colors.NORMAL, ioc_show, colors.BOLD, string, colors.NORMAL)
             if message_type == "FOUND":
                 if not exists(config["log_found_file"]):
                     open(config["log_found_file"], 'a').close()

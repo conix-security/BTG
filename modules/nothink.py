@@ -34,7 +34,7 @@ class Nothink:
             self.ioc = ioc
             if type in self.types:
                 self.search()
-        else :
+        else:
             display(self.module_name, ioc=None, message_type="ERROR",
                     string="You must have nothink_enabled in your configuration file. If you want to use Nothink, put its value to True else put it to False")
 
@@ -51,5 +51,3 @@ class Nothink:
             for line in content.split("\n"):
                 if self.ioc in line:
                     display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-
-

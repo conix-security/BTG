@@ -16,18 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-
-from requests.exceptions import ConnectionError, ReadTimeout
-from os.path import isdir, exists, join
-from os import mkdir, stat, remove, chmod, walk
-from lib.io import display
-from BTG import BTG
-from time import mktime
 import datetime
 import sys
+from os.path import isdir, exists
+from os import mkdir, stat, remove, chmod
+from time import mktime
 import requests
+from requests.exceptions import ConnectionError, ReadTimeout
+from lib.io import display
+from BTG import BTG
 from config_parser import Config
-
 
 class Cache:
     def __init__(self, module_name, url, filename, search_method):
@@ -57,13 +55,13 @@ class Cache:
         if exists(self.temp_file):
             f = open(self.temp_file).read()
         return f
-        
+
     def downloadFile(self):
         """
             Get file from web
         """
-        display("%s.cache"%self.module_name, message_type="DEBUG", 
-            string="Update %s%s"%(self.url, self.filename))
+        display("%s.cache"%self.module_name, message_type="DEBUG",
+                string="Update %s%s"%(self.url, self.filename))
         full_url = "%s%s"%(self.url, self.filename)
         try:
             r = requests.get(
@@ -73,12 +71,12 @@ class Cache:
                 timeout=self.config["requests_timeout"]
             )
         except ConnectionError as e:
-            display("%s.cache"%self.module_name, message_type="ERROR", 
-                string=e)
+            display("%s.cache"%self.module_name, message_type="ERROR",
+                    string=e)
             return
         except ReadTimeout as e:
-            display("%s.cache"%self.module_name, message_type="ERROR", 
-                string="Timeout: %s"%(full_url))
+            display("%s.cache"%self.module_name, message_type="ERROR",
+                    string="Timeout: %s"%(full_url))
             return
         except:
             raise
@@ -97,8 +95,8 @@ class Cache:
                     chmod(self.temp_file, 0o777)
                 remove("%s.lock"%self.temp_file)
         else:
-            display("%s.cache"%self.module_name, message_type="ERROR", 
-                string="Response code: %s | %s%s"%(r.status_code, self.url, self.filename))
+            display("%s.cache"%self.module_name, message_type="ERROR",
+                    string="Response code: %s | %s%s"%(r.status_code, self.url, self.filename))
 
     def checkIfUpdate(self):
         """
@@ -117,21 +115,20 @@ class Cache:
         if self.config["temporary_cache_update"] <= 0:
             return False
         date_to_compare = datetime.datetime.now() - datetime.timedelta(seconds=self.config["temporary_cache_update"]*60)
-        last_update = stat(self.temp_file).st_mtime        
+        last_update = stat(self.temp_file).st_mtime
         if last_update < int(mktime(date_to_compare.timetuple())):
             # Need to update
             return True
-        else:
-            # Don't need
-            return False 
+        # Don't need
+        return False
 
     def createModuleFolder(self):
         if not isdir(self.config["temporary_cache_path"]):
             try:
                 mkdir(self.config["temporary_cache_path"])
             except:
-                display("%s.cache"%self.module_name, message_type="ERROR", 
-                    string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
+                display("%s.cache"%self.module_name, message_type="ERROR",
+                        string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
                 sys.exit()
             chmod(self.config["temporary_cache_path"], 0o777)
         if not isdir(self.temp_folder):

@@ -18,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-
 from lib.cache import Cache
 from lib.io import display
 
@@ -26,7 +25,7 @@ class Ransomwaretracker:
     def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        self.types = ["domain","URL","IPv4","IPv6"]
+        self.types = ["domain", "URL", "IPv4", "IPv6"]
         self.search_method = "Online"
         self.description = "Search in ransomwaretracker feeds"
         self.author = "Hicham Megherbi"
@@ -44,8 +43,8 @@ class Ransomwaretracker:
         ]
         content = Cache(self.module_name, url, paths[0], self.search_method).content
         for line in content.split("\n"):
-            try: 
-               if self.ioc in line:
-                     display(self.module_name, self.ioc, "FOUND", "%s | %s%s"%(line.split(",")[2].replace('"','',2), url, paths[0]))
+            try:
+                if self.ioc in line:
+                    display(self.module_name, self.ioc, "FOUND", "%s | %s%s"%(line.split(",")[2].replace('"', '', 2), url, paths[0]))
             except:
-                   pass
+                pass

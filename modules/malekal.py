@@ -26,7 +26,7 @@ from platform import system
 from config_parser import Config
 cfg = Config.get_instance()
 if system() != "Windows":
-    import requests_cache 
+    import requests_cache
     requests_cache.install_cache('%sBTG'%cfg["sqlite_path"])
 
 class Malekal:
@@ -34,10 +34,10 @@ class Malekal:
         This module allow you to search IOC in Malekal website (HTTP Requests)
         or local directory specified in BTG configuration file.
     """
-    def __init__(self, ioc, type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        if "malekal_local" in self.config and "malekal_remote" in self.config :
+        if "malekal_local" in self.config and "malekal_remote" in self.config:
             if self.config["malekal_local"] and not self.config["malekal_remote"]:
                 self.types = ["MD5"]
             else:
@@ -45,7 +45,7 @@ class Malekal:
                     "MD5", "SHA1", "SHA256", "SHA512", "URL",
                     "IPv4", "IPv6", "domain"
                 ]
-        else :
+        else:
             display(self.module_name, message_type="ERROR", string="Please check if you have malekal_local and malekal_remote fields in config.ini ")
         self.search_method = "Online"
         self.description = "Search IOC in malekal database"
@@ -58,10 +58,10 @@ class Malekal:
 
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")
-        if "malekal_local" in self.config :
+        if "malekal_local" in self.config:
             if self.config["malekal_local"]:
                 self.localSearch()
-        if "malekal_remote" in self.config :
+        if "malekal_remote" in self.config:
             if self.config["malekal_remote"] and BTG.allowedToSearch(self.search_method):
                 self.remoteSearch()
 
@@ -75,7 +75,7 @@ class Malekal:
             base = "hash="
         elif self.type in ["URL", "domain"]:
             base = "url="
-        elif self.type in ["IPv4",  "IPv6"]:
+        elif self.type in ["IPv4", "IPv6"]:
             base = "domaine="
         try:
             if "user_agent" in self.config and "proxy_host" in self.config and "requests_timeout" in self.config:
@@ -90,16 +90,15 @@ class Malekal:
                         url, base,
                         self.ioc))
             else:
-                display(self.module_name, message_type="ERROR",string="Please check if you have user_agent, proxy_host and requests_timeout fields in config.ini ")
+                display(self.module_name, message_type="ERROR", string="Please check if you have user_agent, proxy_host and requests_timeout fields in config.ini ")
 
         except:
             display("%s_remote"%self.module_name, self.ioc, "INFO", "MalekalTimeout")
-            
 
     def localSearch(self):
         """ Search in local directory """
         display("%s_local"%self.module_name, string="Browsing in local directory")
-        if "malekal_files_path" in self.config :
+        if "malekal_files_path" in self.config:
             for root, dirs, files in os.walk(self.config["malekal_files_path"]):
                 path = root.split('/')
                 folder = os.path.basename(root)
@@ -112,5 +111,5 @@ class Malekal:
                                 file
                             )
                         )
-        else :
-            display(self.module_name, message_type="ERROR",string="Please check if you have malekal_files_path field in config.ini ")
+        else:
+            display(self.module_name, message_type="ERROR", string="Please check if you have malekal_files_path field in config.ini ")

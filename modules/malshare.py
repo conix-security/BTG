@@ -17,15 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import json
 from lib.io import display
 from lib.cache import Cache
-import json
 
 class Malshare():
-    def __init__(self,ioc,type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        self.types = ["MD5","SHA256","SHA1"]
+        self.types = ["MD5", "SHA256", "SHA1"]
         self.search_method = "Online"
         self.description = "Search IOC in Malshare database"
         self.author = "Conix"
@@ -35,25 +35,23 @@ class Malshare():
         if type in self.types:
             self.search()
 
-
-
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")
         url = "http://malshare.com/"
-        if "malshare_api_key" in self.config :
-            if self.config["malshare_api_key"] :
+        if "malshare_api_key" in self.config:
+            if self.config["malshare_api_key"]:
                 paths = [
-                    "api.php?api_key=%s&action=details&hash=%s" %(self.config["malshare_api_key"],self.ioc)
+                    "api.php?api_key=%s&action=details&hash=%s" %(self.config["malshare_api_key"], self.ioc)
                 ]
                 for path in paths:
-                    try :
+                    try:
                         content = json.loads(Cache(self.module_name, url, path, self.search_method).content)
-                        safe_urls=[]
+                        safe_urls = []
                         for malware_url in content["SOURCES"]:
-                            safe_urls.append(malware_url.replace("http","hxxp"))
-                        display(self.module_name,self.ioc,"FOUND", "%s | %s%s" % (safe_urls,url,path))
+                            safe_urls.append(malware_url.replace("http", "hxxp"))
+                        display(self.module_name, self.ioc, "FOUND", "%s | %s%s" % (safe_urls, url, path))
                         return
-                    except :
+                    except:
                         pass
-        else :
+        else:
             display(self.module_name, message_type="ERROR", string="You must have a malshare api key to use this module ")

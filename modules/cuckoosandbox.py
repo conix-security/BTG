@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import json
+from platform import system
 from BTG import BTG
 from lib.io import display
 from requests import get
-import json
-from platform import system
 from config_parser import Config
 
 cfg = Config.get_instance()
@@ -29,7 +29,6 @@ if system() != "Windows":
     import requests_cache
 
     requests_cache.install_cache('%sBTG' % cfg["sqlite_path"])
-
 
 class Cuckoosandbox:
     """
