@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import validators
 from lib.cache import Cache
 from lib.io import display
-import validators
+
 
 class Zeustracker:
     def __init__(self, ioc, type, config):

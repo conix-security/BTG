@@ -18,14 +18,17 @@
 
 import datetime
 import sys
-from os.path import isdir, exists
-from os import mkdir, stat, remove, chmod
+from os import chmod, mkdir, remove, stat
+from os.path import exists, isdir
 from time import mktime
+
 import requests
 from requests.exceptions import ConnectionError, ReadTimeout
-from lib.io import display
+
 from BTG import BTG
 from config_parser import Config
+from lib.io import display
+
 
 class Cache:
     def __init__(self, module_name, url, filename, search_method):

@@ -1,7 +1,8 @@
-from multiprocessing import Manager
 import ast
 import os
 from ConfigParser import ConfigParser
+from multiprocessing import Manager
+
 
 class Config():
 

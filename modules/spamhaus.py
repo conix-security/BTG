@@ -20,7 +20,8 @@
 
 from lib.cache import Cache
 from lib.io import display
-from netaddr import IPNetwork, IPAddress
+from netaddr import IPAddress, IPNetwork
+
 
 class Spamhaus:
     def __init__(self, ioc, type, config):

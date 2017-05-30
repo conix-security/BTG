@@ -19,25 +19,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-
-version = "1.5" # BTG version
-
+import argparse
+import importlib
+import multiprocessing
 # Import python modules
 import sys
-import multiprocessing
-import argparse
-from re import findall
+from base64 import b64decode
 from os import listdir, path, remove
 from os.path import isfile, join
-from platform import system
-from base64 import b64decode
+from re import findall
 from time import sleep
-import importlib
+
 import validators
 from config_parser import Config
 from lib.io import display, logSearch
 
+
 config = Config.get_instance()
+version = "1.5"     # BTG version
+
 
 class BTG:
     """
@@ -45,7 +45,7 @@ class BTG:
     """
     def __init__(self, args):
 
-        # Import modules
+        # Import modules
         if config["debug"]:
             display(string="Load modules from %s"%config["modules_folder"])
         all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
@@ -54,7 +54,7 @@ class BTG:
             if file[-3:] == ".py" and file[:-3] != "__init__":
                 modules.append(file[:-3])
         jobs = []
-        # Start BTG process
+        # Start BTG process
         i = 0
         for argument in args:
             i += 1

@@ -18,8 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from lib.io import display
 from config_parser import Config
+from lib.io import display
 
 try:
     from OTXv2 import OTXv2
@@ -27,6 +27,7 @@ try:
 except:
     display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'OTXv2' library (available here: https://github.com/AlienVault-Labs/OTX-Python-SDK)")
     exit()
+
 
 class Otx:
     def __init__(self, ioc, type,config):

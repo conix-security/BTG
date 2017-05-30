@@ -18,8 +18,10 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import json
-from lib.io import display
+
 from lib.cache import Cache
+from lib.io import display
+
 
 class Malshare():
     def __init__(self, ioc, type, config):

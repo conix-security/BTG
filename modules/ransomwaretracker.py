@@ -21,6 +21,7 @@
 from lib.cache import Cache
 from lib.io import display
 
+
 class Ransomwaretracker:
     def __init__(self, ioc, type, config):
         self.config = config

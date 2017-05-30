@@ -18,11 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from lib.io import display
-import warnings
 import sys
+import warnings
 
 from config_parser import Config
+from lib.io import display
+
 try:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

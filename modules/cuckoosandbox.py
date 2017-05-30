@@ -19,16 +19,19 @@
 
 import json
 from platform import system
-from BTG import BTG
-from lib.io import display
+
 from requests import get
+
+from BTG import BTG
 from config_parser import Config
+from lib.io import display
 
 cfg = Config.get_instance()
 if system() != "Windows":
     import requests_cache
 
     requests_cache.install_cache('%sBTG' % cfg["sqlite_path"])
+
 
 class Cuckoosandbox:
     """

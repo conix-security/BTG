@@ -20,10 +20,12 @@
 import urllib
 import urllib2
 from json import loads
+from random import choice, randint
 from time import sleep
-from random import randint, choice
+
 from BTG import BTG
 from lib.io import display
+
 
 class Virustotal:
     """

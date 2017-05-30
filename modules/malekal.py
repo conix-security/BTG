@@ -17,17 +17,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from BTG import BTG
-from lib.io import display
-from requests import get
-from re import findall
 import os
 from platform import system
+from re import findall
+
+from requests import get
+
+from BTG import BTG
 from config_parser import Config
+from lib.io import display
+
 cfg = Config.get_instance()
 if system() != "Windows":
     import requests_cache
     requests_cache.install_cache('%sBTG'%cfg["sqlite_path"])
+
 
 class Malekal:
     """

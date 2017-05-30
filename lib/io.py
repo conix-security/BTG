@@ -17,11 +17,13 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
-from platform import system
-from os.path import exists
-from os import chmod
 from datetime import datetime
+from os import chmod
+from os.path import exists
+from platform import system
+
 from config_parser import Config
+
 
 class display:
     """
@@ -51,6 +53,7 @@ class display:
                 f.close()
             print(output)
 
+
 class logSearch:
     def __init__(self, iocs):
         config = Config.get_instance()
@@ -61,8 +64,6 @@ class logSearch:
         for ioc in iocs:
             f.write("%s %s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))
         f.close()
-
-
 
 
 class colors:

@@ -20,9 +20,13 @@
 
 import re
 import warnings
-from lib.io import display
+
 import requests
+
+from lib.io import display
+
 warnings.filterwarnings("ignore")
+
 
 class Misp_Crawler:
     def __init__(self, ioc, type, config):

@@ -20,6 +20,7 @@
 from lib.cache import Cache
 from lib.io import display
 
+
 class Cybercrimetracker:
     def __init__(self, ioc, type, config):
         self.config = config
