@@ -21,4 +21,4 @@ class Config():
         conf = ConfigParser()
         dir_path = os.path.dirname(os.path.realpath(__file__))
         conf.read("%s/config.ini"%dir_path)
-        Config.__args = {option : ast.literal_eval(conf.get(section, option)) for section in conf.sections() for option in conf.options(section)}
+        Config.__args = {option: ast.literal_eval(conf.get(section, option)) for section in conf.sections() for option in conf.options(section)}

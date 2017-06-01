@@ -62,9 +62,6 @@ lehigh_enabled = True
 [Malwaredomains]
 malwaredomains_enabled = True
 
-[Palevo]
-palevo_enabled = True
-
 [Zeustracker]
 zeustracker_enabled = True
 

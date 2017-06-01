@@ -32,7 +32,6 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
     Nothink
     OpenPhish
     OTX
-    Palevo
     RansomwareTracker
     SpamHaus
     SSLBlacklist
