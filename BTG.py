@@ -103,13 +103,13 @@ class BTG:
         """
         if validators.url(argument):
             return "URL"
-        elif len(findall(r"^[0-9a-fA-F]{32}$", argument)):
+        elif validators.md5(argument):
             return "MD5"
-        elif len(findall(r"^[0-9a-fA-F]{40}$", argument)):
+        elif validators.sha1(argument):
             return "SHA1"
-        elif len(findall(r"^[0-9a-fA-F]{64}$", argument)):
+        elif validators.sha256(argument):
             return "SHA256"
-        elif len(findall(r"^\w{128}$", argument)):
+        elif validators.sha512(argument):
             return "SHA512"
         elif validators.ipv4(argument):
             return "IPv4"
