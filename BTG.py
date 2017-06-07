@@ -124,13 +124,45 @@ class BTG:
     @classmethod
     def allowedToSearch(self, status):
         """
-            Input: "Online", "Offline"
+            Input: "Online", "Onpremises"
         """
-        if status == "Offline":
+        if status == "Onpremises":
+            '''
+            here the modules claims to be related to an on premises service
+            , i.e. being inside researcher nertwork, so we allow the lookup
+
+            modules: misp, cuckoo
+            '''
             return True
         elif status == "Online" and not config["offline"]:
+            '''
+            the modules claims to be online, and user _do not_ asked the
+            lookup to be performed offline
+            thus it is allowed to perform if online
+            '''
             return True
+        '''
+        if none of previous case, lookup forbidden
+        '''
         return False
+
+
+
+
+
+        '''
+        if config[offline]:
+            if status = onpremises
+                true
+            if status = cache
+                true
+            if status = online
+                false
+        else:
+            true
+        '''
+    
+
 
 def motd():
     """

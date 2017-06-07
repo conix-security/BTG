@@ -19,6 +19,7 @@
 
 from lib.cache import Cache
 from lib.io import display
+from BTG import BTG
 
 
 class Vxvault:
@@ -26,13 +27,13 @@ class Vxvault:
         self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["IPv4", "domain", "URL"]
-        self.search_method = "Offline"
+        self.search_method = "Online"
         self.description = "Search domain in Dshield feeds"
         self.author = "Conix"
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types:
+        if type in self.types and BTG.allowedToSearch(self.search_method):
             self.search()
 
     def search(self):

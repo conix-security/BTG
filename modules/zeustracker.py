@@ -20,6 +20,7 @@
 import validators
 from lib.cache import Cache
 from lib.io import display
+from BTG import BTG
 
 
 class Zeustracker:
@@ -33,7 +34,7 @@ class Zeustracker:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types:
+        if type in self.types and BTG.allowedToSearch(self.search_method):
             self.search()
 
     def search(self):

@@ -24,6 +24,7 @@ import warnings
 import requests
 
 from lib.io import display
+from BTG import BTG
 
 warnings.filterwarnings("ignore")
 
@@ -39,7 +40,7 @@ class Misp_Crawler:
         self.creation_date = "21-03-2017"
         self.type = type
         self.ioc = ioc
-        if type in self.types:
+        if type in self.types and BTG.allowedToSearch(self.search_method):
             self.Search()
 
     def Search(self):

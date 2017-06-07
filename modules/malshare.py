@@ -21,6 +21,7 @@ import json
 
 from lib.cache import Cache
 from lib.io import display
+from BTG import BTG
 
 
 class Malshare():
@@ -33,8 +34,8 @@ class Malshare():
         self.author = "Conix"
         self.creation_date = "12-04-2017"
         self.type = type
-        self.ioc = ioc
-        if type in self.types:
+        self.ioc = ioc 
+        if type in self.types and BTG.allowedToSearch(self.search_method):
             self.search()
 
     def search(self):

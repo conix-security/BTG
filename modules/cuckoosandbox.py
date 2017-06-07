@@ -44,41 +44,37 @@ class Cuckoosandbox:
         self.types = [
             "MD5", "SHA256"
         ]
-        self.search_method = "Online"
+        self.search_method = "Onpremises"
         self.description = "Search IOC in CuckooSandbox database"
         self.author = "Conix"
         self.creation_date = "02-03-2017"
         self.type = type
         self.ioc = ioc
-        if type in self.types:
+        if type in self.types and BTG.allowedToSearch(self.search_method):
             self.search()
 
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")
-        if BTG.allowedToSearch(self.search_method):
-            if "cuckoosandbox_api_url" in self.config and "user_agent" in self.config and "proxy_host" in self.config \
-                    and "requests_timeout" in self.config:
-                if self.type in ["MD5"]:
-                    url = "%s/files/view/md5/%s" % (self.config["cuckoosandbox_api_url"], self.ioc)
-                elif self.type in ["SHA256"]:
-                    url = "%s/files/view/sha256/%s" % (self.config["cuckoosandbox_api_url"], self.ioc)
-                page = get(
-                    url,
-                    headers=self.config["user_agent"],
-                    proxies=self.config["proxy_host"],
-                    timeout=self.config["requests_timeout"]
-                ).text
-                if not "Error: 404 Not Found" in page:
-                    id_analysis = json.loads(page)["sample"]["id"]
-                    if "cuckoosandbox_web_url" in self.config:
-                        display("%s_remote" % self.module_name, self.ioc, "FOUND",
-                                "%s/view/%s" % (self.config["cuckoosandbox_web_url"], id_analysis))
-                    else:
-                        display(self.module_name, message_type="ERROR",
-                                string="Please check if you have cuckoosandbox_web_url field in config.ini")
-            else:
-                display(self.module_name, message_type="ERROR",
-                        string="Please check if you have cuckoosandbox_api_url,user_agent,proxy_host and requests_timeout field in config.ini")
-
-                # except:
-                #    display("%s"%self.module_name, self.ioc, "INFO", "MalekalTimeout")
+        if "cuckoosandbox_api_url" in self.config and "user_agent" in self.config and "proxy_host" in self.config \
+                and "requests_timeout" in self.config:
+            if self.type in ["MD5"]:
+                url = "%s/files/view/md5/%s" % (self.config["cuckoosandbox_api_url"], self.ioc)
+            elif self.type in ["SHA256"]:
+                url = "%s/files/view/sha256/%s" % (self.config["cuckoosandbox_api_url"], self.ioc)
+            page = get(
+                url,
+                headers=self.config["user_agent"],
+                proxies=self.config["proxy_host"],
+                timeout=self.config["requests_timeout"]
+            ).text
+            if not "Error: 404 Not Found" in page:
+                id_analysis = json.loads(page)["sample"]["id"]
+                if "cuckoosandbox_web_url" in self.config:
+                    display("%s_remote" % self.module_name, self.ioc, "FOUND",
+                            "%s/view/%s" % (self.config["cuckoosandbox_web_url"], id_analysis))
+                else:
+                    display(self.module_name, message_type="ERROR",
+                            string="Please check if you have cuckoosandbox_web_url field in config.ini")
+        else:
+            display(self.module_name, message_type="ERROR",
+                    string="Please check if you have cuckoosandbox_api_url,user_agent,proxy_host and requests_timeout field in config.ini")

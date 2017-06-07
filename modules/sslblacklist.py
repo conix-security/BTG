@@ -19,6 +19,7 @@
 
 from lib.cache import Cache
 from lib.io import display
+from BTG import BTG
 
 
 class Sslblacklist():

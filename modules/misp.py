@@ -21,6 +21,7 @@
 import sys
 import warnings
 
+from BTG import BTG
 from config_parser import Config
 from lib.io import display
 
@@ -38,13 +39,13 @@ class Misp:
         self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
-        self.search_method = "Offline"
+        self.search_method = "Onpremises"
         self.description = "Search IOC in MISP database"
         self.author = "Conix"
         self.creation_date = "07-10-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types:
+        if type in self.types and BTG.allowedToSearch(self.search_method):
             self.Search()
 
     def Search(self):

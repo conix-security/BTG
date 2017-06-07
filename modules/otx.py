@@ -19,6 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from config_parser import Config
+from BTG import BTG
 from lib.io import display
 
 try:
@@ -40,7 +41,7 @@ class Otx:
         self.creation_date = "13-04-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types:
+        if type in self.types and BTG.allowedToSearch(self.search_method):
             self.Search()
 
     def Search(self):

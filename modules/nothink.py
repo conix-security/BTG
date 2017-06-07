@@ -19,6 +19,7 @@
 
 from lib.cache import Cache
 from lib.io import display
+from BTG import BTG
 
 
 class Nothink:
@@ -33,11 +34,8 @@ class Nothink:
             self.creation_date = "18-04-2016"
             self.type = type
             self.ioc = ioc
-            if type in self.types:
+            if type in self.types and BTG.allowedToSearch(self.search_method):
                 self.search()
-        else:
-            display(self.module_name, ioc=None, message_type="ERROR",
-                    string="You must have nothink_enabled in your configuration file. If you want to use Nothink, put its value to True else put it to False")
 
     def search(self):
         display(self.module_name, self.ioc, "INFO", "Searching...")
