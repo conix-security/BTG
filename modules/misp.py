@@ -21,12 +21,12 @@
 import sys
 import warnings
 
-from config_parser import Config
 from lib.io import module as mod
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     from pymisp import PyMISP
+
 
 class Misp:
     def __init__(self, ioc, type, config):
@@ -50,39 +50,56 @@ class Misp:
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                if "misp_url" in self.config and "misp_key" in self.config and "misp_verifycert" in self.config:
-                    m = PyMISP(self.config["misp_url"], self.config["misp_key"], self.config["misp_verifycert"], 'json')
-                else :
-                    mod.display(self.module_name, message_type="ERROR", string="Please check if you have misp_url, misp_key and misp_verifycert fields in config.ini")
+                if ("misp_url" in self.config and
+                        "misp_key" in self.config and
+                        "misp_verifycert" in self.config):
+                    m = PyMISP(self.config["misp_url"],
+                               self.config["misp_key"],
+                               self.config["misp_verifycert"],
+                               'json')
+                else:
+                    mod.display(self.module_name,
+                                message_type="ERROR",
+                                string=("Check if you have misp_url, misp_key and misp_verifycert"
+                                        "in config.ini"))
                     sys.exit()
-        except Exception, e:
+        except Exception as e:
             mod.display(self.module_name, self.ioc, "ERROR", e)
-            return    
+            return
         result = m.search_all(self.ioc)
         try:
             for event in result["response"]:
                 tag_display = ""
                 try:
                     for tag in event["Event"]["Tag"]:
-                        if "misp_tag_display" in self.config :
+                        if "misp_tag_display" in self.config:
                             if tag["name"].split(":")[0] in self.config["misp_tag_display"]:
                                 if len(tag_display) == 0:
                                     tag_display = "["
                                 else:
                                     tag_display = "%s|"%tag_display
                                 tag_display = "%s%s"%(tag_display, tag["name"])
-                        else :
-                            mod.display(self.module_name, message_type="ERROR",string="Please check if you have misp_tag_display fields in config.ini")
+                        else:
+                            mod.display(self.module_name,
+                                        message_type="ERROR",
+                                        string="Check if you have misp_tag_display in config.ini")
                 except:
                     pass
                 if len(tag_display) != 0:
                     tag_display = "%s]"%tag_display
-                mod.display(self.module_name, self.ioc, "FOUND", "%s Event: %sevents/view/%s"%(tag_display, self.config["misp_url"], event["Event"]["id"]))
+                mod.display(self.module_name,
+                            self.ioc,
+                            "FOUND",
+                            "%s Event: %sevents/view/%s"%(tag_display,
+                                                          self.config["misp_url"],
+                                                          event["Event"]["id"]))
         except:
             try:
                 if result['message'] == "No matches":
                     pass
                 elif "Authentication failed" in result['message']:
-                    mod.display(__name__.split(".")[1], message_type="ERROR", string=result['message'])
+                    mod.display(__name__.split(".")[1],
+                                message_type="ERROR",
+                                string=result['message'])
             except:
                 pass

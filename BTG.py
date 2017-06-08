@@ -27,15 +27,12 @@ import sys
 from base64 import b64decode
 from os import listdir, path, remove
 from os.path import isfile, join
-from re import findall
 from time import sleep
 
 import validators
 from config_parser import Config
-#from lib.io import display, logSearch
 from lib.io import module as mod
 from lib.io import logSearch
-
 
 config = Config.get_instance()
 version = "1.9"     # BTG version
@@ -60,7 +57,9 @@ class BTG:
         i = 0
         for argument in args:
             i += 1
-            p = multiprocessing.Process(target=self.run, args=(argument, modules,))
+            p = multiprocessing.Process(target=self.run,
+                                        args=(argument,
+                                              modules,))
             if "max_process" in config:
                 while len(jobs) > config["max_process"]:
                     for job in jobs:
@@ -69,7 +68,8 @@ class BTG:
                         else:
                             sleep(3)
             else:
-                mod.display(message_type="ERROR", string="Please check if you have max_process field in config.ini")
+                mod.display(message_type="ERROR",
+                            string="Please check if you have max_process field in config.ini")
             jobs.append(p)
             p.start()
 
@@ -135,6 +135,7 @@ def motd():
         vIC8gLyAvIF9fICAKIC8gL18vIC8vIC8gLyAvXy8gLyAgCi9fX19fXy8vXy8gIFxfX19fLw\
         ==""".strip()), version))
 
+
 def parse_args():
     """
         Define the arguments
@@ -143,19 +144,24 @@ def parse_args():
     parser.add_argument('iocs', metavar='IOC', type=str, nargs='+',
                         help='Type: [URL,MD5,SHA1,SHA256,SHA512,IPv4,IPv6,domain]')
     parser.add_argument("-d", "--debug", action="store_true", help="Display debug informations",)
-    parser.add_argument("-o", "--offline", action="store_true", help="Set BTG in offline mode, meaning all modules described as online (i.e. VirusTotal are deactivated")
+    parser.add_argument("-o", "--offline", action="store_true",
+                        help=("Set BTG in offline mode, meaning all modules"
+                              "described as online (i.e. VirusTotal) are deactivated"))
     parser.add_argument("-s", "--silent", action="store_true", help="Disable MOTD")
     return parser.parse_args()
+
 
 def cleanups_lock_cache(real_path):
     for file in listdir(real_path):
         file_path = "%s%s/"%(real_path, file)
         if file.endswith(".lock"):
-            mod.display("MAIN", message_type="DEBUG", string="Delete locked cache file: %s"%file_path[:-1])
+            mod.display("MAIN", message_type="DEBUG",
+                        string="Delete locked cache file: %s"%file_path[:-1])
             remove(file_path[:-1])
         else:
             if path.isdir(file_path):
                 cleanups_lock_cache(file_path)
+
 
 if __name__ == '__main__':
     args = parse_args()
@@ -169,7 +175,9 @@ if __name__ == '__main__':
         config["modules_folder"] = path.join(dir_path, config["modules_folder"])
         config["temporary_cache_path"] = path.join(dir_path, config["temporary_cache_path"])
     else:
-        mod.display(message_type="ERROR", string="Please check if you have modules_folder and temporary_cache_path field in config.ini")
+        mod.display(message_type="ERROR",
+                    string=("Please check if you have modules_folder and temporary_cache_path"
+                            "field in config.ini"))
     if config["display_motd"] and not args.silent:
         motd()
     try:
@@ -178,6 +186,8 @@ if __name__ == '__main__':
         logSearch(args.iocs)
         BTG(args.iocs)
     except (KeyboardInterrupt, SystemExit):
-        # Exit if user press CTRL+C
+        '''
+        Exit if user press CTRL+C
+        '''
         print("\n")
         sys.exit()

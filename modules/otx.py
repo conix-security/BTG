@@ -18,17 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from config_parser import Config
 from lib.io import module as mod
 
 from OTXv2 import OTXv2
 import IndicatorTypes
 
+
 class Otx:
-    def __init__(self, ioc, type,config):
+    def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6","URL", "SHA256"]
+        self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256"]
         self.search_method = "Online"
         self.description = "Search IOC in Alienvault database"
         self.author = "Hicham Megherbi"
@@ -44,35 +44,40 @@ class Otx:
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in Alienvault OTX ...")
         try:
-            if "otx_api_keys" in self.config :
+            if "otx_api_keys" in self.config:
                 otx = OTXv2(self.config["otx_api_keys"])
                 if self.type == "IPv4":
-                   indicator = IndicatorTypes.IPv4
+                    indicator = IndicatorTypes.IPv4
                 if self.type == "IPv6":
-                   indicator = IndicatorTypes.IPv6
+                    indicator = IndicatorTypes.IPv6
                 if self.type == "domain":
-                   indicator = IndicatorTypes.DOMAIN
+                    indicator = IndicatorTypes.DOMAIN
                 if self.type == "URL":
-                   indicator = IndicatorTypes.URL
+                    indicator = IndicatorTypes.URL
                 if self.type == "MD5":
-                   indicator = IndicatorTypes.FILE_HASH_MD5
+                    indicator = IndicatorTypes.FILE_HASH_MD5
                 if self.type == "SHA1":
-                   indicator = IndicatorTypes.FILE_HASH_SHA1
+                    indicator = IndicatorTypes.FILE_HASH_SHA1
                 if self.type == "SHA256":
-                   indicator = IndicatorTypes.FILE_HASH_SHA256
+                    indicator = IndicatorTypes.FILE_HASH_SHA256
                 result = otx.get_indicator_details_full(indicator, self.ioc)
-            else :
-                mod.display(self.module_name,message_type="ERROR", string= "Please check if you have otx_api_keys field in config.ini")
-        except Exception, e:
+            else:
+                mod.display(self.module_name,
+                            message_type="ERROR",
+                            string="Please check if you have otx_api_keys field in config.ini")
+        except Exception as e:
             mod.display(self.module_name, self.ioc, "ERROR", e)
-            return    
+            return
         try:
-            if  self.ioc == str( result["general"]["indicator"]):  
-               _id =str(result["general"]["pulse_info"]["pulses"][0]["id"])
+            if self.ioc == str(result["general"]["indicator"]):
+                _id = str(result["general"]["pulse_info"]["pulses"][0]["id"])
 
-               tags=""
-               for tag in result["general"]["pulse_info"]["pulses"][0]["tags"] :
-                   tags= tags+"%s "%tag
-               mod.display(self.module_name, self.ioc, "FOUND", "Tags: %s| https://otx.alienvault.com/pulse/%s/"%( tags, _id))
+                tags = ""
+                for tag in result["general"]["pulse_info"]["pulses"][0]["tags"]:
+                    tags = tags + "%s " % tag
+                mod.display(self.module_name,
+                            self.ioc,
+                            "FOUND",
+                            "Tags: %s| https://otx.alienvault.com/pulse/%s/"%(tags, _id))
         except:
-             pass
+            pass

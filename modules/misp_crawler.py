@@ -51,12 +51,20 @@ class Misp_Crawler:
             allEvents = self.searchAttribute(s)
             for event in allEvents:
                 if "misp_crawler_url" in self.config:
-                    mod.display(self.module_name, self.ioc, "FOUND", "Event: %s/events/view/%s"%(self.config["misp_crawler_url"], event))
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "FOUND",
+                                "Event: %s/events/view/%s"%(self.config["misp_crawler_url"],
+                                                            event))
                 else:
-                    mod.display(self.module_name, message_type="ERROR", string="Please check if you have misp_crawler_url field in config.ini")
+                    mod.display(self.module_name,
+                                message_type="ERROR",
+                                string="Check if you have misp_crawler_url in config.ini")
 
     def searchAttribute(self, s):
-        if "misp_crawler_url" in self.config and "user_agent" in self.config and "misp_crawler_verifycert" in self.config:
+        if ("misp_crawler_url" in self.config and
+                "user_agent" in self.config and
+                "misp_crawler_verifycert" in self.config):
             response = s.get(
                 "%s/attributes/search"%self.config["misp_crawler_url"],
                 headers=self.config["user_agent"],
@@ -88,10 +96,15 @@ class Misp_Crawler:
             )
             return self.getAllEvents(response.text)
         else:
-            mod.display(self.module_name, message_type="ERROR", string="Please check if you have misp_crawler_url, user_agent and misp_crawler_verifycert fields in config.ini")
+            mod.display(self.module_name,
+                        message_type="ERROR",
+                        string=("Please check if you have misp_crawler_url, user_agent and"
+                                "misp_crawler_verifycert fields in config.ini"))
 
     def loginRequest(self, s):
-        if "misp_crawler_url" in self.config and "user_agent" in self.config and "misp_crawler_verifycert" in self.config:
+        if ("misp_crawler_url" in self.config and
+                "user_agent" in self.config and
+                "misp_crawler_verifycert" in self.config):
             response = s.get(
                 "%s/users/login"%self.config["misp_crawler_url"],
                 headers=self.config["user_agent"],
@@ -113,7 +126,10 @@ class Misp_Crawler:
                 verify=self.config["misp_crawler_verifycert"]
             )
         else:
-            mod.display(self.module_name, message_type="ERROR", string="Please check if you have misp_crawler_url, user_agent and misp_crawler_verifycert fields in config.ini")
+            mod.display(self.module_name,
+                        message_type="ERROR",
+                        string=("Please check if you have misp_crawler_url, user_agent and"
+                                "misp_crawler_verifycert fields in config.ini"))
 
     def getAllEvents(self, response):
         events = []
@@ -124,5 +140,6 @@ class Misp_Crawler:
 
     def getTokens(self, response):
         token_key = re.search(r"data\[_Token\]\[key\]\" value=\"(.+)\" ", response).group(1)
-        token_fields = re.search(r"data\[_Token\]\[fields\]\" value=\"(.+%3A)\"", response).group(1)
+        token_fields = re.search(r"data\[_Token\]\[fields\]\" value=\"(.+%3A)\"",
+                                 response).group(1)
         return token_key, token_fields

@@ -46,6 +46,6 @@ class Vxvault:
         for path in paths:
             content = Cache(self.module_name, url, path, self.search_method).content
             for line in content.split("\n"):
-                if self.ioc in  line:
+                if self.ioc in line:
                     mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                     return

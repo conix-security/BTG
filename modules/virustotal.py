@@ -45,7 +45,6 @@ class Virustotal:
         else:
             mod.display(self.module_name, "", "INFO", "VirusTotal module not activated")
 
-
     def search(self):
         mod.display(self.module_name, "", "INFO", "Search in VirusTotal ...")
         if "proxy_host" in self.config:
@@ -55,15 +54,19 @@ class Virustotal:
             else:
                 opener = urllib2.build_opener()
         else:
-            mod.display(self.module_name, message_type="ERROR", string="Please check if you have proxy_host field in config.ini")
+            mod.display(self.module_name,
+                        message_type="ERROR",
+                        string="Please check if you have proxy_host field in config.ini")
         urllib2.install_opener(opener)
         try:
             if "virustotal_api_keys" in self.config:
                 self.key = choice(self.config["virustotal_api_keys"])
             else:
-                mod.display(self.module_name, message_type="ERROR", string="Please check if you have virustotal_api_keys field in config.ini")
+                mod.display(self.module_name,
+                            message_type="ERROR",
+                            string="Check if you have virustotal_api_keys field in config.ini")
         except:
-            mod.display(self.module_name, self.ioc, "ERROR", "Please provide your authorization key.")
+            mod.display(self.module_name, self.ioc, "ERROR", "Please provide your authkey.")
             return
 
         if self.type in ["URL", "domain", "IPv4"]:
@@ -75,7 +78,7 @@ class Virustotal:
         self.url = "https://www.virustotal.com/vtapi/v2/file/report"
         parameters = {"resource": self.ioc,
                       "apikey": self.key,
-                      "allinfo":1}
+                      "allinfo": 1}
         data = urllib.urlencode(parameters)
         req = urllib2.Request(self.url, data)
         response = urllib2.urlopen(req)
@@ -85,7 +88,12 @@ class Virustotal:
             mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal API seems to be down.")
         try:
             if json_content["positives"]:
-                mod.display(self.module_name, self.ioc, "FOUND", "Score: %s/%s | %s"%(json_content["positives"], json_content["total"], json_content["permalink"]))
+                mod.display(self.module_name,
+                            self.ioc,
+                            "FOUND",
+                            "Score: %s/%s | %s"%(json_content["positives"],
+                                                 json_content["total"],
+                                                 json_content["permalink"]))
         except:
             pass
 
@@ -101,11 +109,19 @@ class Virustotal:
                 json_content = loads(response)
                 break
             except:
-                mod.display(self.module_name, self.ioc, "INFO", "Virustotal json decode fail. Mabye: Blacklisted/Bad API key (Sleep for 10 seconds).")
+                mod.display(self.module_name,
+                            self.ioc,
+                            "INFO",
+                            "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
                 sleep(randint(5, 10))
                 pass
         try:
             if json_content["positives"]:
-                mod.display(self.module_name, self.ioc, "FOUND", "Score: %s/%s | %s"%(json_content["positives"], json_content["total"], json_content["permalink"]))
+                mod.display(self.module_name,
+                            self.ioc,
+                            "FOUND",
+                            "Score: %s/%s | %s"%(json_content["positives"],
+                                                 json_content["total"],
+                                                 json_content["permalink"]))
         except:
             pass

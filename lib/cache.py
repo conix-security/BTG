@@ -25,7 +25,6 @@ from time import mktime
 import requests
 from requests.exceptions import ConnectionError, ReadTimeout
 
-from BTG import BTG
 from config_parser import Config
 from lib.io import module as mod
 
@@ -63,8 +62,9 @@ class Cache:
         """
             Get file from web
         """
-        mod.display("%s.cache"%self.module_name, message_type="DEBUG",
-                string="Update %s%s"%(self.url, self.filename))
+        mod.display("%s.cache"%self.module_name,
+                    message_type="DEBUG",
+                    string="Update %s%s"%(self.url, self.filename))
         full_url = "%s%s"%(self.url, self.filename)
         try:
             r = requests.get(
@@ -74,12 +74,14 @@ class Cache:
                 timeout=self.config["requests_timeout"]
             )
         except ConnectionError as e:
-            mod.display("%s.cache"%self.module_name, message_type="ERROR",
-                    string=e)
+            mod.display("%s.cache"%self.module_name,
+                        message_type="ERROR",
+                        string=e)
             return
         except ReadTimeout as e:
-            mod.display("%s.cache"%self.module_name, message_type="ERROR",
-                    string="Timeout: %s"%(full_url))
+            mod.display("%s.cache"%self.module_name,
+                        message_type="ERROR",
+                        string="Timeout: %s"%(full_url))
             return
         except:
             raise
@@ -98,8 +100,9 @@ class Cache:
                     chmod(self.temp_file, 0o777)
                 remove("%s.lock"%self.temp_file)
         else:
-            mod.display("%s.cache"%self.module_name, message_type="ERROR",
-                    string="Response code: %s | %s%s"%(r.status_code, self.url, self.filename))
+            mod.display("%s.cache"%self.module_name,
+                        message_type="ERROR",
+                        string="Response code: %s | %s%s"%(r.status_code, self.url, self.filename))
 
     def checkIfUpdate(self):
         """
@@ -130,8 +133,9 @@ class Cache:
             try:
                 mkdir(self.config["temporary_cache_path"])
             except:
-                mod.display("%s.cache"%self.module_name, message_type="ERROR",
-                        string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
+                mod.display("%s.cache"%self.module_name,
+                            message_type="ERROR",
+                            string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
                 sys.exit()
             chmod(self.config["temporary_cache_path"], 0o777)
         if not isdir(self.temp_folder):

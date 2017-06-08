@@ -48,6 +48,11 @@ class Ransomwaretracker:
         for line in content.split("\n"):
             try:
                 if self.ioc in line:
-                    mod.display(self.module_name, self.ioc, "FOUND", "%s | %s%s"%(line.split(",")[2].replace('"', '', 2), url, paths[0]))
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "FOUND",
+                                "%s | %s%s"%(line.split(",")[2].replace('"', '', 2),
+                                             url,
+                                             paths[0]))
             except:
                 pass

@@ -49,5 +49,6 @@ class Sslblacklist():
             for line in content.split("\n"):
                 if self.ioc in line:
                     infos = line.split(',')
-                    mod.display(self.module_name, self.ioc, "FOUND", "%s | %s%s" % (infos[2], url, path))
+                    mod.display(self.module_name,
+                                self.ioc, "FOUND", "%s | %s%s" % (infos[2], url, path))
                     return

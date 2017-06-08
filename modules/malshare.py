@@ -33,7 +33,7 @@ class Malshare():
         self.author = "Conix"
         self.creation_date = "12-04-2017"
         self.type = type
-        self.ioc = ioc 
+        self.ioc = ioc
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
         else:
@@ -45,17 +45,26 @@ class Malshare():
         if "malshare_api_key" in self.config:
             if self.config["malshare_api_key"]:
                 paths = [
-                    "api.php?api_key=%s&action=details&hash=%s" %(self.config["malshare_api_key"], self.ioc)
+                    "api.php?api_key=%s&action=details&hash=%s" % (self.config["malshare_api_key"],
+                                                                   self.ioc)
                 ]
                 for path in paths:
                     try:
-                        content = json.loads(Cache(self.module_name, url, path, self.search_method).content)
+                        content = json.loads(Cache(self.module_name,
+                                                   url,
+                                                   path,
+                                                   self.search_method).content)
                         safe_urls = []
                         for malware_url in content["SOURCES"]:
                             safe_urls.append(malware_url.replace("http", "hxxp"))
-                        mod.display(self.module_name, self.ioc, "FOUND", "%s | %s%s" % (safe_urls, url, path))
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "%s | %s%s" % (safe_urls, url, path))
                         return
                     except:
                         pass
         else:
-            mod.display(self.module_name, message_type="ERROR", string="You must have a malshare api key to use this module ")
+            mod.display(self.module_name,
+                        message_type="ERROR",
+                        string="You must have a malshare api key to use this module ")

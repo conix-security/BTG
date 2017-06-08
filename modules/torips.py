@@ -32,7 +32,7 @@ class Torips:
         self.creation_date = "13-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and BTG.allowedToSearch(self.search_method):
+        if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "TorIps module not activated")

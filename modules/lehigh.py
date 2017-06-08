@@ -50,4 +50,7 @@ class Lehigh:
                 if line and line[0] != '#':
                     base = line.split("\t\t")[1]
                     if self.ioc == base.split("\t")[0]:
-                        mod.display(self.module_name, self.ioc, "FOUND", "[%s] %s%s"%(base.split("\t")[1], url, path))
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "[%s] %s%s"%(base.split("\t")[1], url, path))

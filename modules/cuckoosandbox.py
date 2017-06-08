@@ -53,12 +53,13 @@ class Cuckoosandbox:
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "Cuckoosandbox module not activated")
-                
 
     def search(self):
-        moddisplay(self.module_name, "", "INFO", "Searching...")
-        if "cuckoosandbox_api_url" in self.config and "user_agent" in self.config and "proxy_host" in self.config \
-                and "requests_timeout" in self.config:
+        mod.display(self.module_name, "", "INFO", "Searching...")
+        if ("cuckoosandbox_api_url" in self.config and
+                "user_agent" in self.config and
+                "proxy_host" in self.config and
+                "requests_timeout" in self.config):
             if self.type in ["MD5"]:
                 url = "%s/files/view/md5/%s" % (self.config["cuckoosandbox_api_url"], self.ioc)
             elif self.type in ["SHA256"]:
@@ -69,14 +70,19 @@ class Cuckoosandbox:
                 proxies=self.config["proxy_host"],
                 timeout=self.config["requests_timeout"]
             ).text
-            if not "Error: 404 Not Found" in page:
+            if "Error: 404 Not Found" not in page:
                 id_analysis = json.loads(page)["sample"]["id"]
                 if "cuckoosandbox_web_url" in self.config:
-                    mod.display("%s_remote" % self.module_name, self.ioc, "FOUND",
-                            "%s/view/%s" % (self.config["cuckoosandbox_web_url"], id_analysis))
+                    mod.display("%s_remote" % self.module_name,
+                                self.ioc,
+                                "FOUND",
+                                "%s/view/%s" % (self.config["cuckoosandbox_web_url"], id_analysis))
                 else:
-                    mod.display(self.module_name, message_type="ERROR",
-                            string="Please check if you have cuckoosandbox_web_url field in config.ini")
+                    mod.display(self.module_name,
+                                message_type="ERROR",
+                                string="Check if you have cuckoosandbox_web_url in config.ini")
         else:
-            mod.display(self.module_name, message_type="ERROR",
-                    string="Please check if you have cuckoosandbox_api_url,user_agent,proxy_host and requests_timeout field in config.ini")
+            mod.display(self.module_name,
+                        message_type="ERROR",
+                        string=("Check if you have cuckoosandbox_api_url,user_agent,proxy_host and"
+                                "requests_timeout field in config.ini"))

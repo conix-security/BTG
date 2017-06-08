@@ -45,8 +45,14 @@ class module:
                 ioc_show = "{%s%s%s} "%(colors.INFO, ioc, colors.NORMAL)
             else:
                 ioc_show = " "
-            output = "[%s][%s%s%s]%s%s%s%s"%(module, colorize, message_type,
-                                             colors.NORMAL, ioc_show, colors.BOLD, string, colors.NORMAL)
+            output = "[%s][%s%s%s]%s%s%s%s"%(module,
+                                             colorize,
+                                             message_type,
+                                             colors.NORMAL,
+                                             ioc_show,
+                                             colors.BOLD,
+                                             string,
+                                             colors.NORMAL)
             if message_type == "FOUND":
                 if not exists(config["log_found_file"]):
                     open(config["log_found_file"], 'a').close()
@@ -66,7 +72,7 @@ class module:
             '''
             here the modules claims to be related to an on premises service
             , i.e. being inside researcher nertwork, so we allow the lookup
-        
+
             modules: misp, cuckoo
             '''
             return True
@@ -81,7 +87,7 @@ class module:
         if none of previous case, lookup forbidden
         '''
         return False
-        
+
         '''
         possible refactoring :
         if config[offline]:
@@ -110,7 +116,7 @@ class logSearch:
 
 class colors:
     config = Config.get_instance()
-    if system() == "Windows" or config["terminal_color"] == False:
+    if system() == "Windows" or config["terminal_color"] is False:
         DEBUG = ''
         INFO = ''
         FOUND = ''

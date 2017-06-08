@@ -49,7 +49,10 @@ class Malekal:
                     "IPv4", "IPv6", "domain"
                 ]
         else:
-            mod.display(self.module_name, message_type="ERROR", string="Please check if you have malekal_local and malekal_remote fields in config.ini ")
+            mod.display(self.module_name,
+                        message_type="ERROR",
+                        string=("Check if you have malekal_local and malekal_remote"
+                                "fields in config.ini "))
         self.search_method = "Online"
         self.description = "Search IOC in malekal database"
         self.author = "Conix"
@@ -67,14 +70,17 @@ class Malekal:
             if self.config["malekal_local"]:
                 self.localSearch()
         if "malekal_remote" in self.config:
-            if self.config["malekal_remote"] and BTG.allowedToSearch(self.search_method):
+            if self.config["malekal_remote"] and mod.allowedToSearch(self.search_method):
                 self.remoteSearch()
 
     def remoteSearch(self):
         """
             Search IOC with HTTP request
         """
-        mod.display("%s_remote"%self.module_name, self.ioc, "INFO", string="Browsing in remote http")
+        mod.display("%s_remote"%self.module_name,
+                    self.ioc,
+                    "INFO",
+                    string="Browsing in remote http")
         url = "http://malwaredb.malekal.com/index.php?"
         if self.type in ["MD5", "SHA1", "SHA256", "SHA512"]:
             base = "hash="
@@ -83,7 +89,9 @@ class Malekal:
         elif self.type in ["IPv4", "IPv6"]:
             base = "domaine="
         try:
-            if "user_agent" in self.config and "proxy_host" in self.config and "requests_timeout" in self.config:
+            if ("user_agent" in self.config and
+                    "proxy_host" in self.config and
+                    "requests_timeout" in self.config):
                 page = get(
                     "%s%s%s"%(url, base, self.ioc),
                     headers=self.config["user_agent"],
@@ -95,8 +103,10 @@ class Malekal:
                         url, base,
                         self.ioc))
             else:
-                mod.display(self.module_name, message_type="ERROR", string="Please check if you have user_agent, proxy_host and requests_timeout fields in config.ini ")
-
+                mod.display(self.module_name,
+                            message_type="ERROR",
+                            string=("Check if you have user_agent, proxy_host and"
+                                    "requests_timeout fields in config.ini "))
         except:
             mod.display("%s_remote"%self.module_name, self.ioc, "INFO", "MalekalTimeout")
 
@@ -117,4 +127,6 @@ class Malekal:
                             )
                         )
         else:
-            mod.display(self.module_name, message_type="ERROR", string="Please check if you have malekal_files_path field in config.ini ")
+            mod.display(self.module_name,
+                        message_type="ERROR",
+                        string="Check if you have malekal_files_path field in config.ini ")
