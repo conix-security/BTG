@@ -18,8 +18,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from lib.cache import Cache
-from lib.io import display
-from BTG import BTG
+from lib.io import module as mod
 
 
 class Sslblacklist():
@@ -35,9 +34,11 @@ class Sslblacklist():
         self.ioc = ioc
         if type in self.types:
             self.search()
+        else:
+            mod.display(self.module_name, "", "INFO", "SSLblacklist module not activated")
 
     def search(self):
-        display(self.module_name, self.ioc, "INFO", "Searching...")
+        mod.display(self.module_name, "", "INFO", "Searching...")
         url = "https://sslbl.abuse.ch/blacklist/"
         paths = [
             "sslblacklist.csv"
@@ -48,5 +49,5 @@ class Sslblacklist():
             for line in content.split("\n"):
                 if self.ioc in line:
                     infos = line.split(',')
-                    display(self.module_name, self.ioc, "FOUND", "%s | %s%s" % (infos[2], url, path))
+                    mod.display(self.module_name, self.ioc, "FOUND", "%s | %s%s" % (infos[2], url, path))
                     return

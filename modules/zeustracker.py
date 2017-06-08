@@ -19,8 +19,7 @@
 
 import validators
 from lib.cache import Cache
-from lib.io import display
-from BTG import BTG
+from lib.io import module as mod
 
 
 class Zeustracker:
@@ -34,11 +33,13 @@ class Zeustracker:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and BTG.allowedToSearch(self.search_method):
+        if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
+        else:
+            mod.display(self.module_name, "", "INFO", "ZeusTracker module not activated")
 
     def search(self):
-        display(self.module_name, self.ioc, "INFO", "Searching...")
+        mod.display(self.module_name, "", "INFO", "Searching...")
         url = "https://zeustracker.abuse.ch/"
         paths = [
             "blocklist.php?download=baddomains",
@@ -56,7 +57,7 @@ class Zeustracker:
                 if path.split("=")[1] == "compromised":
                     if self.type == "URL":
                         if self.ioc == line:
-                            display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                            mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                             return
                     else:
                         line = line.split("/")[0]
@@ -66,9 +67,9 @@ class Zeustracker:
                             pass
                 if self.type == "domain" and validators.domain(line.strip()):
                     if line.strip() == self.ioc:
-                        display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return
                 elif self.type == "IPv4" and validators.ipv4(line.strip()):
                     if line.strip() == self.ioc:
-                        display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return

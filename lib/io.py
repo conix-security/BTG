@@ -25,12 +25,15 @@ from platform import system
 from config_parser import Config
 
 
-class display:
+class module:
     """
         This function display prettily informations
     """
-    def __init__(self, module="INIT", ioc="", message_type="DEBUG", string=""):
+    def __init__(self):
+        return None
 
+    @classmethod
+    def display(self, module="INIT", ioc="", message_type="DEBUG", string=""):
         exec('colorize = colors.%s'%message_type)
         config = Config.get_instance()
         if not config["debug"] and (message_type == "INFO" or message_type == "DEBUG"):
@@ -52,6 +55,45 @@ class display:
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
             print(output)
+
+    @classmethod
+    def allowedToSearch(self, status):
+        config = Config.get_instance()
+        """
+            Input: "Online", "Onpremises"
+        """
+        if status == "Onpremises":
+            '''
+            here the modules claims to be related to an on premises service
+            , i.e. being inside researcher nertwork, so we allow the lookup
+        
+            modules: misp, cuckoo
+            '''
+            return True
+        elif status == "Online" and not config["offline"]:
+            '''
+            the modules claims to be online, and user _do not_ asked the
+            lookup to be performed offline
+            thus it is allowed to perform if online
+            '''
+            return True
+        '''
+        if none of previous case, lookup forbidden
+        '''
+        return False
+        
+        '''
+        possible refactoring :
+        if config[offline]:
+            if status = onpremises
+                true
+            if status = cache
+                true
+            if status = online
+                false
+        else:
+            true
+        '''
 
 
 class logSearch:

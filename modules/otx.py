@@ -19,16 +19,10 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from config_parser import Config
-from BTG import BTG
-from lib.io import display
+from lib.io import module as mod
 
-try:
-    from OTXv2 import OTXv2
-    import IndicatorTypes
-except:
-    display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'OTXv2' library (available here: https://github.com/AlienVault-Labs/OTX-Python-SDK)")
-    exit()
-
+from OTXv2 import OTXv2
+import IndicatorTypes
 
 class Otx:
     def __init__(self, ioc, type,config):
@@ -41,11 +35,14 @@ class Otx:
         self.creation_date = "13-04-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and BTG.allowedToSearch(self.search_method):
+
+        if type in self.types and mod.allowedToSearch(self.search_method):
             self.Search()
+        else:
+            mod.display(self.module_name, "", "INFO", "Alienvault OTX module not activated")
 
     def Search(self):
-        display(self.module_name, self.ioc, "INFO", "Search in Alienvault...")
+        mod.display(self.module_name, "", "INFO", "Search in Alienvault OTX ...")
         try:
             if "otx_api_keys" in self.config :
                 otx = OTXv2(self.config["otx_api_keys"])
@@ -65,9 +62,9 @@ class Otx:
                    indicator = IndicatorTypes.FILE_HASH_SHA256
                 result = otx.get_indicator_details_full(indicator, self.ioc)
             else :
-                display(self.module_name,message_type="ERROR", string= "Please check if you have otx_api_keys field in config.ini")
+                mod.display(self.module_name,message_type="ERROR", string= "Please check if you have otx_api_keys field in config.ini")
         except Exception, e:
-            display(self.module_name, self.ioc, "ERROR", e)
+            mod.display(self.module_name, self.ioc, "ERROR", e)
             return    
         try:
             if  self.ioc == str( result["general"]["indicator"]):  
@@ -76,6 +73,6 @@ class Otx:
                tags=""
                for tag in result["general"]["pulse_info"]["pulses"][0]["tags"] :
                    tags= tags+"%s "%tag
-               display(self.module_name, self.ioc, "FOUND", "Tags: %s| https://otx.alienvault.com/pulse/%s/"%( tags, _id))
+               mod.display(self.module_name, self.ioc, "FOUND", "Tags: %s| https://otx.alienvault.com/pulse/%s/"%( tags, _id))
         except:
              pass

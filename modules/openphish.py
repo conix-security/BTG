@@ -19,8 +19,7 @@
 
 import validators
 from lib.cache import Cache
-from lib.io import display
-from BTG import BTG
+from lib.io import module as mod
 
 
 class Openphish:
@@ -34,11 +33,13 @@ class Openphish:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and BTG.allowedToSearch(self.search_method):
+        if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
+        else:
+            mod.display(self.module_name, "", "INFO", "OpenPhish module not activated")
 
     def search(self):
-        display(self.module_name, self.ioc, "INFO", "Searching...")
+        mod.display(self.module_name, "", "INFO", "Searching...")
         url = "https://openphish.com/"
         paths = [
             "feed.txt"
@@ -52,13 +53,13 @@ class Openphish:
                     midle = None
                 if self.type == "URL":
                     if self.ioc in line:
-                        display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return
                 elif self.type == "IPv4" and validators.ipv4(midle):
                     if self.ioc == midle:
-                        display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return
                 elif self.type == "domain" and validators.domain(midle):
                     if midle == self.ioc:
-                        display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                         return

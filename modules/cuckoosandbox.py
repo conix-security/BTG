@@ -22,9 +22,8 @@ from platform import system
 
 from requests import get
 
-from BTG import BTG
 from config_parser import Config
-from lib.io import display
+from lib.io import module as mod
 
 cfg = Config.get_instance()
 if system() != "Windows":
@@ -50,11 +49,14 @@ class Cuckoosandbox:
         self.creation_date = "02-03-2017"
         self.type = type
         self.ioc = ioc
-        if type in self.types and BTG.allowedToSearch(self.search_method):
+        if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
+        else:
+            mod.display(self.module_name, "", "INFO", "Cuckoosandbox module not activated")
+                
 
     def search(self):
-        display(self.module_name, self.ioc, "INFO", "Searching...")
+        moddisplay(self.module_name, "", "INFO", "Searching...")
         if "cuckoosandbox_api_url" in self.config and "user_agent" in self.config and "proxy_host" in self.config \
                 and "requests_timeout" in self.config:
             if self.type in ["MD5"]:
@@ -70,11 +72,11 @@ class Cuckoosandbox:
             if not "Error: 404 Not Found" in page:
                 id_analysis = json.loads(page)["sample"]["id"]
                 if "cuckoosandbox_web_url" in self.config:
-                    display("%s_remote" % self.module_name, self.ioc, "FOUND",
+                    mod.display("%s_remote" % self.module_name, self.ioc, "FOUND",
                             "%s/view/%s" % (self.config["cuckoosandbox_web_url"], id_analysis))
                 else:
-                    display(self.module_name, message_type="ERROR",
+                    mod.display(self.module_name, message_type="ERROR",
                             string="Please check if you have cuckoosandbox_web_url field in config.ini")
         else:
-            display(self.module_name, message_type="ERROR",
+            mod.display(self.module_name, message_type="ERROR",
                     string="Please check if you have cuckoosandbox_api_url,user_agent,proxy_host and requests_timeout field in config.ini")

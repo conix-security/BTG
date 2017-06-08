@@ -19,9 +19,8 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from lib.cache import Cache
-from lib.io import display
+from lib.io import module as mod
 from netaddr import IPAddress, IPNetwork
-from BTG import BTG
 
 
 class Spamhaus:
@@ -35,11 +34,13 @@ class Spamhaus:
         self.creation_date = "20-03-2017"
         self.type = type
         self.ioc = ioc
-        if type in self.types and BTG.allowedToSearch(self.search_method):
+        if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
+        else:
+            mod.display(self.module_name, "", "INFO", "Spamhaus module not activated")
 
     def search(self):
-        display(self.module_name, self.ioc, "INFO", "Searching...")
+        mod.display(self.module_name, "", "INFO", "Searching...")
         url = "https://www.spamhaus.org/drop/"
         paths = [
             "drop.txt",
@@ -52,6 +53,6 @@ class Spamhaus:
                 try:
                     if line[0] != ';':
                         if IPAddress(self.ioc) in IPNetwork(line.split(" ")[0]):
-                            display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                            mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                 except:
                     pass

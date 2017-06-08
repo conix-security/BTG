@@ -20,8 +20,7 @@
 import json
 
 from lib.cache import Cache
-from lib.io import display
-from BTG import BTG
+from lib.io import module as mod
 
 
 class Malshare():
@@ -35,11 +34,13 @@ class Malshare():
         self.creation_date = "12-04-2017"
         self.type = type
         self.ioc = ioc 
-        if type in self.types and BTG.allowedToSearch(self.search_method):
+        if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
+        else:
+            mod.display(self.module_name, "", "INFO", "Malshare module not activated")
 
     def search(self):
-        display(self.module_name, self.ioc, "INFO", "Searching...")
+        mod.display(self.module_name, "", "INFO", "Searching...")
         url = "http://malshare.com/"
         if "malshare_api_key" in self.config:
             if self.config["malshare_api_key"]:
@@ -52,9 +53,9 @@ class Malshare():
                         safe_urls = []
                         for malware_url in content["SOURCES"]:
                             safe_urls.append(malware_url.replace("http", "hxxp"))
-                        display(self.module_name, self.ioc, "FOUND", "%s | %s%s" % (safe_urls, url, path))
+                        mod.display(self.module_name, self.ioc, "FOUND", "%s | %s%s" % (safe_urls, url, path))
                         return
                     except:
                         pass
         else:
-            display(self.module_name, message_type="ERROR", string="You must have a malshare api key to use this module ")
+            mod.display(self.module_name, message_type="ERROR", string="You must have a malshare api key to use this module ")

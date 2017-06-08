@@ -18,8 +18,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from lib.cache import Cache
-from lib.io import display
-from BTG import BTG
+from lib.io import module as mod
 
 
 class Nothink:
@@ -34,11 +33,13 @@ class Nothink:
             self.creation_date = "18-04-2016"
             self.type = type
             self.ioc = ioc
-            if type in self.types and BTG.allowedToSearch(self.search_method):
+            if type in self.types and mod.allowedToSearch(self.search_method):
                 self.search()
+            else:
+                mod.display(self.module_name, "", "INFO", "Nothink module not activated")
 
     def search(self):
-        display(self.module_name, self.ioc, "INFO", "Searching...")
+        mod.display(self.module_name, "", "INFO", "Searching...")
         url = "http://www.nothink.org/blacklist/"
         paths = [
             "blacklist_snmp_year.txt",
@@ -49,4 +50,4 @@ class Nothink:
             content = Cache(self.module_name, url, path, self.search_method).content
             for line in content.split("\n"):
                 if self.ioc in line:
-                    display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                    mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))

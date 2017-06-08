@@ -32,11 +32,13 @@ from time import sleep
 
 import validators
 from config_parser import Config
-from lib.io import display, logSearch
+#from lib.io import display, logSearch
+from lib.io import module as mod
+from lib.io import logSearch
 
 
 config = Config.get_instance()
-version = "1.5"     # BTG version
+version = "1.9"     # BTG version
 
 
 class BTG:
@@ -47,7 +49,7 @@ class BTG:
 
         # Import modules
         if config["debug"]:
-            display(string="Load modules from %s"%config["modules_folder"])
+            mod.display(string="Load modules from %s"%config["modules_folder"])
         all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
         modules = []
         for file in all_files:
@@ -67,7 +69,7 @@ class BTG:
                         else:
                             sleep(3)
             else:
-                display(message_type="ERROR", string="Please check if you have max_process field in config.ini")
+                mod.display(message_type="ERROR", string="Please check if you have max_process field in config.ini")
             jobs.append(p)
             p.start()
 
@@ -76,7 +78,7 @@ class BTG:
             Main ioc module requests
         """
         type = self.checkType(argument)
-        display(ioc=argument, string="IOC type: %s"%type)
+        mod.display(ioc=argument, string="IOC type: %s"%type)
         if type is None:
             sys.exit()
         workers = []
@@ -90,12 +92,14 @@ class BTG:
         """
             Load modules in python instance
         """
-        display(string="Load: %s/%s.py"%(config["modules_folder"], module))
+        mod.display(string="Load: %s/%s.py"%(config["modules_folder"], module))
         obj = importlib.import_module("modules."+module)
         for c in dir(obj):
             if module+"_enabled" in config:
                 if module == c.lower() and config[module+"_enabled"]:
                     getattr(obj, c)(argument, type, config)
+            else:
+                mod.display(module, "", "INFO", "Module not configured")
 
     def checkType(self, argument):
         """
@@ -118,50 +122,8 @@ class BTG:
         elif validators.domain(argument):
             return "domain"
         else:
-            display("MAIN", argument, "ERROR", "Unable to retrieve IOC type")
+            mod.display("MAIN", argument, "ERROR", "Unable to retrieve IOC type")
             return None
-
-    @classmethod
-    def allowedToSearch(self, status):
-        """
-            Input: "Online", "Onpremises"
-        """
-        if status == "Onpremises":
-            '''
-            here the modules claims to be related to an on premises service
-            , i.e. being inside researcher nertwork, so we allow the lookup
-
-            modules: misp, cuckoo
-            '''
-            return True
-        elif status == "Online" and not config["offline"]:
-            '''
-            the modules claims to be online, and user _do not_ asked the
-            lookup to be performed offline
-            thus it is allowed to perform if online
-            '''
-            return True
-        '''
-        if none of previous case, lookup forbidden
-        '''
-        return False
-
-
-
-
-
-        '''
-        if config[offline]:
-            if status = onpremises
-                true
-            if status = cache
-                true
-            if status = online
-                false
-        else:
-            true
-        '''
-    
 
 
 def motd():
@@ -181,7 +143,7 @@ def parse_args():
     parser.add_argument('iocs', metavar='IOC', type=str, nargs='+',
                         help='Type: [URL,MD5,SHA1,SHA256,SHA512,IPv4,IPv6,domain]')
     parser.add_argument("-d", "--debug", action="store_true", help="Display debug informations",)
-    parser.add_argument("-o", "--offline", action="store_true", help="Set BTG in offline mode")
+    parser.add_argument("-o", "--offline", action="store_true", help="Set BTG in offline mode, meaning all modules described as online (i.e. VirusTotal are deactivated")
     parser.add_argument("-s", "--silent", action="store_true", help="Disable MOTD")
     return parser.parse_args()
 
@@ -189,7 +151,7 @@ def cleanups_lock_cache(real_path):
     for file in listdir(real_path):
         file_path = "%s%s/"%(real_path, file)
         if file.endswith(".lock"):
-            display("MAIN", message_type="DEBUG", string="Delete locked cache file: %s"%file_path[:-1])
+            mod.display("MAIN", message_type="DEBUG", string="Delete locked cache file: %s"%file_path[:-1])
             remove(file_path[:-1])
         else:
             if path.isdir(file_path):
@@ -207,7 +169,7 @@ if __name__ == '__main__':
         config["modules_folder"] = path.join(dir_path, config["modules_folder"])
         config["temporary_cache_path"] = path.join(dir_path, config["temporary_cache_path"])
     else:
-        display(message_type="ERROR", string="Please check if you have modules_folder and temporary_cache_path field in config.ini")
+        mod.display(message_type="ERROR", string="Please check if you have modules_folder and temporary_cache_path field in config.ini")
     if config["display_motd"] and not args.silent:
         motd()
     try:

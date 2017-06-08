@@ -27,7 +27,7 @@ from requests.exceptions import ConnectionError, ReadTimeout
 
 from BTG import BTG
 from config_parser import Config
-from lib.io import display
+from lib.io import module as mod
 
 
 class Cache:
@@ -49,7 +49,7 @@ class Cache:
 
         self.createModuleFolder()
         if self.checkIfUpdate():
-            if BTG.allowedToSearch(search_method):
+            if mod.allowedToSearch(search_method):
                 self.downloadFile()
         self.content = self.getContent()
 
@@ -63,7 +63,7 @@ class Cache:
         """
             Get file from web
         """
-        display("%s.cache"%self.module_name, message_type="DEBUG",
+        mod.display("%s.cache"%self.module_name, message_type="DEBUG",
                 string="Update %s%s"%(self.url, self.filename))
         full_url = "%s%s"%(self.url, self.filename)
         try:
@@ -74,11 +74,11 @@ class Cache:
                 timeout=self.config["requests_timeout"]
             )
         except ConnectionError as e:
-            display("%s.cache"%self.module_name, message_type="ERROR",
+            mod.display("%s.cache"%self.module_name, message_type="ERROR",
                     string=e)
             return
         except ReadTimeout as e:
-            display("%s.cache"%self.module_name, message_type="ERROR",
+            mod.display("%s.cache"%self.module_name, message_type="ERROR",
                     string="Timeout: %s"%(full_url))
             return
         except:
@@ -98,7 +98,7 @@ class Cache:
                     chmod(self.temp_file, 0o777)
                 remove("%s.lock"%self.temp_file)
         else:
-            display("%s.cache"%self.module_name, message_type="ERROR",
+            mod.display("%s.cache"%self.module_name, message_type="ERROR",
                     string="Response code: %s | %s%s"%(r.status_code, self.url, self.filename))
 
     def checkIfUpdate(self):
@@ -130,7 +130,7 @@ class Cache:
             try:
                 mkdir(self.config["temporary_cache_path"])
             except:
-                display("%s.cache"%self.module_name, message_type="ERROR",
+                mod.display("%s.cache"%self.module_name, message_type="ERROR",
                         string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
                 sys.exit()
             chmod(self.config["temporary_cache_path"], 0o777)

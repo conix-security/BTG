@@ -18,8 +18,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from lib.cache import Cache
-from lib.io import display
-from BTG import BTG
+from lib.io import module as mod
 
 
 class Torips:
@@ -35,9 +34,11 @@ class Torips:
         self.ioc = ioc
         if type in self.types and BTG.allowedToSearch(self.search_method):
             self.search()
+        else:
+            mod.display(self.module_name, "", "INFO", "TorIps module not activated")
 
     def search(self):
-        display(self.module_name, self.ioc, "INFO", "Searching...")
+        mod.display(self.module_name, "", "INFO", "Searching...")
         url = "http://torstatus.blutmagie.de/"
         paths = [
             "ip_list_all.php/Tor_ip_list_ALL.csv",
@@ -46,4 +47,4 @@ class Torips:
         ]
         for path in paths:
             if self.ioc in Cache(self.module_name, url, path, self.search_method).content:
-                display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))

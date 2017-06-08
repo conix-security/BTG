@@ -23,9 +23,8 @@ from re import findall
 
 from requests import get
 
-from BTG import BTG
 from config_parser import Config
-from lib.io import display
+from lib.io import module as mod
 
 cfg = Config.get_instance()
 if system() != "Windows":
@@ -50,18 +49,20 @@ class Malekal:
                     "IPv4", "IPv6", "domain"
                 ]
         else:
-            display(self.module_name, message_type="ERROR", string="Please check if you have malekal_local and malekal_remote fields in config.ini ")
+            mod.display(self.module_name, message_type="ERROR", string="Please check if you have malekal_local and malekal_remote fields in config.ini ")
         self.search_method = "Online"
         self.description = "Search IOC in malekal database"
         self.author = "Conix"
         self.creation_date = "13-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and BTG.allowedToSearch(self.search_method):
+        if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
+        else:
+            mod.display(self.module_name, "", "INFO", "Malekal module not activated")
 
     def search(self):
-        display(self.module_name, self.ioc, "INFO", "Searching...")
+        mod.display(self.module_name, "", "INFO", "Searching...")
         if "malekal_local" in self.config:
             if self.config["malekal_local"]:
                 self.localSearch()
@@ -73,7 +74,7 @@ class Malekal:
         """
             Search IOC with HTTP request
         """
-        display("%s_remote"%self.module_name, self.ioc, "INFO", string="Browsing in remote http")
+        mod.display("%s_remote"%self.module_name, self.ioc, "INFO", string="Browsing in remote http")
         url = "http://malwaredb.malekal.com/index.php?"
         if self.type in ["MD5", "SHA1", "SHA256", "SHA512"]:
             base = "hash="
@@ -90,25 +91,25 @@ class Malekal:
                     timeout=self.config["requests_timeout"]
                 ).text
                 if len(findall("hash=([a-z0-9]{32})\"", page)) > 1:
-                    display("%s_remote"%self.module_name, self.ioc, "FOUND", "%s%s%s"%(
+                    mod.display("%s_remote"%self.module_name, self.ioc, "FOUND", "%s%s%s"%(
                         url, base,
                         self.ioc))
             else:
-                display(self.module_name, message_type="ERROR", string="Please check if you have user_agent, proxy_host and requests_timeout fields in config.ini ")
+                mod.display(self.module_name, message_type="ERROR", string="Please check if you have user_agent, proxy_host and requests_timeout fields in config.ini ")
 
         except:
-            display("%s_remote"%self.module_name, self.ioc, "INFO", "MalekalTimeout")
+            mod.display("%s_remote"%self.module_name, self.ioc, "INFO", "MalekalTimeout")
 
     def localSearch(self):
         """ Search in local directory """
-        display("%s_local"%self.module_name, string="Browsing in local directory")
+        mod.display("%s_local"%self.module_name, string="Browsing in local directory")
         if "malekal_files_path" in self.config:
             for root, dirs, files in os.walk(self.config["malekal_files_path"]):
                 path = root.split('/')
                 folder = os.path.basename(root)
                 for file in files:
                     if file == self.ioc:
-                        display(
+                        mod.display(
                             "%s_local"%self.module_name, self.ioc, "FOUND", "%s%s/%s"%(
                                 self.config["malekal_files_path"],
                                 folder,
@@ -116,4 +117,4 @@ class Malekal:
                             )
                         )
         else:
-            display(self.module_name, message_type="ERROR", string="Please check if you have malekal_files_path field in config.ini ")
+            mod.display(self.module_name, message_type="ERROR", string="Please check if you have malekal_files_path field in config.ini ")

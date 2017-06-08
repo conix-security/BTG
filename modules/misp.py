@@ -21,18 +21,12 @@
 import sys
 import warnings
 
-from BTG import BTG
 from config_parser import Config
-from lib.io import display
+from lib.io import module as mod
 
-try:
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        from pymisp import PyMISP
-except:
-    display(__name__.split(".")[1], message_type="ERROR", string="You need to get 'pymisp' library (available here: https://github.com/MISP/PyMISP)")
-    exit()
-
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from pymisp import PyMISP
 
 class Misp:
     def __init__(self, ioc, type, config):
@@ -45,21 +39,24 @@ class Misp:
         self.creation_date = "07-10-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and BTG.allowedToSearch(self.search_method):
+
+        if type in self.types and mod.allowedToSearch(self.search_method):
             self.Search()
+        else:
+            mod.display(self.module_name, "", "INFO", "MISP module not activated")
 
     def Search(self):
-        display(self.module_name, self.ioc, "INFO", "Search in misp...")
+        mod.display(self.module_name, "", "INFO", "Search in misp...")
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if "misp_url" in self.config and "misp_key" in self.config and "misp_verifycert" in self.config:
                     m = PyMISP(self.config["misp_url"], self.config["misp_key"], self.config["misp_verifycert"], 'json')
                 else :
-                    display(self.module_name, message_type="ERROR", string="Please check if you have misp_url, misp_key and misp_verifycert fields in config.ini")
+                    mod.display(self.module_name, message_type="ERROR", string="Please check if you have misp_url, misp_key and misp_verifycert fields in config.ini")
                     sys.exit()
         except Exception, e:
-            display(self.module_name, self.ioc, "ERROR", e)
+            mod.display(self.module_name, self.ioc, "ERROR", e)
             return    
         result = m.search_all(self.ioc)
         try:
@@ -75,17 +72,17 @@ class Misp:
                                     tag_display = "%s|"%tag_display
                                 tag_display = "%s%s"%(tag_display, tag["name"])
                         else :
-                            display(self.module_name, message_type="ERROR",string="Please check if you have misp_tag_display fields in config.ini")
+                            mod.display(self.module_name, message_type="ERROR",string="Please check if you have misp_tag_display fields in config.ini")
                 except:
                     pass
                 if len(tag_display) != 0:
                     tag_display = "%s]"%tag_display
-                display(self.module_name, self.ioc, "FOUND", "%s Event: %sevents/view/%s"%(tag_display, self.config["misp_url"], event["Event"]["id"]))
+                mod.display(self.module_name, self.ioc, "FOUND", "%s Event: %sevents/view/%s"%(tag_display, self.config["misp_url"], event["Event"]["id"]))
         except:
             try:
                 if result['message'] == "No matches":
                     pass
                 elif "Authentication failed" in result['message']:
-                    display(__name__.split(".")[1], message_type="ERROR", string=result['message'])
+                    mod.display(__name__.split(".")[1], message_type="ERROR", string=result['message'])
             except:
                 pass
