@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright (c) 2016-2017 Conix Cybersecurity
+# Copyright (c) 2017 Conix Cybersecurity
 # Copyright (c) 2017 Robin Marsollier
+# Copyright (c) 2017 Alexandra Toussaint
 #
 # This file is part of BTG.
 #

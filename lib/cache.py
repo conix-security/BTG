@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # Copyright (c) 2016-2017 Conix Cybersecurity
+# Copyright (c) 2017 Alexandra Toussaint
+# Copyright (c) 2017 Robin Marsollier
 #
 # This file is part of BTG.
 #
