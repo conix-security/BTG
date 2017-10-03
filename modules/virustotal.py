@@ -26,6 +26,7 @@ from random import choice, randint
 from time import sleep
 
 from lib.io import module as mod
+import ast
 
 
 class Virustotal:
@@ -84,20 +85,26 @@ class Virustotal:
         data = urllib.urlencode(parameters)
         req = urllib2.Request(self.url, data)
         response = urllib2.urlopen(req)
-        try:
-            json_content = loads(response.read())
-        except:
-            mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal API seems to be down.")
-        try:
-            if json_content["positives"]:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "FOUND",
-                            "Score: %s/%s | %s"%(json_content["positives"],
-                                                 json_content["total"],
-                                                 json_content["permalink"]))
-        except:
-            pass
+        if response.getcode() == 200 :
+            response_content = response.read()
+            try:
+                import simplejson
+                json_content = simplejson.loads(response_content)
+            except :
+                mod.display(self.module_name, self.ioc, "ERROR", "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
+                sleep(randint(5, 10))
+            try:
+                if json_content["positives"]:
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "FOUND",
+                                "Score: %s/%s | %s"%(json_content["positives"],
+                                                     json_content["total"],
+                                                     json_content["permalink"]))
+            except:
+                pass
+        else :
+            mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(response.getcode()))
 
     def searchURL(self):
         self.url = "http://www.virustotal.com/vtapi/v2/url/report"

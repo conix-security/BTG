@@ -27,7 +27,7 @@ import multiprocessing
 import sys
 from base64 import b64decode
 from os import listdir, path, remove
-from os.path import isfile, join
+from os.path import isfile, join, exists
 from time import sleep
 
 import validators
@@ -56,23 +56,45 @@ class BTG:
         jobs = []
         # Start BTG process
         i = 0
-        for argument in args:
-            i += 1
-            p = multiprocessing.Process(target=self.run,
-                                        args=(argument,
-                                              modules,))
-            if "max_process" in config:
-                while len(jobs) > config["max_process"]:
-                    for job in jobs:
-                        if not job.is_alive():
-                            jobs.remove(job)
+        if args.file == "False" :
+            for argument in args.iocs:
+                i += 1
+                p = multiprocessing.Process(target=self.run,
+                                            args=(argument,
+                                                  modules,))
+                if "max_process" in config:
+                    while len(jobs) > config["max_process"]:
+                        for job in jobs:
+                            if not job.is_alive():
+                                jobs.remove(job)
+                            else:
+                                sleep(3)
+                else:
+                    mod.display(message_type="ERROR",
+                                string="Please check if you have max_process field in config.ini")
+                jobs.append(p)
+                p.start()
+        else :
+            for file in args.iocs :
+                with open(file,"r") as f2 :
+                    for argument in f2.readlines():
+                        i += 1
+                        p = multiprocessing.Process(target=self.run,
+                                                    args=(argument.strip("\n"),
+                                                          modules,))
+                        if "max_process" in config:
+                            while len(jobs) > config["max_process"]:
+                                for job in jobs:
+                                    if not job.is_alive():
+                                        jobs.remove(job)
+                                    else:
+                                        sleep(3)
                         else:
-                            sleep(3)
-            else:
-                mod.display(message_type="ERROR",
-                            string="Please check if you have max_process field in config.ini")
-            jobs.append(p)
-            p.start()
+                            mod.display(message_type="ERROR",
+                                        string="Please check if you have max_process field in config.ini")
+                        jobs.append(p)
+                        p.start()
+
 
     def run(self, argument, modules):
         """
@@ -143,7 +165,7 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description='IOC to search')
     parser.add_argument('iocs', metavar='IOC', type=str, nargs='+',
-                        help='Type: [URL,MD5,SHA1,SHA256,SHA512,IPv4,IPv6,domain]')
+                        help='Type: [URL,MD5,SHA1,SHA256,SHA512,IPv4,IPv6,domain] or a file containing one ioc per line')
     parser.add_argument("-d", "--debug", action="store_true", help="Display debug informations",)
     parser.add_argument("-o", "--offline", action="store_true",
                         help=("Set BTG in offline mode, meaning all modules"
@@ -166,6 +188,11 @@ def cleanups_lock_cache(real_path):
 
 if __name__ == '__main__':
     args = parse_args()
+    # Check if the parameter is a file or a list of iocs
+    if exists(args.iocs[0]):
+        args.file="True"
+    else :
+        args.file="False"
     # Check if debug
     if args.debug:
         config["debug"] = True
@@ -184,8 +211,8 @@ if __name__ == '__main__':
     try:
         if path.exists(config["temporary_cache_path"]):
             cleanups_lock_cache(config["temporary_cache_path"])
-        logSearch(args.iocs)
-        BTG(args.iocs)
+        logSearch(args)
+        BTG(args)
     except (KeyboardInterrupt, SystemExit):
         '''
         Exit if user press CTRL+C

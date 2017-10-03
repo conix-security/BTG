@@ -105,15 +105,23 @@ class module:
 
 
 class logSearch:
-    def __init__(self, iocs):
+    def __init__(self, args):
         config = Config.get_instance()
         if not exists(config["log_search_file"]):
             open(config["log_search_file"], 'a').close()
             chmod(config["log_search_file"], 0o777)
         f = open(config["log_search_file"], 'a')
-        for ioc in iocs:
-            f.write("%s %s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))
-        f.close()
+        if args.file == "False" :
+            for ioc in args.iocs:
+                f.write("%s %s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))
+            f.close()
+        else :
+            for file in args.iocs :
+                with open(file, "r") as f2 :
+                    for ioc in f2.readlines():
+                        f.write("%s %s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc.strip('\n')))
+            f.close()
+
 
 
 class colors:
