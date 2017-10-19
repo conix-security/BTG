@@ -4,7 +4,7 @@ Not every IOC deserve to enter your internal MISP instance, for obvious quality 
 
 ![BTG with TOR IP](http://pix.toile-libre.org/upload/original/1482330236.png)
 
-This tool allows you to qualify one or more potential malicious markers of different type (URL, MD5, SHA1, SHA256, SHA512, IPv4, IPv6, domain etc..). You can run this tool with a Gnu/Linux environement. The Windows compatibility is currently working in BETA version.
+This tool allows you to qualify one or more potential malicious observables of various type (URL, MD5, SHA1, SHA256, SHA512, IPv4, IPv6, domain etc..). You can run this tool with a Gnu/Linux environement. The Windows compatibility is currently working in BETA version.
 
 BTG was born from a need for Conix's collaborators. During their activities, SOC and DFIR analysts face off a lot of information and metadata of multiple nature that they must classify as malicious or not.
 
