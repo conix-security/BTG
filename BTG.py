@@ -57,7 +57,7 @@ class BTG:
         # Start BTG process
         i = 0
         if args.file == "False" :
-            for argument in args.iocs:
+            for argument in args.observables:
                 i += 1
                 p = multiprocessing.Process(target=self.run,
                                             args=(argument,
@@ -75,7 +75,7 @@ class BTG:
                 jobs.append(p)
                 p.start()
         else :
-            for file in args.iocs :
+            for file in args.observables :
                 with open(file,"r") as f2 :
                     for argument in f2.readlines():
                         i += 1
@@ -98,10 +98,10 @@ class BTG:
 
     def run(self, argument, modules):
         """
-            Main ioc module requests
+            Main observable module requests
         """
         type = self.checkType(argument)
-        mod.display(ioc=argument, string="IOC type: %s"%type)
+        mod.display(ioc=argument, string="Observable type: %s"%type)
         if type is None:
             sys.exit()
         workers = []
@@ -126,7 +126,7 @@ class BTG:
 
     def checkType(self, argument):
         """
-            Identify IOC type
+            Identify observable type
         """
         if validators.url(argument):
             return "URL"
@@ -145,7 +145,7 @@ class BTG:
         elif validators.domain(argument):
             return "domain"
         else:
-            mod.display("MAIN", argument, "ERROR", "Unable to retrieve IOC type")
+            mod.display("MAIN", argument, "ERROR", "Unable to retrieve observable type")
             return None
 
 
@@ -163,9 +163,9 @@ def parse_args():
     """
         Define the arguments
     """
-    parser = argparse.ArgumentParser(description='IOC to search')
-    parser.add_argument('iocs', metavar='IOC', type=str, nargs='+',
-                        help='Type: [URL,MD5,SHA1,SHA256,SHA512,IPv4,IPv6,domain] or a file containing one ioc per line')
+    parser = argparse.ArgumentParser(description='Observable to qualify')
+    parser.add_argument('observables', metavar='observable', type=str, nargs='+',
+                        help='Type: [URL,MD5,SHA1,SHA256,SHA512,IPv4,IPv6,domain] or a file containing one observable per line')
     parser.add_argument("-d", "--debug", action="store_true", help="Display debug informations",)
     parser.add_argument("-o", "--offline", action="store_true",
                         help=("Set BTG in offline mode, meaning all modules"
@@ -188,8 +188,8 @@ def cleanups_lock_cache(real_path):
 
 if __name__ == '__main__':
     args = parse_args()
-    # Check if the parameter is a file or a list of iocs
-    if exists(args.iocs[0]):
+    # Check if the parameter is a file or a list of observables
+    if exists(args.observables[0]):
         args.file="True"
     else :
         args.file="False"

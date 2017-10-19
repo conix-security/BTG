@@ -112,11 +112,11 @@ class logSearch:
             chmod(config["log_search_file"], 0o777)
         f = open(config["log_search_file"], 'a')
         if args.file == "False" :
-            for ioc in args.iocs:
+            for ioc in args.observables :
                 f.write("%s %s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))
             f.close()
         else :
-            for file in args.iocs :
+            for file in args.observables :
                 with open(file, "r") as f2 :
                     for ioc in f2.readlines():
                         f.write("%s %s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc.strip('\n')))
