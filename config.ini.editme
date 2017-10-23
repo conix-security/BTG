@@ -106,3 +106,7 @@ nothink_enabled = True
 [RansomwareTracker]
 ransomwaretracker_enabled = True
 
+[vxstream]
+vxstream_enabled = True
+vxstream_api_keys = ""
+vxstream_secret = ""
