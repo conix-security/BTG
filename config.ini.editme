@@ -106,6 +106,7 @@ nothink_enabled = True
 [RansomwareTracker]
 ransomwaretracker_enabled = True
 
+# hybrid-analysis.com service
 [vxstream]
 vxstream_enabled = True
 vxstream_api_keys = ""
