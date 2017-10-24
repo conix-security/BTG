@@ -110,3 +110,7 @@ ransomwaretracker_enabled = True
 vxstream_enabled = True
 vxstream_api_keys = ""
 vxstream_secret = ""
+
+[viper]
+viper_enabled = True
+viper_server = ""
