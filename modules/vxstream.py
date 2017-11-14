@@ -20,11 +20,12 @@
 
 import requests
 from requests.auth import HTTPBasicAuth
+from random import choice
 
 from lib.io import module as mod
 
 
-class vxstream:
+class Vxstream:
     def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
@@ -52,7 +53,14 @@ class vxstream:
         if self.type in ["domain"]:
             server = "https://www.hybrid-analysis.com/api/search?query=domain:"
 
-        respond = requests.get(server+self.ioc, headers={'User-agent': 'VxApi Connector'}, verify=True, auth=HTTPBasicAuth(self.config["vxstream_api_keys"], self.config["vxstream_secret"]))
+        if 'vxstream_api_keys_secret' in self.config:
+            api_key_secret = choice(self.config['vxstream_api_keys_secret'])
+        else:
+            mod.display(self.module_name,
+                            message_type="ERROR",
+                            string="Check if you have vxstream_api_keys_secret field in config.ini")
+
+        respond = requests.get(server + self.ioc, headers=self.config['vxstream_user_agent'], verify=True, auth=HTTPBasicAuth(api_key_secret[0], api_key_secret[1]))
         if respond.status_code == 200:
             respond_json = respond.json()
             if respond_json["response_code"] == 0:
@@ -73,7 +81,7 @@ class vxstream:
         mod.display(self.module_name, "", "INFO", "Search in VXstream ...")
 
         try:
-            if "vxstream_api_keys" and "vxstream_secret" in self.config:
+            if "vxstream_api_keys_secret" in self.config:
                 if self.type in self.types:
                         result_json = self.vxstream_api()
             else:
@@ -90,25 +98,25 @@ class vxstream:
                 if self.type in ["MD5", "SHA1", "SHA256"]:
                     result = result_json["response"][0]
                     if "classification_tags" in result and result["classification_tags"]:
-                        tags = ",".join(result["classification_tags"])
+                        tags = " Tags: %s |" % ",".join(result["classification_tags"])
                     else:
-                        tags = "Na"
+                        tags = ""
                     if "verdict" in result:
-                        verdict = result["verdict"]
+                        verdict = " %s |" % result["verdict"]
                     else:
-                        verdict = "Na"
+                        verdict = ""
                     if "threatscore" in result:
-                        threatscore = "Threatscore: %d/100" % result["threatscore"]
+                        threatscore = " Threatscore: %d/100 |" % result["threatscore"]
                     else:
-                        threatscore =  "Threatscore: Na"
+                        threatscore =  ""
                     if "sha256" in result:
-                        url = 'https://www.hybrid-analysis.com/sample/%s' % result["sha256"]
+                        url = ' https://www.hybrid-analysis.com/sample/%s' % result["sha256"]
                     else:
                         url = ""
                     mod.display(self.module_name,
                                 self.ioc,
                                 "FOUND",
-                                "Tags: %s | %s | %s | %s" % (tags, verdict, threatscore, url))
+                                "%s%s%s%s" % (tags, verdict, threatscore, url))
 
                 if self.type in ["domain", "IPv4", "IPv6"]:
                     result = result_json["response"]["result"]
