@@ -23,12 +23,12 @@ import requests
 from lib.io import module as mod
 
 
-class viper:
+class Viper:
     def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
         self.types = ["MD5", "SHA256"]
-        self.search_method = "Online"
+        self.search_method = "Onpremises"
         self.description = "Search IOC in Viper Database"
         self.author = "Hicham Megherbi"
         self.creation_date = "21-10-2017"
@@ -50,7 +50,7 @@ class viper:
         if self.type == "SHA256":
             ioc = "sha256=%s" % self.ioc
 
-        respond = requests.post(server,headers={'User-agent': 'viper Connector'}, data= ioc)
+        respond = requests.post(server, headers=self.config['viper_user_agent'], data= ioc)
 
         if respond.status_code == 200:
             respond_json = respond.json()
@@ -87,22 +87,25 @@ class viper:
             if result_json:
                 if self.type in ["MD5", "SHA256"]:
                     result = result_json
+                    
                     if "tags" in result and result["tags"]:
-                        tags = ",".join(result["tags"])
+                        tags = "Tags: %s |" % ",".join(result["tags"])
                     else:
-                        tags = "Na"
-                    if "name" in result:
-                        name = result["name"]
-                    else:
-                        name = "Na"
+                        tags = ""
+
                     if "id" in result:
-                        id = result["id"]
+                        id = " Id: %d |" % result["id"]
                     else:
-                        id = "Na"
+                        id = ""
+
+                    if "name" in result:
+                        name = " %s" % result["name"]
+                    else:
+                        name = ""
 
                     mod.display(self.module_name,
                                 self.ioc,
                                 "FOUND",
-                                "Tags: %s | Id: %d | %s" % (tags, id, name))
+                                "%s%s%s" % (tags, id, name))
         except:
             pass
