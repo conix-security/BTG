@@ -1,5 +1,5 @@
 # Description: Configuration file
-# All strings must be between quoted
+# All strings must be between quotes
 
 [Btg]
 debug = False
@@ -106,13 +106,19 @@ nothink_enabled = True
 [RansomwareTracker]
 ransomwaretracker_enabled = True
 
-[Vxstream]
-# vxstream_api_keys_secret = [(api_keys, secret)]
-vxstream_enabled = False
-vxstream_user_agent = {'User-agent': 'VxApi Connector'}
-vxstream_api_keys_secret = []
-
 [Viper]
 viper_enabled = False
-viper_server = ""
+viper_server = None
 viper_user_agent = {'User-Agent': 'viper Connector'}
+
+[Virusshare]
+virusshare_enabled = False
+virusshare_username = None
+virusshare_password = None
+
+[Vxstream]
+vxstream_enabled = False
+# user_agent must not be changed
+vxstream_user_agent = {'User-agent': 'VxApi Connector'}
+# vxstream_api_keys_secret = [(api_keys, secret)]
+vxstream_api_keys_secret = []

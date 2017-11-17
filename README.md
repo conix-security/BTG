@@ -36,8 +36,11 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
     SpamHaus
     SSLBlacklist
     Tor exit nodes
+    Viper
+    VirusShare
     VirusTotal
     Vxvault
+    VxStream (hybrid-analysis)
     ZeusTracker
 
 #### Adding your module
