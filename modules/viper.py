@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2017 Conix Cybersecurity
 # Copyright (c) 2017 Hicham Megherbi
+# Copyright (c) 2017 Lancelot Bogard
 #
 # This file is part of BTG.
 #
