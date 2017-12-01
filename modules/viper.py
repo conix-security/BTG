@@ -27,7 +27,7 @@ class Viper:
     def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        self.types = ["MD5", "SHA256"]
+        self.types = ["MD5", "SHA256", "URL", "domain", "IPv4"]
         self.search_method = "Onpremises"
         self.description = "Search IOC in Viper Database"
         self.author = "Hicham Megherbi"
@@ -44,19 +44,23 @@ class Viper:
         """
         Viper API Connection
         """
-        server = self.config["viper_server"]+"file/find"
+        server = "%s/file/find"%self.config["viper_server"]
         if self.type == "MD5":
             ioc = "md5=%s" % self.ioc
         if self.type == "SHA256":
             ioc = "sha256=%s" % self.ioc
-
-        respond = requests.post(server, headers=self.config['viper_user_agent'], data= ioc)
-
+        if self.type in ["domain", "URL", "IPv4"]:
+            ioc = "note=%s" % self.ioc
+        respond = requests.post(server, 
+                                headers=self.config["user_agent"],
+                                proxies=self.config["proxy_host"],
+                                timeout=self.config["requests_timeout"],
+                                data=ioc)
         if respond.status_code == 200:
             respond_json = respond.json()
             if respond_json["results"]:
                 if "default" in  respond_json["results"]:
-                    return respond_json["results"]["default"][0]
+                    return respond_json["results"]["default"]
                 else:
                     return None
             else:
@@ -85,21 +89,20 @@ class Viper:
 
         try:
             if result_json:
-                if self.type in ["MD5", "SHA256"]:
-                    result = result_json
-                    
-                    if "tags" in result and result["tags"]:
-                        tags = "Tags: %s |" % ",".join(result["tags"])
+                if self.type in ["MD5", "SHA256"]: 
+                    result_json = result_json[0]                   
+                    if "tags" in result_json and result_json["tags"]:
+                        tags = "Tags: %s |" % ",".join(result_json["tags"])
                     else:
                         tags = ""
 
-                    if "id" in result:
-                        id = " Id: %d |" % result["id"]
+                    if "id" in result_json:
+                        id = " ID: %d |" % result_json["id"]
                     else:
                         id = ""
 
-                    if "name" in result:
-                        name = " %s" % result["name"]
+                    if "name" in result_json:
+                        name = " Filename: %s" % result_json["name"]
                     else:
                         name = ""
 
@@ -107,5 +110,15 @@ class Viper:
                                 self.ioc,
                                 "FOUND",
                                 "%s%s%s" % (tags, id, name))
+
+                elif self.type in ["URL", "domain", "IPv4"]:
+                    for element in result_json:
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "ID: %s | Filename: %s | md5: %s" % (
+                                        element["id"],
+                                        element["name"],
+                                        element["md5"]))
         except:
             pass
