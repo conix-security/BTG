@@ -36,7 +36,7 @@ from lib.io import module as mod
 from lib.io import logSearch
 
 config = Config.get_instance()
-version = "1.9"     # BTG version
+version = "1.a"     # BTG version
 
 
 class BTG:
