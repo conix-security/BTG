@@ -46,8 +46,9 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
 
 #### Installation
 ```
-sudo apt install python python-pip
+sudo apt install python python-pip git
 git clone https://github.com/conix-security/BTG
+cd BTG
 sudo pip install -r requirements.txt
 cp config.ini.editme config.ini
 vim config.ini
