@@ -72,7 +72,7 @@ class Cuckoosandbox:
                 proxies=self.config["proxy_host"],
                 timeout=self.config["requests_timeout"]
             ).text
-            if "Error: 404 Not Found" not in page:
+            if "Error: 404 Not Found" not in page and "File not found" not in page:
                 id_analysis = json.loads(page)["sample"]["id"]
                 if "cuckoosandbox_web_url" in self.config:
                     mod.display("%s_remote" % self.module_name,

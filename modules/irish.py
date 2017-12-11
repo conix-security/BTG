@@ -46,7 +46,7 @@ class Irish():
                         headers=self.config["user_agent"],
                         proxies=self.config["proxy_host"],
                         timeout=self.config["requests_timeout"])
-        json_content = json.loads(request.text)[0]
+        json_content = json.loads(request.text)
         if not "No report exists for %s hash"%self.ioc in json_content:
             mod.display(self.module_name,
                         self.ioc,
