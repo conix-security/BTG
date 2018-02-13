@@ -128,7 +128,9 @@ class BTG:
         """
             Identify observable type
         """
-        if validators.url(argument):
+        if len(argument.strip()) == 0:
+            return None;
+        elif validators.url(argument):
             return "URL"
         elif validators.md5(argument):
             return "MD5"
