@@ -77,7 +77,7 @@ class BTG:
         else :
             for file in args.observables :
                 with open(file,"r") as f2 :
-                    for argument in f2.readlines():
+                    for argument in f2.read().strip().splitlines():
                         i += 1
                         p = multiprocessing.Process(target=self.run,
                                                     args=(argument.strip("\n"),
