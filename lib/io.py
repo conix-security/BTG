@@ -36,7 +36,7 @@ class module:
 
     @classmethod
     def display(self, module="INIT", ioc="", message_type="DEBUG", string=""):
-        exec('colorize = colors.%s'%message_type)
+        exec("colorize = colors.%s"%message_type, None, globals())
         config = Config.get_instance()
         if not config["debug"] and (message_type == "INFO" or message_type == "DEBUG"):
             pass
@@ -55,6 +55,7 @@ class module:
                                              colors.BOLD,
                                              string,
                                              colors.NORMAL)
+            
             if message_type == "FOUND":
                 if not exists(config["log_found_file"]):
                     open(config["log_found_file"], 'a').close()
