@@ -20,7 +20,10 @@
 
 import ast
 import os
-from ConfigParser import ConfigParser
+try:
+    from ConfigParser import ConfigParser
+except:
+    from configparser import ConfigParser
 from multiprocessing import Manager
 
 

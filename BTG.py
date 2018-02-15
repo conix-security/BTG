@@ -36,7 +36,7 @@ from lib.io import module as mod
 from lib.io import logSearch
 
 config = Config.get_instance()
-version = "1.a"     # BTG version
+version = "1.b"     # BTG version
 
 
 class BTG:
@@ -155,10 +155,11 @@ def motd():
     """
         Display Message Of The Day in console
     """
-    print("%s v%s\n"%(b64decode("""
+    motd = "%s v%s\n"%(b64decode("""
         ICAgIF9fX18gX19fX19fX19fX19fCiAgIC8gX18gKV8gIF9fLyBfX19fLwogIC8gX18gIHw\
         vIC8gLyAvIF9fICAKIC8gL18vIC8vIC8gLyAvXy8gLyAgCi9fX19fXy8vXy8gIFxfX19fLw\
-        ==""".strip()), version))
+        ==""".strip()).decode("utf-8"), version)
+    print(motd.replace("\\n", "\n"))
 
 
 def parse_args():

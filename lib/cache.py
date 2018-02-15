@@ -57,7 +57,10 @@ class Cache:
     def getContent(self):
         f = ""
         if exists(self.temp_file):
-            f = open(self.temp_file).read()
+            try:
+                f = open(self.temp_file, encoding="ISO-8859-1").read()
+            except:
+                f = open(self.temp_file).read()
         return f
 
     def downloadFile(self):

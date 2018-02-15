@@ -19,15 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import urllib
-import urllib2
+from requests import post
 from json import loads
 from random import choice, randint
 from time import sleep
-
 from lib.io import module as mod
 import ast
-
+import json
 
 class Virustotal:
     """
@@ -50,17 +48,6 @@ class Virustotal:
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Search in VirusTotal ...")
-        if "proxy_host" in self.config:
-            if len(self.config["proxy_host"]["https"]) > 0:
-                proxy = urllib2.ProxyHandler({'https': self.config["proxy_host"]["https"]})
-                opener = urllib2.build_opener(proxy)
-            else:
-                opener = urllib2.build_opener()
-        else:
-            mod.display(self.module_name,
-                        message_type="ERROR",
-                        string="Please check if you have proxy_host field in config.ini")
-        urllib2.install_opener(opener)
         try:
             if "virustotal_api_keys" in self.config:
                 self.key = choice(self.config["virustotal_api_keys"])
@@ -71,7 +58,6 @@ class Virustotal:
         except:
             mod.display(self.module_name, self.ioc, "ERROR", "Please provide your authkey.")
             return
-
         if self.type in ["URL", "domain", "IPv4"]:
             self.searchURL()
         else:
@@ -82,45 +68,55 @@ class Virustotal:
         parameters = {"resource": self.ioc,
                       "apikey": self.key,
                       "allinfo": 1}
-        data = urllib.urlencode(parameters)
-        req = urllib2.Request(self.url, data)
-        response = urllib2.urlopen(req)
-        if response.getcode() == 200 :
-            response_content = response.read()
-            try:
-                import simplejson
-                json_content = simplejson.loads(response_content)
-            except :
-                mod.display(self.module_name, self.ioc, "ERROR", "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
-                sleep(randint(5, 10))
-            try:
-                if json_content["positives"]:
-                    mod.display(self.module_name,
-                                self.ioc,
-                                "FOUND",
-                                "Score: %s/%s | %s"%(json_content["positives"],
-                                                     json_content["total"],
-                                                     json_content["permalink"]))
-            except:
-                pass
-        else :
-            mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(response.getcode()))
+        while True:
+            req = post(
+                        self.url,
+                        headers=self.config["user_agent"],
+                        proxies=self.config["proxy_host"],
+                        timeout=self.config["requests_timeout"],
+                        data = parameters
+                    )
+            if req.status_code == 200 :
+                response_content = req.text
+                try:
+                    json_content = json.loads(response_content)
+                    break
+                except :
+                    mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
+                    sleep(randint(5, 10))
+            else :
+                mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(response.getcode()))
+                return
+        try:
+            if json_content["positives"]:
+                mod.display(self.module_name,
+                            self.ioc,
+                            "FOUND",
+                            "Score: %s/%s | %s"%(json_content["positives"],
+                                                 json_content["total"],
+                                                 json_content["permalink"]))
+        except:
+            pass
 
     def searchURL(self):
         self.url = "http://www.virustotal.com/vtapi/v2/url/report"
         parameters = {"resource": self.ioc,
                       "apikey": self.key}
-        data = urllib.urlencode(parameters)
-        req = urllib2.Request(self.url, data)
         while True:
+            req = post(
+                self.url,
+                headers=self.config["user_agent"],
+                proxies=self.config["proxy_host"],
+                timeout=self.config["requests_timeout"],
+                data = parameters
+            )
             try:
-                response = urllib2.urlopen(req).read()
-                json_content = loads(response)
+                json_content = json.loads(req.text)
                 break
             except:
                 mod.display(self.module_name,
                             self.ioc,
-                            "INFO",
+                            "WARNING",
                             "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
                 sleep(randint(5, 10))
                 pass
