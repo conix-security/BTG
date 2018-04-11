@@ -1,0 +1,7 @@
+# ignore logfile
+log.txt
+search.txt
+
+# ignore temp folder
+src/
+dumps/
