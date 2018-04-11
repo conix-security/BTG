@@ -1,0 +1,90 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# Copyright (c) 2017 Conix Cybersecurity
+# Copyright (c) 2017 Tanguy Becam
+#
+# This file is part of BTG.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+import requests
+import json
+from lib.io import module as mod
+from random import choice, randint
+
+class googlesb:
+    """
+        This module performs a Safe Browsing Lookup to Google API
+    """
+    def __init__(self, ioc, type, config):
+        self.config = config
+        self.module_name = __name__.split(".")[1]
+        # supported type : hash and digest SHA256, url
+        self.types = ["URL"]
+        # googleSB run on a local database with a 30min refresh by default
+        self.search_method = "Online"
+        self.description = "Search IOC in GoogleSafeBrowsing database"
+        self.author = "Conix"
+        self.creation_date = "11-04-2018"
+        self.type = type
+        self.ioc = ioc
+
+        if type in self.types and mod.allowedToSearch(self.search_method):
+            self.lookup_API()
+        else:
+            mod.display(self.module_name, "", "INFO", "googlesb module not activated")
+
+    def lookup_API(self):
+        mod.display(self.module_name, "", "INFO", "Performing a Safe Browsing Lookup ...")
+
+        try:
+            if 'googlesb_api_keys' in self.config:
+                api_key = choice(self.config['googlesb_api_keys'])
+            else:
+                mod.display(self.module_name,
+                                message_type="ERROR",sleep(randint(5, 10))
+                                string="Check if you have googlesb_api_keys field in config.ini")
+        except:
+            mod.display(self.module_name, self.ioc, "ERROR", "Please provide your Google API key.")
+            return None
+
+        server = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+api_key
+        print(self.ioc)
+        payload = {"threatInfo":
+                    {
+                    "threatTypes": ["THREAT_TYPE_UNSPECIFIED"],
+                    "platformTypes": ["PLATFORM_TYPE_UNSPECIFIED"],
+                    "threatEntryTypes": ["URL"],
+                    "threatEntries": [{"url": ""+self.ioc}]
+                    }
+                  }
+
+        json_payload = json.dumps(payload)
+
+        response = requests.post(server, data=json_payload)
+
+        if response.status_code == 200:
+            try :
+                json_response = json.loads(response.text)
+            except :
+                # copied from module virustotal, why should we put the worker in sleep mode ?
+                mod.display(self.module_name, self.ioc, "WARNING", "GoogleSafeBrowsing json_response was not readable. (Sleep 10sec).")
+                sleep(randint(5, 10))
+
+            return None
+        else:
+            mod.display(self.module_name,
+                    message_type="ERROR",
+                    string="GoogleSafeBrowsing API connection status %d" % respond.status_code)
+            return None
