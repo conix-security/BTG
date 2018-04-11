@@ -1,7 +1,13 @@
 # ignore logfile
-log.txt
-search.txt
+/log.txt
+/search.txt
 
 # ignore temp folder
 src/
 dumps/
+
+# ignore python cache
+__pycache__/
+
+# ignore config.init
+/config.ini
