@@ -35,9 +35,10 @@ class Dshield:
         self.type = type
         self.ioc = ioc
         if type in self.types and mod.allowedToSearch(self.search_method):
+            print("dshield_enabled = True")
             self.search()
         else:
-            mod.display(self.module_name, "", "INFO", "Dschield module not activated")
+            mod.display(self.module_name, "", "INFO", "Dshield module not activated")
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")

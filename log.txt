@@ -1,0 +1,14 @@
+[10-04-2018 13:00:09][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 13:00:41][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 13:01:04][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 13:02:14][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 13:02:52][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 16:23:58][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 16:24:42][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 16:35:40][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 16:36:47][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 16:50:25][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 17:24:33][virustotal][[92mFOUND[0m]{[94mhttp://mydomain.com[0m} [1mScore: 1/67 | https://www.virustotal.com/url/5caff68d52af39ff8bedb59fbb322b68410c9890a2c324cc305e365f9e2ce93c/analysis/1521178266/[0m
+[10-04-2018 17:24:34][virustotal][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mScore: 5/63 | https://www.virustotal.com/url/58b2c131ebde7dfd3991c17e3d4eb334201c5c0b1b86f40417b33685027927ab/analysis/1491156841/[0m
+[10-04-2018 17:24:34][vxstream][[92mFOUND[0m]{[94m45.34.191.173[0m} [1mResults: 1 | https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=45.34.191.173[0m
+[10-04-2018 17:24:34][virustotal][[92mFOUND[0m]{[94m1a72dca1f6a961f528007ef04b6959d8[0m} [1mScore: 53/63 | https://www.virustotal.com/file/4f90f1ad0ef3627293cace1d944a8015770bb9c58c5988795cf2aa2c1319380f/analysis/1502024481/[0m
