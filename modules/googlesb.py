@@ -31,7 +31,7 @@ class googlesb:
         self.config = config
         self.module_name = __name__.split(".")[1]
         # supported type : hash and digest SHA256, url
-        self.types = ["URL"]
+        self.types = ["URL, SHA256"]
         # googleSB run on a local database with a 30min refresh by default
         self.search_method = "Online"
         self.description = "Search IOC in GoogleSafeBrowsing database"
@@ -43,7 +43,7 @@ class googlesb:
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.lookup_API()
         else:
-            #mod.display(self.module_name, "", "INFO", "googlesb module not activated")
+            mod.display(self.module_name, "", "INFO", "googlesb module not activated")
             return None
 
     def lookup_API(self):
@@ -62,20 +62,25 @@ class googlesb:
 
         server = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+api_key
 
+        # TODO
+        # The 4 following lines are their to fill json body request
+        if str(self.type) == "SHA256":
+            threatType = "EXECUTABLE"
+        else :
+            threatType = str(self.type)
+
         payload = {"threatInfo":
                     {
-                    "threatTypes": ["THREAT_TYPE_UNSPECIFIED"],
-                    "platformTypes": ["PLATFORM_TYPE_UNSPECIFIED"],
-                    "threatEntryTypes": [""+self.type],
-                    "threatEntries": [{"url": ""+self.ioc}]
+                    "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+                    "platformTypes": ["ANY_PLATFORM"],
+                    "threatEntryTypes": [threatType],
+                    "threatEntries": [{threatType.lower(): str(self.ioc)}]
                     }
                   }
 
         json_payload = json.dumps(payload)
 
         response = requests.post(server, data=json_payload)
-
-        print("Status code : %d" % response.status_code)
 
         if response.status_code == 200:
             try :
@@ -91,7 +96,7 @@ class googlesb:
         else:
             mod.display(self.module_name,
                         message_type="ERROR",
-                        string="GoogleSafeBrowsing API connection status %d" % respond.status_code)
+                        string="GoogleSafeBrowsing API connection status %d" % response.status_code)
             return None
 
         try:

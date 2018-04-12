@@ -86,7 +86,9 @@ class Virustotal:
                     mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
                     sleep(randint(5, 10))
             else :
-                mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(response.getcode()))
+                # response never seen before, if we enter this program point -> ERROR
+                # mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(response.getcode()))
+                mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(req.status_code))
                 return
         try:
             if json_content["positives"]:
