@@ -9,5 +9,8 @@ dumps/
 # ignore python cache
 __pycache__/
 
-# ignore config.init
+# ignore config.ini
 /config.ini
+
+# ignore API keys file
+/API_keys

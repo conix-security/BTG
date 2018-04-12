@@ -43,29 +43,30 @@ class googlesb:
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.lookup_API()
         else:
-            mod.display(self.module_name, "", "INFO", "googlesb module not activated")
+            #mod.display(self.module_name, "", "INFO", "googlesb module not activated")
+            return None
 
     def lookup_API(self):
-        mod.display(self.module_name, "", "INFO", "Performing a Safe Browsing Lookup ...")
+        mod.display(self.module_name, "", "INFO", "Search in Google Safe Browsing ...")
 
         try:
             if 'googlesb_api_keys' in self.config:
                 api_key = choice(self.config['googlesb_api_keys'])
             else:
                 mod.display(self.module_name,
-                                message_type="ERROR",sleep(randint(5, 10))
-                                string="Check if you have googlesb_api_keys field in config.ini")
+                            message_type="ERROR",
+                            string="Check if you have googlesb_api_keys field in config.ini")
         except:
             mod.display(self.module_name, self.ioc, "ERROR", "Please provide your Google API key.")
             return None
 
         server = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+api_key
-        print(self.ioc)
+
         payload = {"threatInfo":
                     {
                     "threatTypes": ["THREAT_TYPE_UNSPECIFIED"],
                     "platformTypes": ["PLATFORM_TYPE_UNSPECIFIED"],
-                    "threatEntryTypes": ["URL"],
+                    "threatEntryTypes": [""+self.type],
                     "threatEntries": [{"url": ""+self.ioc}]
                     }
                   }
@@ -74,17 +75,31 @@ class googlesb:
 
         response = requests.post(server, data=json_payload)
 
+        print("Status code : %d" % response.status_code)
+
         if response.status_code == 200:
             try :
                 json_response = json.loads(response.text)
             except :
-                # copied from module virustotal, why should we put the worker in sleep mode ?
-                mod.display(self.module_name, self.ioc, "WARNING", "GoogleSafeBrowsing json_response was not readable. (Sleep 10sec).")
+                # copied from virustotal module, why should we put the worker in sleep mode ?
+                mod.display(self.module_name,
+                            self.ioc,
+                            message_type="WARNING",
+                            string="GoogleSafeBrowsing json_response was not readable. (Sleep 10sec).")
                 sleep(randint(5, 10))
-
-            return None
+                return None
         else:
             mod.display(self.module_name,
-                    message_type="ERROR",
-                    string="GoogleSafeBrowsing API connection status %d" % respond.status_code)
+                        message_type="ERROR",
+                        string="GoogleSafeBrowsing API connection status %d" % respond.status_code)
             return None
+
+        try:
+            if 'matches' in json_response:
+                for m in json_response['matches'] :
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "FOUND",
+                                "ThreatEntryType: %s | ThreatType: %s | PlatformType: %s" % (m['threatEntryType'], m['threatType'], m['platformType']))
+        except:
+            pass
