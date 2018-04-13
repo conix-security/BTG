@@ -46,12 +46,15 @@ class googlesb:
             mod.display(self.module_name, "", "INFO", "googlesb module not activated")
             return None
 
+
     def lookup_API(self):
         mod.display(self.module_name, "", "INFO", "Search in Google Safe Browsing ...")
 
         try:
             if 'googlesb_api_keys' in self.config:
                 api_key = choice(self.config['googlesb_api_keys'])
+            # TODO
+            # Dead code ?
             else:
                 mod.display(self.module_name,
                             message_type="ERROR",
@@ -119,9 +122,9 @@ class googlesb:
                             "FOUND",
                             "ThreatType: %s | PlatformType: %s" % (list_type, list_platform))
             else:
-                    mod.display(self.module_name,
-                                self.ioc,
-                                "INFO",
-                                "Nothing found in Google Safe Browsing")
+                mod.display(self.module_name,
+                            self.ioc,
+                            "INFO",
+                            "Nothing found in Google Safe Browsing")
         except:
             pass

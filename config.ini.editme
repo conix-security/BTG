@@ -125,4 +125,10 @@ irish_enabled = True
 
 [GoogleSB]
 googlesb_enabled = False
+# googlesb_api_keys = [('key1', ..., 'keyN')]
 googlesb_api_keys = []
+
+[MetaDefender]
+metadefender_enabled = False
+#metadefender_api_keys = [('key1', ..., 'keyN')]
+metadefender_api_keys = []
