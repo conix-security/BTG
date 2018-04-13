@@ -30,9 +30,9 @@ class googlesb:
     def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        # supported type : hash and digest SHA256, url
-        self.types = ["URL, SHA256"]
-        # googleSB run on a local database with a 30min refresh by default
+        # supported type : hash and digest SHA256, URL
+        self.types = ["URL", "SHA256", "IPv4", "IPv6" ]
+        # googleSB can run on a local database with a 30min refresh by default
         self.search_method = "Online"
         self.description = "Search IOC in GoogleSafeBrowsing database"
         self.author = "Conix"
@@ -63,16 +63,22 @@ class googlesb:
         server = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+api_key
 
         # TODO
-        # The 4 following lines are their to fill json body request
-        if str(self.type) == "SHA256":
+        # The following switch case is there to fill json body request
+        if self.type == "SHA256":
             threatType = "EXECUTABLE"
+            threatTypeEntry = "hash"
+        # This condition shouldn't be right, can't find IP addresses in API docs, should result in a 400 status_code
+        elif self.type in ["IPv4", "IPv6"]:
+            threatType = "IP_RANGE"
+            threatTypeEntry = "ip"
         else :
-            threatType = str(self.type)
+            threatType = self.type
+
 
         payload = {"threatInfo":
                     {
                     "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
-                    "platformTypes": ["ANY_PLATFORM"],
+                    "platformTypes": ["ANY_PLATFORM", "ALL_PLATFORMS", "WINDOWS", "LINUX", "OSX", "ANDROID", "IOS"],
                     "threatEntryTypes": [threatType],
                     "threatEntries": [{threatType.lower(): str(self.ioc)}]
                     }
@@ -86,6 +92,7 @@ class googlesb:
             try :
                 json_response = json.loads(response.text)
             except :
+                # TODO
                 # copied from virustotal module, why should we put the worker in sleep mode ?
                 mod.display(self.module_name,
                             self.ioc,
@@ -101,10 +108,20 @@ class googlesb:
 
         try:
             if 'matches' in json_response:
+                list_platform = set([])
+                list_type = set([])
                 for m in json_response['matches'] :
+                    list_type.add(m['threatType'])
+                    list_platform.add(m['platformType'])
+
+                mod.display(self.module_name,
+                            self.ioc,
+                            "FOUND",
+                            "ThreatType: %s | PlatformType: %s" % (list_type, list_platform))
+            else:
                     mod.display(self.module_name,
                                 self.ioc,
-                                "FOUND",
-                                "ThreatEntryType: %s | ThreatType: %s | PlatformType: %s" % (m['threatEntryType'], m['threatType'], m['platformType']))
+                                "INFO",
+                                "Nothing found in Google Safe Browsing")
         except:
             pass
