@@ -42,26 +42,36 @@ class Misp_Crawler:
         self.type = type
         self.ioc = ioc
         if type in self.types and mod.allowedToSearch(self.search_method):
-            self.Search()
+            if self.config["misp_crawler_url"] == None \
+                or self.config["misp_crawler_login"] == None \
+                or self.config["misp_crawler_password"] == None :
+                mod.display(self.module_name, "", "ERROR", "Checkout MISP_crawler parameters, something is wrong.")
+            else :
+                self.Search()
         else:
             mod.display(self.module_name, "", "INFO", "MISP_crawler module not activated")
 
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in misp crawler...")
         with requests.Session() as s:
-            self.loginRequest(s)
-            allEvents = self.searchAttribute(s)
-            for event in allEvents:
-                if "misp_crawler_url" in self.config:
-                    mod.display(self.module_name,
-                                self.ioc,
-                                "FOUND",
-                                "Event: %s/events/view/%s"%(self.config["misp_crawler_url"],
-                                                            event))
-                else:
-                    mod.display(self.module_name,
-                                message_type="ERROR",
-                                string="Check if you have misp_crawler_url in config.ini")
+            try:
+                self.loginRequest(s)
+                allEvents = self.searchAttribute(s)
+                for event in allEvents:
+                    if "misp_crawler_url" in self.config:
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "Event: %s/events/view/%s"%(self.config["misp_crawler_url"],
+                                                                event))
+                    else:
+                        mod.display(self.module_name,
+                                    message_type="ERROR",
+                                    string="Check if you have misp_crawler_url in config.ini")
+            except:
+                mod.display(self.module_name,
+                            message_type="ERROR",
+                            string="Checkout MISP_crawler parameters, something is wrong, could not perform the request.")
 
     def searchAttribute(self, s):
         if ("misp_crawler_url" in self.config and
