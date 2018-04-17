@@ -1,5 +1,5 @@
 # ignore .gitignore for pull request later
-/.gitignore
+.gitignore
 
 # ignore logfile
 /log.txt
