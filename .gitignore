@@ -1,0 +1,19 @@
+# ignore .gitignore for pull request later
+/./gitignore
+
+# ignore logfile
+/log.txt
+/search.txt
+
+# ignore temp folder
+src/
+dumps/
+
+# ignore python cache
+__pycache__/
+
+# ignore config.ini
+/config.ini
+
+# ignore API keys file
+/API_keys

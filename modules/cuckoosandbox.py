@@ -53,38 +53,42 @@ class Cuckoosandbox:
         self.ioc = ioc
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
+
         else:
             mod.display(self.module_name, "", "INFO", "Cuckoosandbox module not activated")
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
-        if ("cuckoosandbox_api_url" in self.config and
-                "user_agent" in self.config and
-                "proxy_host" in self.config and
-                "requests_timeout" in self.config):
-            if self.type in ["MD5"]:
-                url = "%s/files/view/md5/%s" % (self.config["cuckoosandbox_api_url"], self.ioc)
-            elif self.type in ["SHA256"]:
-                url = "%s/files/view/sha256/%s" % (self.config["cuckoosandbox_api_url"], self.ioc)
-            page = get(
-                url,
-                headers=self.config["user_agent"],
-                proxies=self.config["proxy_host"],
-                timeout=self.config["requests_timeout"]
-            ).text
-            if "Error: 404 Not Found" not in page and "File not found" not in page:
-                id_analysis = json.loads(page)["sample"]["id"]
-                if "cuckoosandbox_web_url" in self.config:
-                    mod.display("%s_remote" % self.module_name,
-                                self.ioc,
-                                "FOUND",
-                                "%s/view/%s" % (self.config["cuckoosandbox_web_url"], id_analysis))
-                else:
-                    mod.display(self.module_name,
-                                message_type="ERROR",
-                                string="Check if you have cuckoosandbox_web_url in config.ini")
-        else:
-            mod.display(self.module_name,
-                        message_type="ERROR",
-                        string=("Check if you have cuckoosandbox_api_url,user_agent,proxy_host and"
-                                "requests_timeout field in config.ini"))
+        try:
+            if ("cuckoosandbox_api_url" in self.config and
+                    "user_agent" in self.config and
+                    "proxy_host" in self.config and
+                    "requests_timeout" in self.config):
+                if self.type in ["MD5"]:
+                    url = "%s/files/view/md5/%s" % (self.config["cuckoosandbox_api_url"], self.ioc)
+                elif self.type in ["SHA256"]:
+                    url = "%s/files/view/sha256/%s" % (self.config["cuckoosandbox_api_url"], self.ioc)
+                page = get(
+                    url,
+                    headers=self.config["user_agent"],
+                    proxies=self.config["proxy_host"],
+                    timeout=self.config["requests_timeout"]
+                ).text
+                if "Error: 404 Not Found" not in page and "File not found" not in page:
+                    id_analysis = json.loads(page)["sample"]["id"]
+                    if "cuckoosandbox_web_url" in self.config:
+                        mod.display("%s_remote" % self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "%s/view/%s" % (self.config["cuckoosandbox_web_url"], id_analysis))
+                    else:
+                        mod.display(self.module_name,
+                                    message_type="ERROR",
+                                    string="Check if you have cuckoosandbox_web_url in config.ini")
+            else:
+                mod.display(self.module_name,
+                            message_type="ERROR",
+                            string=("Check if you have cuckoosandbox_api_url,user_agent,proxy_host and"
+                                    "requests_timeout field in config.ini"))
+        except:
+            mod.display(self.module_name, "", "ERROR", "Could not perform the request, checkout config.ini at [%s]" % (self.module_name))

@@ -4,6 +4,7 @@
 # Copyright (c) 2017 Lancelot Bogard
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
+# Copyright (c) 2018 Robin Marsollier
 #
 # This file is part of BTG.
 #
@@ -42,12 +43,7 @@ class Misp_Crawler:
         self.type = type
         self.ioc = ioc
         if type in self.types and mod.allowedToSearch(self.search_method):
-            if self.config["misp_crawler_url"] == None \
-                or self.config["misp_crawler_login"] == None \
-                or self.config["misp_crawler_password"] == None :
-                mod.display(self.module_name, "", "ERROR", "Checkout MISP_crawler parameters, something is wrong.")
-            else :
-                self.Search()
+            self.Search()
         else:
             mod.display(self.module_name, "", "INFO", "MISP_crawler module not activated")
 
@@ -71,7 +67,7 @@ class Misp_Crawler:
             except:
                 mod.display(self.module_name,
                             message_type="ERROR",
-                            string="Checkout MISP_crawler parameters, something is wrong, could not perform the request.")
+                            string="Could not perform the request, checkout config.ini at [%s]" % (self.module_name))
 
     def searchAttribute(self, s):
         if ("misp_crawler_url" in self.config and
