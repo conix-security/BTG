@@ -35,8 +35,6 @@ class metadefender:
         self.description = "Search IOC in MetaDefender"
         self.author = "Conix"
         self.creation_date = "13-04-2018"
-        # Headers must have API key
-        self.headers = {'apikey' : choice(self.config['metadefender_api_keys'])}
         self.type = type
         self.ioc = ioc
 
@@ -49,18 +47,20 @@ class metadefender:
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in MetaDefender ...")
 
+        headers = {'apikey' : ''}
         try:
             if 'metadefender_api_keys' in self.config:
                 api_key = choice(self.config['metadefender_api_keys'])
-            # TODO
-            # Dead code ?
+                headers['apikey'] = api_key
             else:
                 mod.display(self.module_name,
                             self.ioc,
                             message_type="ERROR",
                             string="Check if you have metadefender_api_keys field in config.ini")
+                return None
         except:
             mod.display(self.module_name, self.ioc, "ERROR", "Please provide your MetaDefender key")
+            return None
 
         # URL building
         url="https://api.metadefender.com/"
@@ -72,7 +72,7 @@ class metadefender:
             url = url + "v1/scan/" + self.ioc
             branch = 2
 
-        response = requests.get(url, headers=self.headers)
+        response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
             try:

@@ -48,6 +48,7 @@ misp_crawler_verifycert = True
 
 [Virustotal]
 virustotal_enabled = False
+# virustotal_API_keys = [(key1, ..., keyN)]
 virustotal_API_keys = []
 
 [Tor]
@@ -130,5 +131,5 @@ googlesb_api_keys = []
 
 [MetaDefender]
 metadefender_enabled = False
-#metadefender_api_keys = [('key1', ..., 'keyN')]
+# metadefender_api_keys = [('key1', ..., 'keyN')]
 metadefender_api_keys = []
