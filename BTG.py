@@ -101,9 +101,6 @@ class BTG:
             Main observable module requests
         """
         type = self.checkType(argument)
-
-        print(argument, type)
-
         mod.display(ioc=argument, string="Observable type: %s"%type)
         if type is None:
             sys.exit()
