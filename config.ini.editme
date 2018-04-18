@@ -48,6 +48,7 @@ misp_crawler_verifycert = True
 
 [Virustotal]
 virustotal_enabled = False
+# virustotal_API_keys = [(key1, ..., keyN)]
 virustotal_API_keys = []
 
 [Tor]
@@ -117,10 +118,18 @@ virusshare_password = None
 
 [Vxstream]
 vxstream_enabled = False
-# user_agent must not be changed
-vxstream_user_agent = {'User-agent': 'VxApi Connector'}
 # vxstream_api_keys_secret = [(api_keys, secret)]
 vxstream_api_keys_secret = []
 
 [IRISH]
 irish_enabled = True
+
+[GoogleSB]
+googlesb_enabled = False
+# googlesb_api_keys = [('key1', ..., 'keyN')]
+googlesb_api_keys = []
+
+[MetaDefender]
+metadefender_enabled = False
+# metadefender_api_keys = [('key1', ..., 'keyN')]
+metadefender_api_keys = []

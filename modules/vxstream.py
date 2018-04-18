@@ -31,7 +31,9 @@ class Vxstream:
         self.module_name = __name__.split(".")[1]
         self.types = ["MD5", "SHA1", "SHA256", "domain", "IPv4", "IPv6"]
         self.search_method = "Online"
-        self.description = "Search IOC in Hybride Analyses"
+        # Specifing user_agent to avoid the 403
+        self.user_agent = {'User-agent': 'VxApi Connector'}
+        self.description = "Search IOC in Hybrid Analysis"
         self.author = "Hicham Megherbi"
         self.creation_date = "20-10-2017"
         self.type = type
@@ -60,7 +62,10 @@ class Vxstream:
                             message_type="ERROR",
                             string="Check if you have vxstream_api_keys_secret field in config.ini")
 
-        respond = requests.get(server + self.ioc, headers=self.config['vxstream_user_agent'], verify=True, auth=HTTPBasicAuth(api_key_secret[0], api_key_secret[1]))
+        # User-agent is not config related anymore (always the same one, no need to let user edit it)
+        # respond = requests.get(server + self.ioc, headers=self.config['vxstream_user_agent'], verify=True, auth=HTTPBasicAuth(api_key_secret[0], api_key_secret[1]))
+        respond = requests.get(server + self.ioc, headers=self.user_agent, verify=True, auth=HTTPBasicAuth(api_key_secret[0], api_key_secret[1]))
+
         if respond.status_code == 200:
             respond_json = respond.json()
             if respond_json["response_code"] == 0:
