@@ -31,7 +31,7 @@ class googlesb:
         self.config = config
         self.module_name = __name__.split(".")[1]
         # supported type : hash and digest SHA256, URL
-        self.types = ["URL", "SHA256", "IPv4", "IPv6" ]
+        self.types = ["URL"]
         # googleSB can run on a local database with a 30min refresh by default
         self.search_method = "Online"
         self.description = "Search IOC in GoogleSafeBrowsing database"
@@ -66,11 +66,11 @@ class googlesb:
         server = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+api_key
 
         # TODO
-        # The following switch case is there to fill json body request
+        # Does not work 400 status_code
         if self.type == "SHA256":
             threatType = "EXECUTABLE"
             threatTypeEntry = "hash"
-        # This condition shouldn't be right, can't find IP addresses in API docs, should result in a 400 status_code
+        # Does not work 400 status_code
         elif self.type in ["IPv4", "IPv6"]:
             threatType = "IP_RANGE"
             threatTypeEntry = "ip"

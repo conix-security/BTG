@@ -33,7 +33,7 @@ class Vxstream:
         self.search_method = "Online"
         # Specifing user_agent to avoid the 403
         self.user_agent = {'User-agent': 'VxApi Connector'}
-        self.description = "Search IOC in Hybride Analyses"
+        self.description = "Search IOC in Hybrid Analysis"
         self.author = "Hicham Megherbi"
         self.creation_date = "20-10-2017"
         self.type = type
