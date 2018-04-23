@@ -104,10 +104,12 @@ class Cache:
                 if to_chmod:
                     chmod(self.temp_file, 0o777)
                 remove("%s.lock"%self.temp_file)
-        else:
+        elif not r.status_code == 404:
+            # We are not in the case where it did not find anything
+            complete_url = self.url+self.filename
             mod.display("%s.cache"%self.module_name,
                         message_type="ERROR",
-                        string="Response code: %s | %s%s"%(r.status_code, self.url, self.filename))
+                        string="Response code: %s | %s"%(r.status_code, complete_url))
 
     def checkIfUpdate(self):
         """
