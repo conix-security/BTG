@@ -104,12 +104,14 @@ class Cache:
                 if to_chmod:
                     chmod(self.temp_file, 0o777)
                 remove("%s.lock"%self.temp_file)
-        elif not r.status_code == 404:
-            # We are not in the case where it did not find anything
-            complete_url = self.url+self.filename
+        elif self.module_name == "malshare" and r.status.code == 404:
+            # TODO
+            # Apparently this module is annoying
+            raise malshare404('Hash not found on malshare, it is alright')
+        else:
             mod.display("%s.cache"%self.module_name,
                         message_type="ERROR",
-                        string="Response code: %s | %s"%(r.status_code, complete_url))
+                        string="Response code: %s | %s"%(r.status_code, full_url))
 
     def checkIfUpdate(self):
         """
