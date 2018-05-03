@@ -2,6 +2,7 @@
 # Copyright (c) 2016-2017 Conix Cybersecurity
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
@@ -65,15 +66,21 @@ class module:
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
                 print(output)
-            if message_type == "ERROR":
+            if message_type == "ERROR" or message_type == "WARNING":
                 if not exists(config["log_error_file"]):
                     open(config["log_error_file"], 'a').close()
                     chmod(config["log_error_file"], 0o777)
                 f = open(config["log_error_file"], 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
-                # TODO
-                # Level system for logging print
+            if message_type == "FATAL_ERROR":
+                if not exists(config["log_error_file"]):
+                    open(config["log_error_file"], 'a').close()
+                    chmod(config["log_error_file"], 0o777)
+                f = open(config["log_error_file"], 'a')
+                f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
+                f.close()
+                print(output)
 
     @classmethod
     def allowedToSearch(self, status):
@@ -134,7 +141,6 @@ class logSearch:
             f.close()
 
 
-
 class colors:
     config = Config.get_instance()
     if system() == "Windows" or config["terminal_color"] is False:
@@ -143,13 +149,15 @@ class colors:
         FOUND = ''
         WARNING = ''
         ERROR = ''
+        FATAL_ERROR = ''
         NORMAL = ''
         BOLD = ''
     else:
-        DEBUG = '\033[95m'
-        INFO = '\033[94m'
-        FOUND = '\033[92m'
-        WARNING = '\033[93m'
-        ERROR = '\033[91m'
+        DEBUG = '\033[38;5;13m'
+        INFO = '\033[38;5;117m'
+        FOUND = '\033[38;5;10m'
+        WARNING = '\033[38;5;11m'
+        ERROR = '\033[38;5;202m'
+        FATAL_ERROR = '\033[38;5;9m'
         NORMAL = '\033[0m'
         BOLD = '\033[1m'

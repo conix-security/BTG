@@ -96,42 +96,6 @@ class googlesb():
         future = asyncio.ensure_future(run(self, server, json_payload))
         loop.run_until_complete(future)
 
-        # if response.status_code == 200:
-        #     try :
-        #         json_response = json.loads(response.text)
-        #     except :
-        #         # TODO
-        #         # copied from virustotal module, why should we put the worker in sleep mode ?
-        #         mod.display(self.module_name,
-        #                     self.ioc,
-        #                     message_type="WARNING",
-        #                     string="GoogleSafeBrowsing json_response was not readable. (Sleep 10sec).")
-        #         return None
-        # else:
-        #     mod.display(self.module_name,
-        #                 message_type="ERROR",
-        #                 string="GoogleSafeBrowsing API connection status %d" % response.status_code)
-        #     return None
-        #
-        # try:
-        #     if 'matches' in json_response:
-        #         list_platform = set([])
-        #         list_type = set([])
-        #         for m in json_response['matches'] :
-        #             list_type.add(m['threatType'])
-        #             list_platform.add(m['platformType'])
-        #
-        #         mod.display(self.module_name,
-        #                     self.ioc,
-        #                     "FOUND",
-        #                     "ThreatType: %s | PlatformType: %s" % (list_type, list_platform))
-        #     else:2 /bin/sh
-        #         mod.display(self.module_name,
-        #                     self.ioc,
-        #                     "INFO",
-        #                     "Nothing found in Google Safe Browsing")
-        # except:
-        #     return None
 
 async def fetch(self, url, data, session):
     async with session.post(url, data=data) as response:

@@ -20,7 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import requests
-
+import json
 from lib.io import module as mod
 
 
@@ -28,7 +28,7 @@ class Viper:
     def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        self.types = ["MD5", "SHA256", "URL", "domain", "IPv4"]
+        self.types = ["MD5", "SHA1", "SHA256", "URL", "domain", "IPv4"]
         self.search_method = "Onpremises"
         self.description = "Search IOC in Viper Database"
         self.author = "Hicham Megherbi"
@@ -45,81 +45,87 @@ class Viper:
         """
         Viper API Connection
         """
-        server = "%s/file/find"%self.config["viper_server"]
-        if self.type == "MD5":
-            ioc = "md5=%s" % self.ioc
-        if self.type == "SHA256":
-            ioc = "sha256=%s" % self.ioc
+        if self.type in ["MD5", "SHA1", "SHA256"]:
+            url = "%s/api/v3/project/default/malware/?search=%s" %(self.config["viper_server"], self.ioc)
         if self.type in ["domain", "URL", "IPv4"]:
-            ioc = "note=%s" % self.ioc
-        respond = requests.post(server, 
-                                headers=self.config["user_agent"],
+            url = "%s/api/v3/project/default/note/?search=%s"%(self.config["viper_server"], self.ioc)
+        headers = {'Authorization': 'Token %s'%self.config["viper_api_key"]}
+        response = requests.get(url,
+                                headers=headers,
                                 proxies=self.config["proxy_host"],
-                                timeout=self.config["requests_timeout"],
-                                data=ioc)
-        if respond.status_code == 200:
-            respond_json = respond.json()
-            if respond_json["results"]:
-                if "default" in  respond_json["results"]:
-                    return respond_json["results"]["default"]
-                else:
-                    return None
+                                timeout=self.config["requests_timeout"])
+        if response.status_code == 200:
+            response_json = response.json()
+            if response_json["count"] != 0:
+                return response_json
             else:
                 return None
         else:
             mod.display(self.module_name,
                         message_type="ERROR",
-                        string="Viper API connection status %d" % respond.status_code)
+                        string="Viper API connection status %d" % response.status_code)
             return None
+
+    def checkToken(self):
+        headers = {'Authorization': 'Token %s'%self.config["viper_api_key"]}
+        response = requests.get("%s/api/v3/test-auth/"%(self.config["viper_server"]), headers=headers)
+        content = json.loads(response.text)
+        try:
+            if "Authentication validated successfully" in content["message"]:
+                return True
+        except KeyError:
+            return False
+
 
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in Viper ...")
 
         try:
-            if "viper_server" in self.config:
+            if "viper_server" in self.config and "viper_api_key" in self.config:
+                if not self.checkToken():
+                    mod.display(self.module_name, self.ioc, "ERROR", "Bad API key")
+                    return
                 if self.type in self.types:
                     result_json = self.viper_api()
             else:
                 mod.display(self.module_name,
                             message_type=":",
-                            string="Please check if you have viper field in config.ini")
+                            string="Please check if you have viper fields in config.ini")
 
         except Exception as e:
             mod.display(self.module_name, self.ioc, "ERROR", e)
             return
 
-        try:
-            if result_json:
-                if self.type in ["MD5", "SHA256"]: 
-                    result_json = result_json[0]                   
-                    if "tags" in result_json and result_json["tags"]:
-                        tags = "Tags: %s |" % ",".join(result_json["tags"])
-                    else:
-                        tags = ""
+        if result_json:
+            if self.type in ["MD5", "SHA1", "SHA256"]:
+                result_json = result_json["results"][0]
+                id = " ID: %d |"%result_json["data"]["id"]
+                name  = " Filename: %s"%result_json["data"]["name"]
+                tag_final = ""
+                try:
+                    for tag in result_json["data"]["tag_set"]:
+                        if len(tag_final) == 0:
+                            tag_final = tag["data"]["tag"]
+                        else:
+                            tag_final = "%s, %s"%(tag_final, tag["data"]["tag"])
+                except:
+                    pass
+                if len(tag_final) != 0:
+                    tags = "Tags: %s |"%tag_final
+                else:
+                    tags = ""
+                mod.display(self.module_name,
+                            self.ioc,
+                            "FOUND",
+                            "%s%s%s" % (tags, id, name))
 
-                    if "id" in result_json:
-                        id = " ID: %d |" % result_json["id"]
-                    else:
-                        id = ""
-
-                    if "name" in result_json:
-                        name = " Filename: %s" % result_json["name"]
-                    else:
-                        name = ""
-
-                    mod.display(self.module_name,
+            elif self.type in ["URL", "domain", "IPv4"]:
+                for element in result_json["results"]:
+                    for malware in element["data"]["malware_set"]:
+                        mod.display(self.module_name,
                                 self.ioc,
                                 "FOUND",
-                                "%s%s%s" % (tags, id, name))
-
-                elif self.type in ["URL", "domain", "IPv4"]:
-                    for element in result_json:
-                        mod.display(self.module_name,
-                                    self.ioc,
-                                    "FOUND",
-                                    "ID: %s | Filename: %s | md5: %s" % (
-                                        element["id"],
-                                        element["name"],
-                                        element["md5"]))
-        except:
-            pass
+                                "ID: %s | Filename: %s | SHA1: %s" % (
+                                    malware["data"]["id"],
+                                    malware["data"]["name"],
+                                    malware["data"]["sha1"]))

@@ -28,7 +28,7 @@ from time import mktime
 import requests
 from requests.exceptions import ConnectionError, ReadTimeout
 
-from config_parser import Config
+from config.config_parser import Config
 from lib.io import module as mod
 
 

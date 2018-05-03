@@ -111,20 +111,18 @@ class BTG():
                             p.start()
                     except:
                         mod.display("MAIN",
-                                    message_type="ERROR",
+                                    message_type="FATAL_ERROR",
                                     string="Something went wrong with the argument file : %s" % f1)
                     finally:
                         f1.close()
-                        print("All jobs are queued, everything went fine")
 
-
+    # TODO
     async def resolver_DNS(domain):
         loop = asyncio.get_event_loop()
         # temp = resolver_DNS(domain)
         # IP = loop.run_until_complete(temp)
         resolver = aio.DNSResolver(loop=loop)
         return await resolver.query(domain, 'A')
-
 
     def extend_IOC(self, argument, observable_list):
         """
@@ -143,7 +141,6 @@ class BTG():
         if not IP and IP not in observable_list:
             observable_list.append(IP)
 
-
     def run(self, argument, type, modules, q, tasks):
         """
             Main observable module requests
@@ -159,9 +156,8 @@ class BTG():
                     tasks.append(task)
                 except :
                     mod.display("MAIN",
-                                message_type="ERROR",
-                                string="Could not connect enqueue the job : %s, %s, %s " % (module, argument, type))
-
+                                message_type="FATAL_ERROR",
+                                string="Could not enqueue the job : %s, %s, %s " % (module, argument, type))
 
     def checkType(self, argument):
         """
@@ -252,7 +248,7 @@ if __name__ == '__main__':
         config["temporary_cache_path"] = path.join(dir_path, config["temporary_cache_path"])
     else:
         mod.display("MAIN",
-                    message_type="ERROR",
+                    message_type="FATAL_ERROR",
                     string="Please check if you have modules_folder and temporary_cache_path \
                             field in config.ini")
     if config["display_motd"] and not args.silent:
@@ -270,38 +266,49 @@ if __name__ == '__main__':
 
         # Connecting to Redis
         redis_host, redis_port, redis_password = init_redis()
-        if redis_host==None or redis_port==None:
-            mod.display("MAIN",
-                        message_type="ERROR",
-                        string="Could not establish connection with Redis, check if you have redis_host, redis_port \
-                                and maybe redis_password in /config/config.ini")
-            sys.exit()
-        with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
+
+        try :
+            with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
                 start_time = time.strftime('%X')
                 queue_name = init_queue()
                 queue_going = Queue(queue_name,connection=conn)
-                BTG(args)
+        except :
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Could not establish connection with Redis, check if you have redis_host, redis_port \
+                                and maybe redis_password in /config/config.ini")
+            sys.exit()
 
-                # waiting for all jobs to be done
-                while len(queue_going.jobs)>0 :
-                    # print("BTG is processing ... %s -> %s" % (start_time,time.strftime('%X')), end='\r')
-                    time.sleep(1)
-                end_time = time.strftime('%X')
+        BTG(args)
+        # waiting for all jobs to be done
+        while len(queue_going.jobs)>0 :
+            # print("BTG is processing ... %s -> %s" % (start_time,time.strftime('%X')), end='\r')
+            time.sleep(1)
+        end_time = time.strftime('%X')
 
-                # killing all subprocesses and their children
-                time.sleep(3)
-                for process in processes:
-                    # killing all processes in the group
-                    pgrp = getpgid(process.pid)
-                    killpg(pgrp, signal.SIGINT)
+        # killing all subprocesses and their children
+        time.sleep(3)
+        for process in processes:
+            # killing all processes in the group
+            pgrp = getpgid(process.pid)
+            killpg(pgrp, signal.SIGINT)
 
-                queue_going.delete(delete_jobs=True)
-                print("\n All works done :", start_time, end_time)
-
+        queue_going.delete(delete_jobs=True)
+        print("\n All works done :", start_time, end_time)
 
     except (KeyboardInterrupt, SystemExit):
         '''
         Exit if user press CTRL+C
         '''
+        time.sleep(2)
+        print("\n ")
+        print('\033[38;5;9m' + '\033[1m' + "A FATAL_ERROR occured or you pressed CTRL+C")
+        print("Closing the worker, and clearing pending jobs ...")
         print("\n")
+        queue_going.delete(delete_jobs=True)
+        for process in processes:
+            # killing all processes in the group
+            pgrp = getpgid(process.pid)
+            killpg(pgrp, signal.SIGINT)
+        time.sleep(2)
         sys.exit()
