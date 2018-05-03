@@ -3,5 +3,6 @@ pymisp
 dnspython
 requests-cache
 netaddr
+socket
 -e git+https://github.com/devhub/domaintools.git#egg=domaintools
 otxv2

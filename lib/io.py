@@ -18,14 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import sys, os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 from datetime import datetime
 from os import chmod
 from os.path import exists
 from platform import system
 
-from config_parser import Config
-
+from config.config_parser import Config
 
 class module:
     """
@@ -55,7 +56,7 @@ class module:
                                              colors.BOLD,
                                              string,
                                              colors.NORMAL)
-            
+
             if message_type == "FOUND":
                 if not exists(config["log_found_file"]):
                     open(config["log_found_file"], 'a').close()
@@ -63,7 +64,16 @@ class module:
                 f = open(config["log_found_file"], 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
-            print(output)
+                print(output)
+            if message_type == "ERROR":
+                if not exists(config["log_error_file"]):
+                    open(config["log_error_file"], 'a').close()
+                    chmod(config["log_error_file"], 0o777)
+                f = open(config["log_error_file"], 'a')
+                f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
+                f.close()
+                # TODO
+                # Level system for logging print
 
     @classmethod
     def allowedToSearch(self, status):

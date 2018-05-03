@@ -30,7 +30,7 @@ class metadefender:
     def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        self.types = ["MD5", "SHA1", "SHA256", "SHA512", "IPv4", "IPv6" ]
+        self.types = ["MD5", "SHA1", "SHA256", "SHA512", "IPv4", "IPv6"]
         self.search_method = "Online"
         self.description = "Search IOC in MetaDefender"
         self.author = "Conix"

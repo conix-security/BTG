@@ -83,13 +83,11 @@ class Virustotal:
                     json_content = json.loads(response_content)
                     break
                 except :
-                    mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
-                    sleep(randint(5, 10))
+                    mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key?")
+                    return None
             else :
-                # response never seen before, if we enter this program point -> ERROR
-                # mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(response.getcode()))
                 mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(req.status_code))
-                return
+                return None
         try:
             if json_content["positives"]:
                 mod.display(self.module_name,
@@ -117,12 +115,8 @@ class Virustotal:
                 json_content = json.loads(req.text)
                 break
             except:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "WARNING",
-                            "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
-                sleep(randint(5, 10))
-                pass
+                mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key?")
+                return None
         try:
             if json_content["positives"]:
                 mod.display(self.module_name,

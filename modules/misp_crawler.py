@@ -4,7 +4,7 @@
 # Copyright (c) 2017 Lancelot Bogard
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
-# Copyright (c) 2018 Robin Marsollier
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #

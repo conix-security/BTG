@@ -22,8 +22,13 @@ import requests
 import json
 from lib.io import module as mod
 from random import choice, randint
+import time
 
-class googlesb:
+import asyncio
+from aiohttp import ClientSession
+
+
+class googlesb():
     """
         This module performs a Safe Browsing Lookup to Google API
     """
@@ -31,7 +36,7 @@ class googlesb:
         self.config = config
         self.module_name = __name__.split(".")[1]
         # supported type : hash and digest SHA256, URL
-        self.types = ["URL"]
+        self.types = ["URL", "domain"]
         # googleSB can run on a local database with a 30min refresh by default
         self.search_method = "Online"
         self.description = "Search IOC in GoogleSafeBrowsing database"
@@ -45,7 +50,6 @@ class googlesb:
         else:
             mod.display(self.module_name, "", "INFO", "googlesb module not activated")
             return None
-
 
     def lookup_API(self):
         mod.display(self.module_name, "", "INFO", "Search in Google Safe Browsing ...")
@@ -75,8 +79,7 @@ class googlesb:
             threatType = "IP_RANGE"
             threatTypeEntry = "ip"
         else :
-            threatType = self.type
-
+            threatType = "URL"
 
         payload = {"threatInfo":
                     {
@@ -88,43 +91,83 @@ class googlesb:
                   }
 
         json_payload = json.dumps(payload)
+        # response = requests.post(server, data=json_payload)
+        loop = asyncio.get_event_loop()
+        future = asyncio.ensure_future(run(self, server, json_payload))
+        loop.run_until_complete(future)
 
-        response = requests.post(server, data=json_payload)
+        # if response.status_code == 200:
+        #     try :
+        #         json_response = json.loads(response.text)
+        #     except :
+        #         # TODO
+        #         # copied from virustotal module, why should we put the worker in sleep mode ?
+        #         mod.display(self.module_name,
+        #                     self.ioc,
+        #                     message_type="WARNING",
+        #                     string="GoogleSafeBrowsing json_response was not readable. (Sleep 10sec).")
+        #         return None
+        # else:
+        #     mod.display(self.module_name,
+        #                 message_type="ERROR",
+        #                 string="GoogleSafeBrowsing API connection status %d" % response.status_code)
+        #     return None
+        #
+        # try:
+        #     if 'matches' in json_response:
+        #         list_platform = set([])
+        #         list_type = set([])
+        #         for m in json_response['matches'] :
+        #             list_type.add(m['threatType'])
+        #             list_platform.add(m['platformType'])
+        #
+        #         mod.display(self.module_name,
+        #                     self.ioc,
+        #                     "FOUND",
+        #                     "ThreatType: %s | PlatformType: %s" % (list_type, list_platform))
+        #     else:2 /bin/sh
+        #         mod.display(self.module_name,
+        #                     self.ioc,
+        #                     "INFO",
+        #                     "Nothing found in Google Safe Browsing")
+        # except:
+        #     return None
 
-        if response.status_code == 200:
-            try :
-                json_response = json.loads(response.text)
-            except :
-                # TODO
-                # copied from virustotal module, why should we put the worker in sleep mode ?
-                mod.display(self.module_name,
-                            self.ioc,
-                            message_type="WARNING",
-                            string="GoogleSafeBrowsing json_response was not readable. (Sleep 10sec).")
-                sleep(randint(5, 10))
+async def fetch(self, url, data, session):
+    async with session.post(url, data=data) as response:
+        return await response.text()
+
+async def run(self, url, data):
+    tasks = []
+
+    # Fetch all responses within one Client session,
+    # keep connection alive for all requests.
+    async with ClientSession() as session:
+        task = asyncio.ensure_future(fetch(self, url, data, session))
+        tasks.append(task)
+
+        responses = await asyncio.gather(*tasks)
+
+        for response in responses :
+            temp = json.loads(response)
+            try:
+                if 'matches' in temp:
+                    list_platform = set([])
+                    list_type = set([])
+                    for m in temp['matches'] :
+                        list_type.add(m['threatType'])
+                        list_platform.add(m['platformType'])
+
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "FOUND",
+                                "ThreatType: %s | PlatformType: %s" % (list_type, list_platform))
+                else:
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "INFO",
+                                "Nothing found in Google Safe Browsing")
+            except:
                 return None
-        else:
-            mod.display(self.module_name,
-                        message_type="ERROR",
-                        string="GoogleSafeBrowsing API connection status %d" % response.status_code)
-            return None
 
-        try:
-            if 'matches' in json_response:
-                list_platform = set([])
-                list_type = set([])
-                for m in json_response['matches'] :
-                    list_type.add(m['threatType'])
-                    list_platform.add(m['platformType'])
-
-                mod.display(self.module_name,
-                            self.ioc,
-                            "FOUND",
-                            "ThreatType: %s | PlatformType: %s" % (list_type, list_platform))
-            else:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "INFO",
-                            "Nothing found in Google Safe Browsing")
-        except:
-            pass
+        return responses

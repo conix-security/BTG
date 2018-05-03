@@ -72,7 +72,7 @@ class Otx:
             mod.display(self.module_name,
                         self.ioc,
                         "ERROR",
-                        "Please check if you have filled the otx_api_keys field in config.ini.")
+                        "Could not perform the request, either you did not fill the otx_apièkeys field or the key maximum request is reached")
             return None
         try:
             if self.ioc == str(result["general"]["indicator"]):

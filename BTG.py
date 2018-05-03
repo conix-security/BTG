@@ -4,6 +4,7 @@
 # Copyright (c) 2016-2017 Lancelot Bogard
 # Copyright (c) 2016-2017 Robin Marsollier
 # Copyright (c) 2017 Alexandra Toussaint
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
@@ -23,112 +24,150 @@
 import argparse
 import importlib
 import multiprocessing
-# Import python modules
+
 import sys
 from base64 import b64decode
-from os import listdir, path, remove
-from os.path import isfile, join, exists
-from time import sleep
+from os import listdir, path, remove, kill, killpg, setsid, getpgid
+from os.path import isfile, join, exists, abspath
 
 import validators
-from config_parser import Config
 from lib.io import module as mod
 from lib.io import logSearch
+from lib.run_module import module_worker
 
+from urllib.parse import urlparse
+import socket
+import time
+
+from rq import Connection, Queue
+from redis import Redis
+from config.redis_config import init_redis, init_queue, init_worker, number_of_worker
+
+import subprocess
+import signal
+
+from config.config_parser import Config
 config = Config.get_instance()
 version = "1.b"     # BTG version
 
-
-class BTG:
+class BTG():
     """
         BTG Main class
     """
     def __init__(self, args):
-
         # Import modules
         if config["debug"]:
-            mod.display(string="Load modules from %s"%config["modules_folder"])
+            ret = mod.display(string="Load modules from %s"%config["modules_folder"])
+            print(ret)
         all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
         modules = []
         for file in all_files:
             if file[-3:] == ".py" and file[:-3] != "__init__":
                 modules.append(file[:-3])
+
+        global queue_going
         jobs = []
-        # Start BTG process
-        i = 0
+        tasks = []
+
         if args.file == "False" :
             for argument in args.observables:
-                i += 1
+                # TODO
+                # Extending observables without doing an useless loop
+                type = self.checkType(argument)
+                if "split_observable" in config and config["split_observable"]:
+                    if type == "URL":
+                        self.extend_IOC(argument, args.observables)
+
                 p = multiprocessing.Process(target=self.run,
                                             args=(argument,
-                                                  modules,))
-                if "max_process" in config:
-                    while len(jobs) > config["max_process"]:
-                        for job in jobs:
-                            if not job.is_alive():
-                                jobs.remove(job)
-                            else:
-                                sleep(3)
-                else:
-                    mod.display(message_type="ERROR",
-                                string="Please check if you have max_process field in config.ini")
+                                                  type,
+                                                  modules,
+                                                  queue_going,
+                                                  tasks))
                 jobs.append(p)
                 p.start()
         else :
             for file in args.observables :
-                with open(file,"r") as f2 :
-                    for argument in f2.read().strip().splitlines():
-                        i += 1
-                        p = multiprocessing.Process(target=self.run,
-                                                    args=(argument.strip("\n"),
-                                                          modules,))
-                        if "max_process" in config:
-                            while len(jobs) > config["max_process"]:
-                                for job in jobs:
-                                    if not job.is_alive():
-                                        jobs.remove(job)
-                                    else:
-                                        sleep(3)
-                        else:
-                            mod.display(message_type="ERROR",
-                                        string="Please check if you have max_process field in config.ini")
-                        jobs.append(p)
-                        p.start()
+                # TODO
+                # Take care of big size file ?
+                with open(file,"r") as f1 :
+                    try:
+                        observable_list = f1.read().strip().splitlines()
+                        for argument in observable_list:
+                            # TODO
+                            # Extending observables without doing an useless loop
+                            type = self.checkType(argument)
+                            if "split_observable" in config and config["split_observable"]:
+                                if type == "URL":
+                                    self.extend_IOC(argument, observable_list)
+
+                            p = multiprocessing.Process(target=self.run,
+                                                        args=(argument,
+                                                              type,
+                                                              modules,
+                                                              queue_going,
+                                                              tasks))
+                            jobs.append(p)
+                            p.start()
+                    except:
+                        mod.display("MAIN",
+                                    message_type="ERROR",
+                                    string="Something went wrong with the argument file : %s" % f1)
+                    finally:
+                        f1.close()
+                        print("All jobs are queued, everything went fine")
 
 
-    def run(self, argument, modules):
+    async def resolver_DNS(domain):
+        loop = asyncio.get_event_loop()
+        # temp = resolver_DNS(domain)
+        # IP = loop.run_until_complete(temp)
+        resolver = aio.DNSResolver(loop=loop)
+        return await resolver.query(domain, 'A')
+
+
+    def extend_IOC(self, argument, observable_list):
+        """
+            Extending IOC from URL into URL + DOMAIN + IP
+        """
+        urlstruct = urlparse(argument)
+        url = urlstruct.geturl()
+        domain = urlstruct.netloc
+        try:
+            IP = socket.gethostbyname(domain)
+        except:
+            IP = None
+
+        if domain not in observable_list:
+            observable_list.append(domain)
+        if not IP and IP not in observable_list:
+            observable_list.append(IP)
+
+
+    def run(self, argument, type, modules, q, tasks):
         """
             Main observable module requests
         """
-        type = self.checkType(argument)
         mod.display(ioc=argument, string="Observable type: %s"%type)
         if type is None:
             sys.exit()
-        workers = []
         for module in modules:
-            worker = multiprocessing.Process(target=self.module_worker,
-                                             args=(module, argument, type,))
-            workers.append(worker)
-            worker.start()
+            if module+"_enabled" in config and config[module+"_enabled"]:
+                try :
+                    task = queue_going.enqueue(module_worker,
+                                    args=(module, argument, type),)
+                    tasks.append(task)
+                except :
+                    mod.display("MAIN",
+                                message_type="ERROR",
+                                string="Could not connect enqueue the job : %s, %s, %s " % (module, argument, type))
 
-    def module_worker(self, module, argument, type):
-        """
-            Load modules in python instance
-        """
-        mod.display(string="Load: %s/%s.py"%(config["modules_folder"], module))
-        obj = importlib.import_module("modules."+module)
-        for c in dir(obj):
-            if module+"_enabled" in config:
-                if module == c.lower() and config[module+"_enabled"]:
-                    getattr(obj, c)(argument, type, config)
-            else:
-                mod.display(module, "", "INFO", "Module not configured")
 
     def checkType(self, argument):
         """
             Identify observable type
         """
-        if len(argument.strip()) == 0:
+        if not argument or len(argument.strip()) == 0:
             return None
         elif argument[0] is '#':
             return None
@@ -149,7 +188,10 @@ class BTG:
         elif validators.domain(argument):
             return "domain"
         else:
-            mod.display("MAIN", argument, "ERROR", "Unable to retrieve observable type")
+            mod.display("MAIN",
+                        argument,
+                        "ERROR",
+                        "Unable to retrieve observable type")
             return None
 
 
@@ -183,7 +225,8 @@ def cleanups_lock_cache(real_path):
     for file in listdir(real_path):
         file_path = "%s%s/"%(real_path, file)
         if file.endswith(".lock"):
-            mod.display("MAIN", message_type="DEBUG",
+            mod.display("MAIN",
+                        message_type="DEBUG",
                         string="Delete locked cache file: %s"%file_path[:-1])
             remove(file_path[:-1])
         else:
@@ -208,16 +251,54 @@ if __name__ == '__main__':
         config["modules_folder"] = path.join(dir_path, config["modules_folder"])
         config["temporary_cache_path"] = path.join(dir_path, config["temporary_cache_path"])
     else:
-        mod.display(message_type="ERROR",
-                    string=("Please check if you have modules_folder and temporary_cache_path"
-                            "field in config.ini"))
+        mod.display("MAIN",
+                    message_type="ERROR",
+                    string="Please check if you have modules_folder and temporary_cache_path \
+                            field in config.ini")
     if config["display_motd"] and not args.silent:
         motd()
     try:
         if path.exists(config["temporary_cache_path"]):
             cleanups_lock_cache(config["temporary_cache_path"])
         logSearch(args)
-        BTG(args)
+
+        # subprocess loop to launch rq-worker
+        processes = []
+        max_worker = number_of_worker()
+        for i in range(max_worker):
+            processes.append(subprocess.Popen('python3 ./lib/run_worker.py', shell=True, preexec_fn = setsid))
+
+        # Connecting to Redis
+        redis_host, redis_port, redis_password = init_redis()
+        if redis_host==None or redis_port==None:
+            mod.display("MAIN",
+                        message_type="ERROR",
+                        string="Could not establish connection with Redis, check if you have redis_host, redis_port \
+                                and maybe redis_password in /config/config.ini")
+            sys.exit()
+        with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
+                start_time = time.strftime('%X')
+                queue_name = init_queue()
+                queue_going = Queue(queue_name,connection=conn)
+                BTG(args)
+
+                # waiting for all jobs to be done
+                while len(queue_going.jobs)>0 :
+                    # print("BTG is processing ... %s -> %s" % (start_time,time.strftime('%X')), end='\r')
+                    time.sleep(1)
+                end_time = time.strftime('%X')
+
+                # killing all subprocesses and their children
+                time.sleep(3)
+                for process in processes:
+                    # killing all processes in the group
+                    pgrp = getpgid(process.pid)
+                    killpg(pgrp, signal.SIGINT)
+
+                queue_going.delete(delete_jobs=True)
+                print("\n All works done :", start_time, end_time)
+
+
     except (KeyboardInterrupt, SystemExit):
         '''
         Exit if user press CTRL+C

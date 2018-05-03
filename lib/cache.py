@@ -2,6 +2,7 @@
 # Copyright (c) 2016-2017 Conix Cybersecurity
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
@@ -111,7 +112,7 @@ class Cache:
                     raise No_such_file('Race concurency between multiple instance of BTG, \
                                         cannot remove already deleted file')
         elif self.module_name == "malshare" and r.status.code == 404:
-            # When we have a 404 from malshare it is valid negative response
+            # When we have a 404 from malshare it is a valid negative response
             raise malshare404('Hash not found on malshare, it is alright')
         else:
             mod.display("%s.cache"%self.module_name,
