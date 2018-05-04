@@ -76,16 +76,9 @@ class BTG():
                 type = self.checkType(argument)
                 if "split_observable" in config and config["split_observable"]:
                     if type == "URL":
-                        self.extend_IOC(argument, args.observables)
+                        self.extend_IOC(argument, observable_list)
 
-                p = multiprocessing.Process(target=self.run,
-                                            args=(argument,
-                                                  type,
-                                                  modules,
-                                                  queue_going,
-                                                  tasks))
-                jobs.append(p)
-                p.start()
+                self.run(argument,type,modules,queue_going,tasks)
         else :
             for file in args.observables :
                 # TODO
@@ -93,28 +86,21 @@ class BTG():
                 with open(file,"r") as f1 :
                     try:
                         observable_list = f1.read().strip().splitlines()
-                        for argument in observable_list:
-                            # TODO
-                            # Extending observables without doing an useless loop
-                            type = self.checkType(argument)
-                            if "split_observable" in config and config["split_observable"]:
-                                if type == "URL":
-                                    self.extend_IOC(argument, observable_list)
-
-                            p = multiprocessing.Process(target=self.run,
-                                                        args=(argument,
-                                                              type,
-                                                              modules,
-                                                              queue_going,
-                                                              tasks))
-                            jobs.append(p)
-                            p.start()
                     except:
                         mod.display("MAIN",
                                     message_type="FATAL_ERROR",
-                                    string="Something went wrong with the argument file : %s" % f1)
+                                    string="Something went wrong with the argument file")
                     finally:
                         f1.close()
+                for argument in observable_list:
+                    # TODO
+                    # Extending observables without doing an useless loop
+                    type = self.checkType(argument)
+                    if "split_observable" in config and config["split_observable"]:
+                        if type == "URL":
+                            self.extend_IOC(argument, observable_list)
+
+                    self.run(argument,type,modules,queue_going,tasks)
 
     # TODO
     async def resolver_DNS(domain):
@@ -138,16 +124,18 @@ class BTG():
 
         if domain not in observable_list:
             observable_list.append(domain)
-        if not IP and IP not in observable_list:
+        if not IP==None and IP not in observable_list:
             observable_list.append(IP)
 
     def run(self, argument, type, modules, q, tasks):
         """
             Main observable module requests
         """
-        mod.display(ioc=argument, string="Observable type: %s"%type)
+        # mod.display(ioc=argument, string="Observable type: %s"%type)
         if type is None:
-            sys.exit()
+            mod.display("MAIN",
+                        message_type="WARNING",
+                        string="IOC : %s has an undefined type : %s" % (argument, type))
         for module in modules:
             if module+"_enabled" in config and config[module+"_enabled"]:
                 try :
@@ -282,7 +270,6 @@ if __name__ == '__main__':
         BTG(args)
         # waiting for all jobs to be done
         while len(queue_going.jobs)>0 :
-            # print("BTG is processing ... %s -> %s" % (start_time,time.strftime('%X')), end='\r')
             time.sleep(1)
         end_time = time.strftime('%X')
 

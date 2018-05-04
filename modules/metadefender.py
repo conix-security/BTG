@@ -78,13 +78,10 @@ class metadefender:
             try:
                 json_response = json.loads(response.text)
             except:
-                # TODO
-                # copied from virustotal module, why should we put the worker in sleep mode ?
                 mod.display(self.module_name,
                             self.ioc,
                             message_type="WARNING",
                             string="MetaDefender json_response was not readable. (Sleep 10sec).")
-                sleep(randint(5, 10))
                 return None
         else:
             mod.display(self.module_name,
@@ -100,12 +97,12 @@ class metadefender:
                             self.ioc,
                             "FOUND",
                             "Score : %d/%d | %s" % (json_response["scan_results"]["total_detected_avs"], json_response["scan_results"]["total_avs"], url))
-            elif  branch == 2:
+            elif branch == 2:
                 if json_response["detected_by"] > 0:
                     mod.display(self.module_name,
                                 self.ioc,
                                 "FOUND",
-                                "Score : %d/%d | %s" % (len(json_response["scan_results"]),json_response["detected_by"], url))
+                                "Score : %d/%d | %s" % (json_response["detected_by"], len(json_response["scan_results"]), url))
             else:
                 mod.display(self.module_name,
                             self.ioc,
