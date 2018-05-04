@@ -18,6 +18,7 @@
 
 import sys, os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
+import random
 
 from config.config_parser import Config
 config = Config.get_instance()
@@ -35,7 +36,11 @@ def init_redis():
 
 # Specifying Queue options : [name, timeout, ttl, ...]
 def init_queue():
-    queue_name = 'default'
+    # Producing a large enough random name for the queue, thus we can run multiple instance of BTG
+    random.seed()
+    hash = hex(random.getrandbits(32))
+    queue_name = hash
+    # queue_name = 'default'
     # queue_ttl = None
     # queue_timeout = None
     # queue_result_timeout = None

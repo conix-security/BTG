@@ -246,15 +246,8 @@ if __name__ == '__main__':
             cleanups_lock_cache(config["temporary_cache_path"])
         logSearch(args)
 
-        # subprocess loop to launch rq-worker
-        processes = []
-        max_worker = number_of_worker()
-        for i in range(max_worker):
-            processes.append(subprocess.Popen('python3 ./lib/run_worker.py', shell=True, preexec_fn = setsid))
-
         # Connecting to Redis
         redis_host, redis_port, redis_password = init_redis()
-
         try :
             with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
                 start_time = time.strftime('%X')
@@ -267,7 +260,20 @@ if __name__ == '__main__':
                                 and maybe redis_password in /config/config.ini")
             sys.exit()
 
+        # subprocess loop to launch rq-worker
+        processes = []
+        max_worker = number_of_worker()
+        try :
+            for i in range(max_worker):
+                processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+queue_name], shell=True, preexec_fn = setsid))
+        except :
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Could not launch workers as subprocess")
+            sys.exit()
+
         BTG(args)
+
         # waiting for all jobs to be done
         while len(queue_going.jobs)>0 :
             time.sleep(1)

@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # Connecting to Redis
     redis_host, redis_port, redis_password = init_redis()
     with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
-        queue_name = init_queue()
+        queue_name = sys.argv[1]
         q = Queue(queue_name, connection=conn)
         mod.display("WORKER",
                     message_type="INFO",
