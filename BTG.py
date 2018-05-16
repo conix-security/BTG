@@ -102,14 +102,6 @@ class BTG():
 
                     self.run(argument,type,modules,queue_going,tasks)
 
-    # TODO
-    async def resolver_DNS(domain):
-        loop = asyncio.get_event_loop()
-        # temp = resolver_DNS(domain)
-        # IP = loop.run_until_complete(temp)
-        resolver = aio.DNSResolver(loop=loop)
-        return await resolver.query(domain, 'A')
-
     def extend_IOC(self, argument, observable_list):
         """
             Extending IOC from URL into URL + DOMAIN + IP
