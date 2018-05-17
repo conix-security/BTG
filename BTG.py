@@ -123,7 +123,7 @@ class BTG():
         urlstruct = urlparse(argument)
         url = urlstruct.geturl()
         domain = urlstruct.netloc
-        if "offline" in config:
+        if not "offline" in config:
             try:
                 IP = socket.gethostbyname(domain)
             except:
