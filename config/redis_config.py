@@ -19,6 +19,7 @@
 import sys, os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 import random
+import redis
 
 from config.config_parser import Config
 config = Config.get_instance()
@@ -26,26 +27,29 @@ config = Config.get_instance()
 # Full fill connection parameter for redis, see config/config.ini
 def init_redis():
     redis_host, redis_port, redis_password = None, None, None
-    if 'redis_host' in config and not config['redis_host']==None :
+    if 'redis_host' in config and not config['redis_host'] == None :
         redis_host = config['redis_host']
-    if 'redis_port' in config and not config['redis_port']==None :
+    if 'redis_port' in config and not config['redis_port'] == None :
         redis_port = config['redis_port']
     if 'redis_password' in config:
         redis_password = config['redis_password']
     return redis_host, redis_port, redis_password
 
-# Specifying Queue options : [name, timeout, ttl, ...]
-def init_queue():
+def init_queue(redis_host, redis_port, redis_password):
+
+    r = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password)
+
     # Producing a large enough random name for the queue, thus we can run multiple instance of BTG
     random.seed()
     hash = hex(random.getrandbits(32))
-    queue_name = hash
-    # queue_name = 'default'
-    # queue_ttl = None
-    # queue_timeout = None
-    # queue_result_timeout = None
-    return queue_name
-    # return queue_name, queue_ttl, queue_timeout, queue_result_timeout
+
+    while r.get(hash) is not None:
+        hash = hex(random.getrandbits(32))
+
+    request_queue = hash
+    response_queue = hex(int(hash, base=16) + 1)
+
+    return request_queue, response_queue
 
 # Specifying worker options : [burst, logging_level]
 def init_worker():

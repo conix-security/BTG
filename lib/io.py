@@ -58,26 +58,30 @@ class module:
                                              string,
                                              colors.NORMAL)
 
+            log_folder = config["log_folder"]
             if message_type == "FOUND":
-                if not exists(config["log_found_file"]):
-                    open(config["log_found_file"], 'a').close()
-                    chmod(config["log_found_file"], 0o777)
-                f = open(config["log_found_file"], 'a')
+                log_path = log_folder + config["log_found_file"]
+                if not exists(log_path):
+                    open(log_path, 'a').close()
+                    chmod(log_path, 0o777)
+                f = open(log_path, 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
                 print(output)
             if message_type == "ERROR" or message_type == "WARNING":
-                if not exists(config["log_error_file"]):
-                    open(config["log_error_file"], 'a').close()
-                    chmod(config["log_error_file"], 0o777)
-                f = open(config["log_error_file"], 'a')
+                log_path = log_folder + config["log_error_file"]
+                if not exists(log_path):
+                    open(log_path, 'a').close()
+                    chmod(log_path, 0o777)
+                f = open(log_path, 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
             if message_type == "FATAL_ERROR":
-                if not exists(config["log_error_file"]):
-                    open(config["log_error_file"], 'a').close()
-                    chmod(config["log_error_file"], 0o777)
-                f = open(config["log_error_file"], 'a')
+                log_path = log_folder + config["log_error_file"]
+                if not exists(log_path):
+                    open(log_path, 'a').close()
+                    chmod(log_path, 0o777)
+                f = open(log_path, 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
                 print(output)
@@ -125,10 +129,12 @@ class module:
 class logSearch:
     def __init__(self, args):
         config = Config.get_instance()
-        if not exists(config["log_search_file"]):
-            open(config["log_search_file"], 'a').close()
-            chmod(config["log_search_file"], 0o777)
-        f = open(config["log_search_file"], 'a')
+        log_folder = config["log_folder"]
+        log_path = log_folder + config["log_search_file"]
+        if not exists(log_path):
+            open(log_path, 'a').close()
+            chmod(log_path, 0o777)
+        f = open(log_path, 'a')
         if args.file == "False" :
             for ioc in args.observables :
                 f.write("%s %s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))

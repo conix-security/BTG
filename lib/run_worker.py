@@ -31,9 +31,5 @@ if __name__ == '__main__':
     with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
         queue_name = sys.argv[1]
         q = Queue(queue_name, connection=conn)
-        mod.display("WORKER",
-                    message_type="INFO",
-                    string="max_process either the field or the value of the field is not there")
-
         burst, logging_level = init_worker()
         worker = Worker(q).work(burst=burst, logging_level=logging_level)

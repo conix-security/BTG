@@ -24,11 +24,6 @@ from lib.io import module as mod
 from random import choice, randint
 import time
 
-import asyncio
-import async_timeout
-from aiohttp import ClientSession
-
-
 class googlesb():
     """
         This module performs a Safe Browsing Lookup to Google API
@@ -101,7 +96,7 @@ class googlesb():
                 mod.display(self.module_name,
                             self.ioc,
                             message_type="WARNING",
-                            string="GoogleSafeBrowsing json_response was not readable. (Sleep 10sec).")
+                            string="GoogleSafeBrowsing json_response was not readable.")
                 return None
         else:
             mod.display(self.module_name,

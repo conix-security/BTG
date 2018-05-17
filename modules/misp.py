@@ -63,7 +63,6 @@ class Misp:
                                 message_type="ERROR",
                                 string=("Check if you have misp_url, misp_key and misp_verifycert"
                                         "in config.ini"))
-                    sys.exit()
         except Exception as e:
             mod.display(self.module_name, self.ioc, "ERROR", e)
             return

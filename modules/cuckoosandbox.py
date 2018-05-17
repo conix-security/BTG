@@ -26,12 +26,6 @@ from requests import get
 
 from lib.io import module as mod
 
-if system() != "Windows":
-    import requests_cache
-
-    requests_cache.install_cache('%sBTG' % cfg["sqlite_path"])
-
-
 class Cuckoosandbox:
     """
         This module allow you to search IOC in CuckooSandbox database
@@ -49,6 +43,7 @@ class Cuckoosandbox:
         self.creation_date = "02-03-2017"
         self.type = type
         self.ioc = ioc
+
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
         else:

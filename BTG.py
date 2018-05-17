@@ -23,12 +23,11 @@
 
 import argparse
 import importlib
-import multiprocessing
 
 import sys
 from base64 import b64decode
-from os import listdir, path, remove, kill, killpg, setsid, getpgid
-from os.path import isfile, join, exists, abspath
+from os import listdir, path, remove, kill, killpg, setsid, getpgid, mkdir, chmod
+from os.path import isfile, join, exists, abspath, isdir
 
 import validators
 from lib.io import module as mod
@@ -48,13 +47,15 @@ import signal
 
 from config.config_parser import Config
 config = Config.get_instance()
-version = "1.b"     # BTG version
+version = "1.c"     # BTG version
 
 class BTG():
     """
         BTG Main class
     """
     def __init__(self, args):
+        # mkdir logging log_folder
+        self.createLoggingFolder()
         # Import modules
         if config["debug"]:
             ret = mod.display(string="Load modules from %s"%config["modules_folder"])
@@ -65,7 +66,7 @@ class BTG():
             if file[-3:] == ".py" and file[:-3] != "__init__":
                 modules.append(file[:-3])
 
-        global queue_going
+        global request_going
         jobs = []
         tasks = []
 
@@ -78,7 +79,7 @@ class BTG():
                     if type == "URL":
                         self.extend_IOC(argument, observable_list)
 
-                self.run(argument,type,modules,queue_going,tasks)
+                self.run(argument,type,modules,request_going,tasks)
         else :
             for file in args.observables :
                 # TODO
@@ -100,7 +101,20 @@ class BTG():
                         if type == "URL":
                             self.extend_IOC(argument, observable_list)
 
-                    self.run(argument,type,modules,queue_going,tasks)
+                    self.run(argument,type,modules,request_going,tasks)
+
+
+    def createLoggingFolder(self):
+        if not isdir(config["log_folder"]):
+            try:
+                mkdir(config["log_folder"])
+            except:
+                mod.display("MAIN",
+                            message_type="FATAL_ERROR",
+                            string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
+                sys.exit()
+            chmod(config["log_folder"], 0o777)
+
 
     def extend_IOC(self, argument, observable_list):
         """
@@ -109,21 +123,25 @@ class BTG():
         urlstruct = urlparse(argument)
         url = urlstruct.geturl()
         domain = urlstruct.netloc
-        try:
-            IP = socket.gethostbyname(domain)
-        except:
+        if "offline" in config:
+            try:
+                IP = socket.gethostbyname(domain)
+            except:
+                IP = None
+        else:
             IP = None
 
         if domain not in observable_list:
             observable_list.append(domain)
-        if not IP==None and IP not in observable_list:
+        if IP is not None and IP not in observable_list:
             observable_list.append(IP)
+
 
     def run(self, argument, type, modules, q, tasks):
         """
             Main observable module requests
         """
-        # mod.display(ioc=argument, string="Observable type: %s"%type)
+        mod.display(ioc=argument, string="Observable type: %s"%type)
         if type is None:
             mod.display("MAIN",
                         message_type="WARNING",
@@ -131,13 +149,14 @@ class BTG():
         for module in modules:
             if module+"_enabled" in config and config[module+"_enabled"]:
                 try :
-                    task = queue_going.enqueue(module_worker,
+                    task = request_going.enqueue(module_worker,
                                     args=(module, argument, type),)
                     tasks.append(task)
                 except :
                     mod.display("MAIN",
                                 message_type="FATAL_ERROR",
                                 string="Could not enqueue the job : %s, %s, %s " % (module, argument, type))
+
 
     def checkType(self, argument):
         """
@@ -210,6 +229,36 @@ def cleanups_lock_cache(real_path):
                 cleanups_lock_cache(file_path)
 
 
+def shut_down(processes, request_going, response_going):
+    for process in processes:
+        # killing all processes in the group
+        pgrp = getpgid(process.pid)
+        killpg(pgrp, signal.SIGINT)
+
+    request_going.delete(delete_jobs=True)
+    response_going.delete(delete_jobs=True)
+    time.sleep(2)
+
+
+def subprocess_launcher():
+    """
+        Subprocess loop to launch rq-worker
+    """
+    processes = []
+    max_worker = number_of_worker()
+    try :
+        for i in range(max_worker):
+            processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+request_queue], shell=True, preexec_fn = setsid))
+        # processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+response_queue], shell=True, preexec_fn = setsid))
+    except :
+        mod.display("MAIN",
+                    message_type="FATAL_ERROR",
+                    string="Could not launch workers as subprocess")
+        sys.exit()
+
+    return processes
+
+
 if __name__ == '__main__':
     args = parse_args()
     # Check if the parameter is a file or a list of observables
@@ -223,13 +272,14 @@ if __name__ == '__main__':
     if args.offline:
         config["offline"] = True
     dir_path = path.dirname(path.realpath(__file__))
-    if "modules_folder" in config and "temporary_cache_path" in config:
+    if "modules_folder" in config and "temporary_cache_path" in config and "log_folder" in config:
+        config["log_folder"] = path.join(dir_path, config["log_folder"])
         config["modules_folder"] = path.join(dir_path, config["modules_folder"])
         config["temporary_cache_path"] = path.join(dir_path, config["temporary_cache_path"])
     else:
         mod.display("MAIN",
                     message_type="FATAL_ERROR",
-                    string="Please check if you have modules_folder and temporary_cache_path \
+                    string="Please check if you have log_folder, modules_folder and temporary_cache_path \
                             field in config.ini")
     if config["display_motd"] and not args.silent:
         motd()
@@ -237,50 +287,31 @@ if __name__ == '__main__':
         if path.exists(config["temporary_cache_path"]):
             cleanups_lock_cache(config["temporary_cache_path"])
         logSearch(args)
-
         # Connecting to Redis
         redis_host, redis_port, redis_password = init_redis()
         try :
             with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
                 start_time = time.strftime('%X')
-                queue_name = init_queue()
-                queue_going = Queue(queue_name,connection=conn)
+                request_queue, response_queue = init_queue(redis_host, redis_port, redis_password)
+                request_going = Queue(request_queue, connection=conn)
+                response_going = Queue(response_queue, connection=conn)
         except :
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
-                        string="Could not establish connection with Redis, check if you have redis_host, redis_port \
-                                and maybe redis_password in /config/config.ini")
+                        string="Could not establish connection with Redis, check if you have redis_host, redis_port and maybe redis_password in /config/config.ini")
             sys.exit()
 
-        # subprocess loop to launch rq-worker
-        processes = []
-        max_worker = number_of_worker()
-        try :
-            for i in range(max_worker):
-                processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+queue_name], shell=True, preexec_fn = setsid))
-        except :
-            mod.display("MAIN",
-                        message_type="FATAL_ERROR",
-                        string="Could not launch workers as subprocess")
-            sys.exit()
+        processes = subprocess_launcher()
 
         BTG(args)
 
         # waiting for all jobs to be done
-        while len(queue_going.jobs)>0 :
+        while len(request_going.jobs) > 0 :
             time.sleep(1)
         end_time = time.strftime('%X')
 
-        # killing all subprocesses and their children
-        time.sleep(3)
-        for process in processes:
-            # killing all processes in the group
-            pgrp = getpgid(process.pid)
-            killpg(pgrp, signal.SIGINT)
-
-        queue_going.delete(delete_jobs=True)
+        shut_down(processes, request_going, response_going)
         print("\n All works done :", start_time, end_time)
-
     except (KeyboardInterrupt, SystemExit):
         '''
         Exit if user press CTRL+C
@@ -290,10 +321,7 @@ if __name__ == '__main__':
         print('\033[38;5;9m' + '\033[1m' + "A FATAL_ERROR occured or you pressed CTRL+C")
         print("Closing the worker, and clearing pending jobs ...")
         print("\n")
-        queue_going.delete(delete_jobs=True)
-        for process in processes:
-            # killing all processes in the group
-            pgrp = getpgid(process.pid)
-            killpg(pgrp, signal.SIGINT)
-        time.sleep(2)
+
+        shut_down(processes, request_going, response_going)
+
         sys.exit()

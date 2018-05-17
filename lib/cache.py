@@ -149,7 +149,7 @@ class Cache:
                 mkdir(self.config["temporary_cache_path"])
             except:
                 mod.display("%s.cache"%self.module_name,
-                            message_type="ERROR",
+                            message_type="FATAL_ERROR",
                             string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
                 sys.exit()
             chmod(self.config["temporary_cache_path"], 0o777)
