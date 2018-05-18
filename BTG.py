@@ -32,7 +32,7 @@ from os.path import isfile, join, exists, abspath, isdir
 import validators
 from lib.io import module as mod
 from lib.io import logSearch
-from lib.run_module import module_worker
+from lib.worker_tasks import module_worker
 
 from urllib.parse import urlparse
 import socket
