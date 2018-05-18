@@ -59,7 +59,6 @@ class BTG():
         # Import modules
         if config["debug"]:
             ret = mod.display(string="Load modules from %s"%config["modules_folder"])
-            print(ret)
         all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
         modules = []
         for file in all_files:
@@ -79,7 +78,7 @@ class BTG():
                     if type == "URL":
                         self.extend_IOC(argument, observable_list)
 
-                self.run(argument,type,modules,request_going,tasks)
+                self.run(argument,type,modules,tasks)
         else :
             for file in args.observables :
                 # TODO
@@ -100,8 +99,7 @@ class BTG():
                     if "split_observable" in config and config["split_observable"]:
                         if type == "URL":
                             self.extend_IOC(argument, observable_list)
-
-                    self.run(argument,type,modules,request_going,tasks)
+                    self.run(argument,type,modules,tasks)
 
 
     def createLoggingFolder(self):
@@ -137,7 +135,7 @@ class BTG():
             observable_list.append(IP)
 
 
-    def run(self, argument, type, modules, q, tasks):
+    def run(self, argument, type, modules, tasks):
         """
             Main observable module requests
         """
@@ -150,7 +148,7 @@ class BTG():
             if module+"_enabled" in config and config[module+"_enabled"]:
                 try :
                     task = request_going.enqueue(module_worker,
-                                    args=(module, argument, type),)
+                                    args=(module, argument, type),result_ttl=0)
                     tasks.append(task)
                 except :
                     mod.display("MAIN",

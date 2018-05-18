@@ -3,15 +3,16 @@
 
 [Btg]
 debug = False
-display_motd = False
+display_motd = True
 # Force to use offline modules
 offline = False
 terminal_color = True
 # Specify modules folder
 modules_folder = "./modules/"
-log_found_file = "./log.txt"
-log_error_file = "./log_error.txt"
-log_search_file = "./search.txt"
+log_folder = "./logs/"
+log_found_file = "log.txt"
+log_error_file = "log_error.txt"
+log_search_file = "search.txt"
 # User-Agent for http requests
 user_agent = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9 Safari/537.36",}
 proxy_host = {"http": "","https": ""}
@@ -22,10 +23,10 @@ temporary_cache_path = "./dumps/"
 temporary_cache_update = 120
 # SQlite3 path (for specific modules using requests_cache)
 sqlite_path = "/tmp/"
-# Specify maximum child process for BTG
+# Specify maximum number of worker for BTG
 max_worker = 4
 # IF you want to split observable, for instance : URL -> URL + DOMAIN + IP
-split_observable = True
+split_observable = False
 
 [Redis]
 redis_host = 'localhost'
