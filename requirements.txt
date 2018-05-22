@@ -3,7 +3,6 @@ pymisp
 dnspython
 requests-cache
 netaddr
-socket
 rq
 redis
 -e git+https://github.com/devhub/domaintools.git#egg=domaintools
