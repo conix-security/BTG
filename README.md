@@ -29,6 +29,7 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
     Malwaredomainlist
     Malwaredomains
     MalwareTeks
+    MetaDefender
     MISP (Malware Information Sharing Platform)
     MISP Crawler
     Nothink

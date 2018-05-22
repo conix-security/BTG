@@ -9,6 +9,7 @@ offline = False
 terminal_color = True
 # Specify modules folder
 modules_folder = "./modules/"
+# Specify log folder
 log_folder = "./logs/"
 log_found_file = "log.txt"
 log_error_file = "log_error.txt"
