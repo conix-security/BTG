@@ -6,6 +6,5 @@ netaddr
 socket
 rq
 redis
-aiohttp
 -e git+https://github.com/devhub/domaintools.git#egg=domaintools
 otxv2

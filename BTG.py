@@ -40,7 +40,7 @@ import time
 
 from rq import Connection, Queue
 from redis import Redis
-from config.redis_config import init_redis, init_queue, init_worker, number_of_worker
+from lib.redis_config import init_redis, init_queue, init_worker, number_of_worker
 
 import subprocess
 import signal
@@ -63,7 +63,7 @@ class BTG():
             if file[-3:] == ".py" and file[:-3] != "__init__":
                 modules.append(file[:-3])
 
-        global request_going
+        global working_going
         jobs = []
         tasks = []
 
@@ -133,7 +133,7 @@ class BTG():
         for module in modules:
             if module+"_enabled" in config and config[module+"_enabled"]:
                 try :
-                    task = request_going.enqueue(module_worker,
+                    task = working_going.enqueue(module_worker,
                                     args=(module, argument, type),result_ttl=0)
                     tasks.append(task)
                 except :
@@ -184,6 +184,16 @@ def motd():
         ==""".strip()).decode("utf-8"), version)
     print(motd.replace("\\n", "\n"))
 
+def createLoggingFolder():
+    if not isdir(config["log_folder"]):
+        try:
+            mkdir(config["log_folder"])
+        except:
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
+            sys.exit()
+        chmod(config["log_folder"], 0o777)
 
 def parse_args():
     """
@@ -213,14 +223,13 @@ def cleanups_lock_cache(real_path):
                 cleanups_lock_cache(file_path)
 
 
-def shut_down(processes, request_going, response_going):
+def shut_down(processes, working_going):
     for process in processes:
         # killing all processes in the group
         pgrp = getpgid(process.pid)
         killpg(pgrp, signal.SIGINT)
 
-    request_going.delete(delete_jobs=True)
-    response_going.delete(delete_jobs=True)
+    working_going.delete(delete_jobs=True)
     time.sleep(2)
 
 
@@ -232,7 +241,7 @@ def subprocess_launcher():
     max_worker = number_of_worker()
     try :
         for i in range(max_worker):
-            processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+request_queue], shell=True, preexec_fn = setsid))
+            processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+working_queue], shell=True, preexec_fn = setsid))
         # processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+response_queue], shell=True, preexec_fn = setsid))
     except :
         mod.display("MAIN",
@@ -242,16 +251,6 @@ def subprocess_launcher():
 
     return processes
 
-def createLoggingFolder():
-    if not isdir(config["log_folder"]):
-        try:
-            mkdir(config["log_folder"])
-        except:
-            mod.display("MAIN",
-                        message_type="FATAL_ERROR",
-                        string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
-            sys.exit()
-        chmod(config["log_folder"], 0o777)
 
 if __name__ == '__main__':
     args = parse_args()
@@ -288,9 +287,8 @@ if __name__ == '__main__':
         try :
             with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
                 start_time = time.strftime('%X')
-                request_queue, response_queue = init_queue(redis_host, redis_port, redis_password)
-                request_going = Queue(request_queue, connection=conn)
-                response_going = Queue(response_queue, connection=conn)
+                working_queue = init_queue(redis_host, redis_port, redis_password)
+                working_going = Queue(working_queue, connection=conn)
         except :
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
@@ -302,11 +300,11 @@ if __name__ == '__main__':
         BTG(args)
 
         # waiting for all jobs to be done
-        while len(request_going.jobs) > 0 :
+        while len(working_going.jobs) > 0 :
             time.sleep(1)
         end_time = time.strftime('%X')
 
-        shut_down(processes, request_going, response_going)
+        shut_down(processes, working_going)
         print("\n All works done :", start_time, end_time)
     except (KeyboardInterrupt, SystemExit):
         '''
@@ -318,6 +316,6 @@ if __name__ == '__main__':
         print("Closing the worker, and clearing pending jobs ...")
         print("\n")
 
-        shut_down(processes, request_going, response_going)
+        shut_down(processes, working_going)
 
         sys.exit()

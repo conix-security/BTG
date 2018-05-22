@@ -17,7 +17,6 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import sys, os
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
 import random
 import redis
 
@@ -36,20 +35,13 @@ def init_redis():
     return redis_host, redis_port, redis_password
 
 def init_queue(redis_host, redis_port, redis_password):
-
     r = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password)
-
     # Producing a large enough random name for the queue, thus we can run multiple instance of BTG
     random.seed()
     hash = hex(random.getrandbits(32))
-
     while r.get(hash) is not None:
         hash = hex(random.getrandbits(32))
-
-    request_queue = hash
-    response_queue = hex(int(hash, base=16) + 1)
-
-    return request_queue, response_queue
+    return hash
 
 # Specifying worker options : [burst, logging_level]
 def init_worker():

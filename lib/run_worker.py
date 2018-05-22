@@ -22,8 +22,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from lib.io import module as mod
 from rq import Connection, Queue, Worker
 from redis import Redis
-
-from config.redis_config import init_redis, init_queue, init_worker
+from redis_config import init_redis, init_worker
 
 if __name__ == '__main__':
     # Connecting to Redis
