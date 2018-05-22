@@ -54,8 +54,6 @@ class BTG():
         BTG Main class
     """
     def __init__(self, args):
-        # mkdir logging log_folder
-        self.createLoggingFolder()
         # Import modules
         if config["debug"]:
             ret = mod.display(string="Load modules from %s"%config["modules_folder"])
@@ -100,18 +98,6 @@ class BTG():
                         if type == "URL":
                             self.extend_IOC(argument, observable_list)
                     self.run(argument,type,modules,tasks)
-
-
-    def createLoggingFolder(self):
-        if not isdir(config["log_folder"]):
-            try:
-                mkdir(config["log_folder"])
-            except:
-                mod.display("MAIN",
-                            message_type="FATAL_ERROR",
-                            string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
-                sys.exit()
-            chmod(config["log_folder"], 0o777)
 
 
     def extend_IOC(self, argument, observable_list):
@@ -256,6 +242,16 @@ def subprocess_launcher():
 
     return processes
 
+def createLoggingFolder():
+    if not isdir(config["log_folder"]):
+        try:
+            mkdir(config["log_folder"])
+        except:
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
+            sys.exit()
+        chmod(config["log_folder"], 0o777)
 
 if __name__ == '__main__':
     args = parse_args()
@@ -282,6 +278,8 @@ if __name__ == '__main__':
     if config["display_motd"] and not args.silent:
         motd()
     try:
+        # mkdir logging log_folder
+        createLoggingFolder()
         if path.exists(config["temporary_cache_path"]):
             cleanups_lock_cache(config["temporary_cache_path"])
         logSearch(args)
