@@ -228,10 +228,8 @@ def shut_down(processes, working_going):
         # killing all processes in the group
         pgrp = getpgid(process.pid)
         killpg(pgrp, signal.SIGINT)
-
     working_going.delete(delete_jobs=True)
     time.sleep(2)
-
 
 def subprocess_launcher():
     """
@@ -304,7 +302,15 @@ if __name__ == '__main__':
             time.sleep(1)
         end_time = time.strftime('%X')
 
-        shut_down(processes, working_going)
+        try:
+            shut_down(processes, working_going)
+        except:
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Could not close subprocesses, maybe there were not any to begin with.")
+            sys.exit()
+
+
         print("\n All works done :", start_time, end_time)
     except (KeyboardInterrupt, SystemExit):
         '''
@@ -316,6 +322,12 @@ if __name__ == '__main__':
         print("Closing the worker, and clearing pending jobs ...")
         print("\n")
 
-        shut_down(processes, working_going)
+        try:
+            shut_down(processes, working_going)
+        except:
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Could not close subprocesses, maybe there were not any to begin with.")
+            sys.exit()
 
         sys.exit()
