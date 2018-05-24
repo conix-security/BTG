@@ -34,7 +34,7 @@ from lib.io import module as mod
 from lib.io import logSearch
 from lib.worker_tasks import module_worker
 
-from urllib.parse import urlparse
+import tldextract
 import socket
 import time
 
@@ -47,7 +47,7 @@ import signal
 
 from config.config_parser import Config
 config = Config.get_instance()
-version = "1.c"     # BTG version
+version = "2.0"     # BTG version
 
 class BTG():
     """
@@ -104,21 +104,44 @@ class BTG():
         """
             Extending IOC from URL into URL + DOMAIN + IP
         """
-        urlstruct = urlparse(argument)
-        url = urlstruct.geturl()
-        domain = urlstruct.netloc
-        if not "offline" in config:
-            try:
-                IP = socket.gethostbyname(domain)
-            except:
-                IP = None
+        if config['offline']:
+            # Cache search
+            if "TLDE_cache" in config:
+                cache_extract = tldextract.TLDExtract(cache_file=config['TLDE_cache'])
+                extract = cache_extract(argument)
         else:
-            IP = None
+            # Live search
+            extract = tldextract.extract(argument)
 
-        if domain not in observable_list:
-            observable_list.append(domain)
-        if IP is not None and IP not in observable_list:
-            observable_list.append(IP)
+        try:
+            registered_domain = extract.registered_domain
+        except:
+            registered_domain = None
+        try:
+            suffix_domain = extract.suffix
+        except:
+            suffix_domain = None
+        try:
+            complete_domain = '.'.join(part for part in extract if part)
+        except:
+            complete_domain = None
+        domains =[registered_domain, suffix_domain, complete_domain]
+
+        IPs = [None, None, None]
+        if not "offline" in config:
+            for domain in domains:
+                try:
+                    IP = socket.gethostbyname(domain)
+                except:
+                    IP = None
+                IPs.append(IP)
+
+        for domain in domains:
+            if domain is not None and domain not in observable_list:
+                observable_list.append(domain)
+        for IP in IPs:
+            if IP is not None and IP not in observable_list:
+                observable_list.append(IP)
 
 
     def run(self, argument, type, modules, tasks):
