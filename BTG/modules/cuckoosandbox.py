@@ -24,7 +24,15 @@ from platform import system
 
 from requests import get
 
+from config_parser import Config
 from lib.io import module as mod
+
+cfg = Config.get_instance()
+if system() != "Windows":
+    import requests_cache
+
+    requests_cache.install_cache('%sBTG' % cfg["sqlite_path"])
+
 
 class Cuckoosandbox:
     """
@@ -43,7 +51,6 @@ class Cuckoosandbox:
         self.creation_date = "02-03-2017"
         self.type = type
         self.ioc = ioc
-
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
         else:
@@ -82,9 +89,10 @@ class Cuckoosandbox:
                     else:
                         mod.display(self.module_name,
                                     message_type="ERROR",
-                                    string="Check if you have cuckoosandbox_web_url in config.ini")
+                                    string="Check if you have cuckoosandbox_web_url in config.ini")               
         else:
             mod.display(self.module_name,
                         message_type="ERROR",
                         string=("Check if you have cuckoosandbox_api_url,user_agent,proxy_host and"
                                 "requests_timeout field in config.ini"))
+

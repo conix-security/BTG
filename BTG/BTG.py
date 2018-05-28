@@ -153,6 +153,7 @@ class BTG():
             mod.display("MAIN",
                         message_type="WARNING",
                         string="IOC : %s has an undefined type : %s" % (argument, type))
+            return None
         for module in modules:
             if module+"_enabled" in config and config[module+"_enabled"]:
                 try :
@@ -190,10 +191,10 @@ class BTG():
         elif validators.domain(argument):
             return "domain"
         else:
-            mod.display("MAIN",
-                        argument,
-                        "ERROR",
-                        "Unable to retrieve observable type")
+            # mod.display("MAIN",
+            #             argument,
+            #             "ERROR",
+            #             "Unable to retrieve observable type")
             return None
 
 
@@ -322,7 +323,7 @@ if __name__ == '__main__':
 
         # waiting for all jobs to be done
         while len(working_going.jobs) > 0 :
-            time.sleep(1)
+            time.sleep(5)
         end_time = time.strftime('%X')
 
         try:

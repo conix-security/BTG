@@ -50,7 +50,7 @@ class Viper:
         if self.type in ["domain", "URL", "IPv4"]:
             url = "%s/api/v3/project/default/note/?search=%s"%(self.config["viper_server"], self.ioc)
         headers = {'Authorization': 'Token %s'%self.config["viper_api_key"]}
-        response = requests.get(url,
+        response = requests.get(url, 
                                 headers=headers,
                                 proxies=self.config["proxy_host"],
                                 timeout=self.config["requests_timeout"])
@@ -74,7 +74,7 @@ class Viper:
             if "Authentication validated successfully" in content["message"]:
                 return True
         except KeyError:
-            return False
+            return False        
 
 
     def Search(self):
@@ -97,7 +97,7 @@ class Viper:
             return
 
         if result_json:
-            if self.type in ["MD5", "SHA1", "SHA256"]:
+            if self.type in ["MD5", "SHA1", "SHA256"]: 
                 result_json = result_json["results"][0]
                 id = " ID: %d |"%result_json["data"]["id"]
                 name  = " Filename: %s"%result_json["data"]["name"]
@@ -118,7 +118,7 @@ class Viper:
                             self.ioc,
                             "FOUND",
                             "%s%s%s" % (tags, id, name))
-
+                
             elif self.type in ["URL", "domain", "IPv4"]:
                 for element in result_json["results"]:
                     for malware in element["data"]["malware_set"]:
@@ -129,3 +129,5 @@ class Viper:
                                     malware["data"]["id"],
                                     malware["data"]["name"],
                                     malware["data"]["sha1"]))
+
+
