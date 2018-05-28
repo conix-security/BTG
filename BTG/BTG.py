@@ -191,10 +191,10 @@ class BTG():
         elif validators.domain(argument):
             return "domain"
         else:
-            # mod.display("MAIN",
-            #             argument,
-            #             "ERROR",
-            #             "Unable to retrieve observable type")
+            mod.display("MAIN",
+                        argument,
+                        "ERROR",
+                        "Unable to retrieve observable type")
             return None
 
 
