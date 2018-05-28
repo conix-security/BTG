@@ -126,6 +126,30 @@ class module:
         '''
 
 
+class errors:
+    """
+        This function display prettily errors
+    """
+    def __init__(self):
+        return None
+
+    @classmethod
+    def display(self, dict_list=[]):
+        config = Config.get_instance()
+        print("\n --- ERRORS ---")
+        for dict in dict_list:
+            if dict['nb_error'] > 0:
+                output = "[%s%s%s] encountered %s%d%s errors"%(colors.MODULE,
+                                                            dict['module_name'],
+                                                            colors.NORMAL,
+                                                            colors.NB_ERROR,
+                                                            dict['nb_error'],
+                                                            colors.NORMAL)
+
+                print(output)
+        log_error_path = config["log_folder"] + config["log_error_file"]
+        print("See %s for detailed errors."%(log_error_path))
+
 class logSearch:
     def __init__(self, args):
         config = Config.get_instance()
@@ -158,12 +182,16 @@ class colors:
         FATAL_ERROR = ''
         NORMAL = ''
         BOLD = ''
+        MODULE = ''
+        NB_ERROR = ''
     else:
-        DEBUG = '\033[38;5;13m'
-        INFO = '\033[38;5;117m'
-        FOUND = '\033[38;5;10m'
-        WARNING = '\033[38;5;11m'
-        ERROR = '\033[38;5;202m'
-        FATAL_ERROR = '\033[38;5;9m'
+        DEBUG = '\033[38;5;13m' # LIGHT_MAGENTA
+        INFO = '\033[38;5;117m' # LIGHT_BLUE
+        FOUND = '\033[38;5;10m' # GREEN
+        WARNING = '\033[38;5;11m' # YELLOW
+        ERROR = '\033[38;5;202m' # ORANGE
+        FATAL_ERROR = '\033[38;5;9m' # RED
         NORMAL = '\033[0m'
         BOLD = '\033[1m'
+        MODULE = '\033[38;5;199m' # PURPLE
+        NB_ERROR = '\033[38;5;9m' # RED

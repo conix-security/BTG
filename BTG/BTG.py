@@ -32,11 +32,14 @@ from os.path import isfile, join, exists, abspath, isdir
 import validators
 from lib.io import module as mod
 from lib.io import logSearch
+from lib.io import errors as err
+
 from lib.worker_tasks import module_worker
 
+import re
 import tldextract
-import socket
 import time
+from datetime import datetime
 
 from rq import Connection, Queue
 from redis import Redis
@@ -53,15 +56,10 @@ class BTG():
     """
         BTG Main class
     """
-    def __init__(self, args):
+    def __init__(self, args, modules):
         # Import modules
         if config["debug"]:
             ret = mod.display(string="Load modules from %s"%config["modules_folder"])
-        all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
-        modules = []
-        for file in all_files:
-            if file[-3:] == ".py" and file[:-3] != "__init__":
-                modules.append(file[:-3])
 
         global working_going
         jobs = []
@@ -152,7 +150,7 @@ class BTG():
         if type is None:
             mod.display("MAIN",
                         message_type="WARNING",
-                        string="IOC : %s has an undefined type : %s" % (argument, type))
+                        string="IOC: %s | has an undefined type: %s" % (argument, type))
             return None
         for module in modules:
             if module+"_enabled" in config and config[module+"_enabled"]:
@@ -191,11 +189,57 @@ class BTG():
         elif validators.domain(argument):
             return "domain"
         else:
-            mod.display("MAIN",
-                        argument,
-                        "ERROR",
-                        "Unable to retrieve observable type")
+            # mod.display("MAIN",
+            #             argument,
+            #             "ERROR",
+            #             "Unable to retrieve observable type")
             return None
+
+
+#List all modules
+def gen_module_list():
+    all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
+    modules = []
+    for file in all_files:
+        if file[-3:] == ".py" and file[:-3] != "__init__":
+            modules.append(file[:-3])
+    return modules
+
+# List all activated modules
+def gen_enabled_modules_list(modules):
+    enabled_list = []
+    for module in modules:
+        if module+"_enabled" in config and config[module+"_enabled"]:
+            enabled_list.append(module)
+    return enabled_list
+
+# Count errors encountered during execution
+def show_up_errors(start_time, end_time, modules):
+    enabled_list = gen_enabled_modules_list(modules)
+    dict_list = []
+    for module in enabled_list:
+        dict_list.append({"module_name" : module, "nb_error" : 0})
+    log_error_file = config["log_folder"] + config["log_error_file"]
+    with open(log_error_file,"r") as f :
+        try:
+            lines = f.read().strip().splitlines()
+        except:
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Could not open the log_error_file, checkout your config.ini.")
+        finally:
+            f.close()
+
+    regex = re.compile("(?<=\[).*?(?=\])")
+    for line in lines :
+        match = regex.findall(line)
+        log_time = match[0]
+        log_module = match[1]
+        if log_time > start_time and log_time < end_time:
+            for dict in dict_list:
+                if log_module == dict['module_name']:
+                    dict["nb_error"] = dict["nb_error"] + 1
+    return dict_list
 
 
 def motd():
@@ -208,6 +252,7 @@ def motd():
         ==""".strip()).decode("utf-8"), version)
     print(motd.replace("\\n", "\n"))
 
+
 def createLoggingFolder():
     if not isdir(config["log_folder"]):
         try:
@@ -218,6 +263,7 @@ def createLoggingFolder():
                         string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
             sys.exit()
         chmod(config["log_folder"], 0o777)
+
 
 def parse_args():
     """
@@ -255,6 +301,7 @@ def shut_down(processes, working_going):
     working_going.delete(delete_jobs=True)
     time.sleep(2)
 
+
 def subprocess_launcher():
     """
         Subprocess loop to launch rq-worker
@@ -264,7 +311,6 @@ def subprocess_launcher():
     try :
         for i in range(max_worker):
             processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+working_queue], shell=True, preexec_fn = setsid))
-        # processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+response_queue], shell=True, preexec_fn = setsid))
     except :
         mod.display("MAIN",
                     message_type="FATAL_ERROR",
@@ -308,7 +354,6 @@ if __name__ == '__main__':
         redis_host, redis_port, redis_password = init_redis()
         try :
             with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
-                start_time = time.strftime('%X')
                 working_queue = init_queue(redis_host, redis_port, redis_password)
                 working_going = Queue(working_queue, connection=conn)
         except :
@@ -318,13 +363,16 @@ if __name__ == '__main__':
             sys.exit()
 
         processes = subprocess_launcher()
-
-        BTG(args)
-
+        modules = gen_module_list()
+        start_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+        BTG(args, modules)
         # waiting for all jobs to be done
         while len(working_going.jobs) > 0 :
             time.sleep(5)
-        end_time = time.strftime('%X')
+        end_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+
+        errors_to_display = show_up_errors(start_time, end_time, modules)
+        err.display(dict_list=errors_to_display)
 
         try:
             shut_down(processes, working_going)
@@ -334,8 +382,7 @@ if __name__ == '__main__':
                         string="Could not close subprocesses, maybe there were not any to begin with.")
             sys.exit()
 
-
-        print("\n All works done :", start_time, end_time)
+        print("\nAll works done: %s -- %s" %(start_time, end_time))
     except (KeyboardInterrupt, SystemExit):
         '''
         Exit if user press CTRL+C
