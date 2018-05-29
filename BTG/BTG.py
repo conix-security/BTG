@@ -220,15 +220,18 @@ def show_up_errors(start_time, end_time, modules):
     for module in enabled_list:
         dict_list.append({"module_name" : module, "nb_error" : 0})
     log_error_file = config["log_folder"] + config["log_error_file"]
-    with open(log_error_file,"r") as f :
-        try:
-            lines = f.read().strip().splitlines()
-        except:
-            mod.display("MAIN",
-                        message_type="FATAL_ERROR",
-                        string="Could not open the log_error_file, checkout your config.ini.")
-        finally:
-            f.close()
+    try:
+        with open(log_error_file,"r") as f :
+            try:
+                lines = f.read().strip().splitlines()
+            except:
+                mod.display("MAIN",
+                            message_type="FATAL_ERROR",
+                            string="Could not open the log_error_file, checkout your config.ini.")
+            finally:
+                f.close()
+    except:
+        return dict_list
 
     regex = re.compile("(?<=\[).*?(?=\])")
     for line in lines :
