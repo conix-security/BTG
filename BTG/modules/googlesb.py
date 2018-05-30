@@ -53,8 +53,6 @@ class googlesb():
         try:
             if 'googlesb_api_keys' in self.config:
                 api_key = choice(self.config['googlesb_api_keys'])
-            # TODO
-            # Dead code ?
             else:
                 mod.display(self.module_name,
                             message_type="ERROR",

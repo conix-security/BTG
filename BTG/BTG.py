@@ -41,7 +41,7 @@ import tldextract
 import time
 from datetime import datetime
 
-from rq import Connection, Queue
+from rq import Connection, Queue, Worker
 from redis import Redis
 from lib.redis_config import init_redis, init_queue, init_worker, number_of_worker
 
@@ -196,135 +196,159 @@ class BTG():
             return None
 
 
-#List all modules
-def gen_module_list():
-    all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
-    modules = []
-    for file in all_files:
-        if file[-3:] == ".py" and file[:-3] != "__init__":
-            modules.append(file[:-3])
-    return modules
+class Utils:
+    def __init__():
+        return None
 
-# List all activated modules
-def gen_enabled_modules_list(modules):
-    enabled_list = []
-    for module in modules:
-        if module+"_enabled" in config and config[module+"_enabled"]:
-            enabled_list.append(module)
-    return enabled_list
+    #List all modules
+    def gen_module_list():
+        all_files = [f for f in listdir(config["modules_folder"]) if isfile(join(config["modules_folder"], f))]
+        modules = []
+        for file in all_files:
+            if file[-3:] == ".py" and file[:-3] != "__init__":
+                modules.append(file[:-3])
+        return modules
 
-# Count errors encountered during execution
-def show_up_errors(start_time, end_time, modules):
-    enabled_list = gen_enabled_modules_list(modules)
-    dict_list = []
-    for module in enabled_list:
-        dict_list.append({"module_name" : module, "nb_error" : 0})
-    log_error_file = config["log_folder"] + config["log_error_file"]
-    try:
-        with open(log_error_file,"r") as f :
+    # List all activated modules
+    def gen_enabled_modules_list(modules):
+        enabled_list = []
+        for module in modules:
+            if module+"_enabled" in config and config[module+"_enabled"]:
+                enabled_list.append(module)
+        return enabled_list
+
+    # Count errors encountered during execution
+    def show_up_errors(start_time, end_time, modules):
+        enabled_list = Utils.gen_enabled_modules_list(modules)
+        dict_list = []
+        for module in enabled_list:
+            dict_list.append({"module_name" : module, "nb_error" : 0})
+        log_error_file = config["log_folder"] + config["log_error_file"]
+        try:
+            with open(log_error_file,"r") as f :
+                try:
+                    lines = f.read().strip().splitlines()
+                except:
+                    mod.display("MAIN",
+                                message_type="FATAL_ERROR",
+                                string="Could not open the log_error_file, checkout your config.ini.")
+                finally:
+                    f.close()
+        except:
+            return dict_list
+
+        regex = re.compile("(?<=\[).*?(?=\])")
+        for line in lines :
+            match = regex.findall(line)
+            log_time = match[0]
+            log_module = match[1]
+            if log_time >= start_time and log_time <= end_time:
+                for dict in dict_list:
+                    if log_module == dict['module_name']:
+                        dict["nb_error"] = dict["nb_error"] + 1
+        return dict_list
+
+
+    def motd():
+        """
+            Display Message Of The Day in console
+        """
+        motd = "%s v%s\n"%(b64decode("""
+            ICAgIF9fX18gX19fX19fX19fX19fCiAgIC8gX18gKV8gIF9fLyBfX19fLwogIC8gX18gIHw\
+            vIC8gLyAvIF9fICAKIC8gL18vIC8vIC8gLyAvXy8gLyAgCi9fX19fXy8vXy8gIFxfX19fLw\
+            ==""".strip()).decode("utf-8"), version)
+        print(motd.replace("\\n", "\n"))
+
+
+    def createLoggingFolder():
+        if not isdir(config["log_folder"]):
             try:
-                lines = f.read().strip().splitlines()
+                mkdir(config["log_folder"])
             except:
                 mod.display("MAIN",
                             message_type="FATAL_ERROR",
-                            string="Could not open the log_error_file, checkout your config.ini.")
-            finally:
-                f.close()
-    except:
-        return dict_list
-
-    regex = re.compile("(?<=\[).*?(?=\])")
-    for line in lines :
-        match = regex.findall(line)
-        log_time = match[0]
-        log_module = match[1]
-        if log_time > start_time and log_time < end_time:
-            for dict in dict_list:
-                if log_module == dict['module_name']:
-                    dict["nb_error"] = dict["nb_error"] + 1
-    return dict_list
+                            string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
+                sys.exit()
+            chmod(config["log_folder"], 0o777)
 
 
-def motd():
-    """
-        Display Message Of The Day in console
-    """
-    motd = "%s v%s\n"%(b64decode("""
-        ICAgIF9fX18gX19fX19fX19fX19fCiAgIC8gX18gKV8gIF9fLyBfX19fLwogIC8gX18gIHw\
-        vIC8gLyAvIF9fICAKIC8gL18vIC8vIC8gLyAvXy8gLyAgCi9fX19fXy8vXy8gIFxfX19fLw\
-        ==""".strip()).decode("utf-8"), version)
-    print(motd.replace("\\n", "\n"))
+    def parse_args():
+        """
+            Define the arguments
+        """
+        parser = argparse.ArgumentParser(description='Observable to qualify')
+        parser.add_argument('observables', metavar='observable', type=str, nargs='+',
+                            help='Type: [URL,MD5,SHA1,SHA256,SHA512,IPv4,IPv6,domain] or a file containing one observable per line')
+        parser.add_argument("-d", "--debug", action="store_true", help="Display debug informations",)
+        parser.add_argument("-o", "--offline", action="store_true",
+                            help=("Set BTG in offline mode, meaning all modules"
+                                  "described as online (i.e. VirusTotal) are deactivated"))
+        parser.add_argument("-s", "--silent", action="store_true", help="Disable MOTD")
+        return parser.parse_args()
 
 
-def createLoggingFolder():
-    if not isdir(config["log_folder"]):
-        try:
-            mkdir(config["log_folder"])
-        except:
+    def cleanups_lock_cache(real_path):
+        for file in listdir(real_path):
+            file_path = "%s%s/"%(real_path, file)
+            if file.endswith(".lock"):
+                mod.display("MAIN",
+                            message_type="DEBUG",
+                            string="Delete locked cache file: %s"%file_path[:-1])
+                remove(file_path[:-1])
+            else:
+                if path.isdir(file_path):
+                    Utils.cleanups_lock_cache(file_path)
+
+
+
+    def potato(working_going):
+        # DO-WHILE loop to check if a worker is still working
+        is_busy = True
+        while is_busy:
+            states = []
+            workers = Worker.all(queue=working_going)
+            for worker in workers:
+                state = worker.get_state()
+                states.append(state)
+            for state in states:
+                if state == 'busy':
+                    break
+                is_busy = False
+            time.sleep(1)
+
+    def shut_down(processes, working_going, sig_int=True):
+        if not sig_int:
+            Utils.potato(working_going)
+
+        working_going.delete(delete_jobs=True)
+
+        for process in processes:
+            # killing all processes in the group
+            pgrp = getpgid(process.pid)
+            killpg(pgrp, signal.SIGINT)
+        time.sleep(2)
+
+
+    def subprocess_launcher():
+        """
+            Subprocess loop to launch rq-worker
+        """
+        processes = []
+        max_worker = number_of_worker()
+        try :
+            for i in range(max_worker):
+                processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+working_queue], shell=True, preexec_fn = setsid))
+        except :
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
-                        string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
+                        string="Could not launch workers as subprocess")
             sys.exit()
-        chmod(config["log_folder"], 0o777)
 
-
-def parse_args():
-    """
-        Define the arguments
-    """
-    parser = argparse.ArgumentParser(description='Observable to qualify')
-    parser.add_argument('observables', metavar='observable', type=str, nargs='+',
-                        help='Type: [URL,MD5,SHA1,SHA256,SHA512,IPv4,IPv6,domain] or a file containing one observable per line')
-    parser.add_argument("-d", "--debug", action="store_true", help="Display debug informations",)
-    parser.add_argument("-o", "--offline", action="store_true",
-                        help=("Set BTG in offline mode, meaning all modules"
-                              "described as online (i.e. VirusTotal) are deactivated"))
-    parser.add_argument("-s", "--silent", action="store_true", help="Disable MOTD")
-    return parser.parse_args()
-
-
-def cleanups_lock_cache(real_path):
-    for file in listdir(real_path):
-        file_path = "%s%s/"%(real_path, file)
-        if file.endswith(".lock"):
-            mod.display("MAIN",
-                        message_type="DEBUG",
-                        string="Delete locked cache file: %s"%file_path[:-1])
-            remove(file_path[:-1])
-        else:
-            if path.isdir(file_path):
-                cleanups_lock_cache(file_path)
-
-
-def shut_down(processes, working_going):
-    for process in processes:
-        # killing all processes in the group
-        pgrp = getpgid(process.pid)
-        killpg(pgrp, signal.SIGINT)
-    working_going.delete(delete_jobs=True)
-    time.sleep(2)
-
-
-def subprocess_launcher():
-    """
-        Subprocess loop to launch rq-worker
-    """
-    processes = []
-    max_worker = number_of_worker()
-    try :
-        for i in range(max_worker):
-            processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+working_queue], shell=True, preexec_fn = setsid))
-    except :
-        mod.display("MAIN",
-                    message_type="FATAL_ERROR",
-                    string="Could not launch workers as subprocess")
-        sys.exit()
-
-    return processes
+        return processes
 
 
 if __name__ == '__main__':
-    args = parse_args()
+    args = Utils.parse_args()
     # Check if the parameter is a file or a list of observables
     if exists(args.observables[0]):
         args.file="True"
@@ -346,15 +370,17 @@ if __name__ == '__main__':
                     string="Please check if you have log_folder, modules_folder and temporary_cache_path \
                             field in config.ini")
     if config["display_motd"] and not args.silent:
-        motd()
+        Utils.motd()
+
     try:
         # mkdir logging log_folder
-        createLoggingFolder()
+        Utils.createLoggingFolder()
         if path.exists(config["temporary_cache_path"]):
-            cleanups_lock_cache(config["temporary_cache_path"])
+            Utils.cleanups_lock_cache(config["temporary_cache_path"])
         logSearch(args)
         # Connecting to Redis
         redis_host, redis_port, redis_password = init_redis()
+
         try :
             with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
                 working_queue = init_queue(redis_host, redis_port, redis_password)
@@ -365,27 +391,27 @@ if __name__ == '__main__':
                         string="Could not establish connection with Redis, check if you have redis_host, redis_port and maybe redis_password in /config/config.ini")
             sys.exit()
 
-        processes = subprocess_launcher()
-        modules = gen_module_list()
+        processes = Utils.subprocess_launcher()
+        modules = Utils.gen_module_list()
         start_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
         BTG(args, modules)
         # waiting for all jobs to be done
-        while len(working_going.jobs) > 0 :
+        while len(working_going.jobs) > 0:
             time.sleep(5)
-        end_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
-
-        errors_to_display = show_up_errors(start_time, end_time, modules)
-        err.display(dict_list=errors_to_display)
 
         try:
-            shut_down(processes, working_going)
+            Utils.shut_down(processes, working_going, sig_int=False)
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
                         string="Could not close subprocesses, maybe there were not any to begin with.")
             sys.exit()
 
+        end_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+        errors_to_display = Utils.show_up_errors(start_time, end_time, modules)
+        err.display(dict_list=errors_to_display)
         print("\nAll works done: %s -- %s" %(start_time, end_time))
+
     except (KeyboardInterrupt, SystemExit):
         '''
         Exit if user press CTRL+C
@@ -397,7 +423,7 @@ if __name__ == '__main__':
         print("\n")
 
         try:
-            shut_down(processes, working_going)
+            Utils.shut_down(processes, working_going, sig_int=True)
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",

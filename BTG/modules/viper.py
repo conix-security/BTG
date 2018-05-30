@@ -37,20 +37,29 @@ class Viper:
         self.ioc = ioc
 
         if type in self.types and mod.allowedToSearch(self.search_method):
-            self.Search()
+            length = len(self.config['viper_server'])
+            if  length != len(self.config['viper_api_key']) and length <= 0:
+                mod.display(self.module_name,
+                            message_type="ERROR",
+                            string="Viper fields in config.ini are missfilled, checkout commentaries.")
+                return
+            for indice in range(len(self.config['viper_server'])):
+                server = self.config['viper_server'][indice]
+                api_key = self.config['viper_api_key'][indice]
+                self.Search(server,api_key)
         else:
             mod.display(self.module_name, "", "INFO", "Viper module not activated")
 
-    def viper_api(self):
+    def viper_api(self, server, api_key):
         """
         Viper API Connection
         """
         if self.type in ["MD5", "SHA1", "SHA256"]:
-            url = "%s/api/v3/project/default/malware/?search=%s" %(self.config["viper_server"], self.ioc)
+            url = "%s/api/v3/project/default/malware/?search=%s" %(server, self.ioc)
         if self.type in ["domain", "URL", "IPv4"]:
-            url = "%s/api/v3/project/default/note/?search=%s"%(self.config["viper_server"], self.ioc)
-        headers = {'Authorization': 'Token %s'%self.config["viper_api_key"]}
-        response = requests.get(url, 
+            url = "%s/api/v3/project/default/note/?search=%s"%(server, self.ioc)
+        headers = {'Authorization': 'Token %s' % api_key}
+        response = requests.get(url,
                                 headers=headers,
                                 proxies=self.config["proxy_host"],
                                 timeout=self.config["requests_timeout"])
@@ -66,38 +75,37 @@ class Viper:
                         string="Viper API connection status %d" % response.status_code)
             return None
 
-    def checkToken(self):
-        headers = {'Authorization': 'Token %s'%self.config["viper_api_key"]}
-        response = requests.get("%s/api/v3/test-auth/"%(self.config["viper_server"]), headers=headers)
+    def checkToken(self, server, api_key):
+        headers = {'Authorization': 'Token %s'% api_key}
+        response = requests.get("%s/api/v3/test-auth/"%(server), headers=headers)
         content = json.loads(response.text)
         try:
             if "Authentication validated successfully" in content["message"]:
                 return True
         except KeyError:
-            return False        
+            return False
 
 
-    def Search(self):
+    def Search(self, server, api_key):
         mod.display(self.module_name, "", "INFO", "Search in Viper ...")
 
         try:
             if "viper_server" in self.config and "viper_api_key" in self.config:
-                if not self.checkToken():
+                if not self.checkToken(server, api_key):
                     mod.display(self.module_name, self.ioc, "ERROR", "Bad API key")
                     return
                 if self.type in self.types:
-                    result_json = self.viper_api()
+                    result_json = self.viper_api(server, api_key)
             else:
                 mod.display(self.module_name,
                             message_type=":",
                             string="Please check if you have viper fields in config.ini")
-
         except Exception as e:
             mod.display(self.module_name, self.ioc, "ERROR", e)
             return
 
         if result_json:
-            if self.type in ["MD5", "SHA1", "SHA256"]: 
+            if self.type in ["MD5", "SHA1", "SHA256"]:
                 result_json = result_json["results"][0]
                 id = " ID: %d |"%result_json["data"]["id"]
                 name  = " Filename: %s"%result_json["data"]["name"]
@@ -118,7 +126,7 @@ class Viper:
                             self.ioc,
                             "FOUND",
                             "%s%s%s" % (tags, id, name))
-                
+
             elif self.type in ["URL", "domain", "IPv4"]:
                 for element in result_json["results"]:
                     for malware in element["data"]["malware_set"]:
@@ -129,5 +137,3 @@ class Viper:
                                     malware["data"]["id"],
                                     malware["data"]["name"],
                                     malware["data"]["sha1"]))
-
-

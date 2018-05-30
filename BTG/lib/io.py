@@ -68,7 +68,7 @@ class module:
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
                 print(output)
-            if message_type == "ERROR" or message_type == "WARNING":
+            elif message_type == "ERROR" or message_type == "WARNING":
                 log_path = log_folder + config["log_error_file"]
                 if not exists(log_path):
                     open(log_path, 'a').close()
@@ -76,7 +76,9 @@ class module:
                 f = open(log_path, 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
-            if message_type == "FATAL_ERROR":
+                if config['debug']:
+                    print(output)
+            elif message_type == "FATAL_ERROR":
                 log_path = log_folder + config["log_error_file"]
                 if not exists(log_path):
                     open(log_path, 'a').close()
@@ -85,6 +87,7 @@ class module:
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
                 print(output)
+
 
     @classmethod
     def allowedToSearch(self, status):
@@ -136,7 +139,7 @@ class errors:
     @classmethod
     def display(self, dict_list=[]):
         config = Config.get_instance()
-        print("\n --- ERRORS ---")
+        error_encountered = False
         for dict in dict_list:
             if dict['nb_error'] > 0:
                 output = "[%s%s%s] encountered %s%d%s errors"%(colors.MODULE,
@@ -145,10 +148,12 @@ class errors:
                                                             colors.NB_ERROR,
                                                             dict['nb_error'],
                                                             colors.NORMAL)
-
                 print(output)
-        log_error_path = config["log_folder"] + config["log_error_file"]
-        print("See %s for detailed errors."%(log_error_path))
+                error_encountered = True
+        if error_encountered :
+            log_error_path = config["log_folder"] + config["log_error_file"]
+            print("\n --- ERRORS ---")
+            print("See %s for detailed errors."%(log_error_path))
 
 class logSearch:
     def __init__(self, args):
