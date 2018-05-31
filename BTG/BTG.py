@@ -300,8 +300,7 @@ class Utils:
                     Utils.cleanups_lock_cache(file_path)
 
 
-
-    def potato(working_going):
+    def graceful_shutdown(working_going):
         # DO-WHILE loop to check if a worker is still working
         is_busy = True
         while is_busy:
@@ -316,17 +315,19 @@ class Utils:
                 is_busy = False
             time.sleep(1)
 
-    def shut_down(processes, working_going, sig_int=True):
+    def shut_down(processes, working_going, failed_queue, sig_int=True):
         if not sig_int:
-            Utils.potato(working_going)
+            Utils.graceful_shutdown(working_going)
 
+        # Removing undone jobs
         working_going.delete(delete_jobs=True)
-
+        # Killing all processes in the group
         for process in processes:
-            # killing all processes in the group
             pgrp = getpgid(process.pid)
-            killpg(pgrp, signal.SIGINT)
-        time.sleep(2)
+            killpg(pgrp, signal.SIGTERM)
+        time.sleep(3)
+        # Clearing potentially failed jobs because of the previous kill
+        failed_queue.empty()
 
 
     def subprocess_launcher():
@@ -385,6 +386,7 @@ if __name__ == '__main__':
             with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
                 working_queue = init_queue(redis_host, redis_port, redis_password)
                 working_going = Queue(working_queue, connection=conn)
+                failed_queue = Queue('failed', connection=conn)
         except :
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
@@ -397,10 +399,10 @@ if __name__ == '__main__':
         BTG(args, modules)
         # waiting for all jobs to be done
         while len(working_going.jobs) > 0:
-            time.sleep(5)
+            time.sleep(1)
 
         try:
-            Utils.shut_down(processes, working_going, sig_int=False)
+            Utils.shut_down(processes, working_going, failed_queue, sig_int=False)
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
@@ -423,7 +425,7 @@ if __name__ == '__main__':
         print("\n")
 
         try:
-            Utils.shut_down(processes, working_going, sig_int=True)
+            Utils.shut_down(processes, working_going, failed_queue, sig_int=True)
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",

@@ -3,6 +3,7 @@
 # Copyright (c) 2016-2017 Conix Cybersecurity
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
