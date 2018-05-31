@@ -20,6 +20,7 @@
 
 import requests
 import json
+from lib.cache import Cache
 from lib.io import module as mod
 from random import choice, randint
 import time
@@ -50,42 +51,34 @@ class feodotracker():
     # OFFLINE research from local .txt
     def search(self):
         mod.display(self.module_name, "", "INFO", "Search in FeodoTracker ...")
+        url = "https://feodotracker.abuse.ch/blocklist/?download="
+        paths = [
+            "ipblocklist",
+            "domainblocklist"
+        ]
 
         if self.type == "IPv4":
-            url = "https://feodotracker.abuse.ch/blocklist/?download=ipblocklist"
+            path = paths[0]
         elif self.type == "domain":
-            url = "https://feodotracker.abuse.ch/blocklist/?download=domainblocklist"
+            path = paths[1]
         else:
             mod.display(self.module_name,
                         self.ioc,
                         "ERROR",
                         "This IOC is of an unrecognized type: %s"%(self.type))
 
-        response = requests.get(url)
 
-        if response.status_code == 200:
-            # find should be faster then a simple for loop research
-            indice1 = response.text.find(self.ioc)
-            if indice1 == -1:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "INFO",
-                            "Nothing found in FeodoTracker")
-                return None
-            else:
-                # To be sure
-                # indice2 = response.text.find('\n', indice1)
-                # print(response.text[indice1:indice2])
-                
-                url_reponse = "https://feodotracker.abuse.ch/host/"+self.ioc
-                mod.display(self.module_name,
-                            self.ioc,
-                            "FOUND",
-                            url_reponse)
-                return None
-        else:
+        content = Cache(self.module_name, url, path, self.search_method).content
+        if content.find(self.ioc) == -1:
             mod.display(self.module_name,
                         self.ioc,
-                        message_type="ERROR",
-                        string="FeodoTracker API connection status %d" % response.status_code)
+                        "INFO",
+                        "Nothing found in FeodoTracker")
+            return None
+        else:
+            url_reponse = "https://feodotracker.abuse.ch/host/"+self.ioc
+            mod.display(self.module_name,
+                        self.ioc,
+                        "FOUND",
+                        url_reponse)
             return None

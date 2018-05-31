@@ -21,6 +21,7 @@
 import requests
 import json
 from lib.io import module as mod
+from lib.cache import Cache
 from random import choice, randint
 import time
 import csv
@@ -46,42 +47,34 @@ class urlhaus():
             mod.display(self.module_name, "", "INFO", "URLhause module not activated")
             return None
 
-    # TODO
-    # OFFLINE research from local .csv
     def search(self):
         mod.display(self.module_name, "", "INFO", "Search in URLhause ...")
 
-        url = "https://urlhaus.abuse.ch/downloads/csv/"
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            # find should be faster then a simple for loop research
-            if response.text.find(self.ioc) == -1:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "INFO",
-                            "Nothing found in URLhause")
-                return None
-            else:
-                try:
-                    reader = csv.reader(response.text.split('\n'), delimiter=',')
-                except:
-                    mod.display(self.module_name,
-                                self.ioc,
-                                "ERROR",
-                                "Could not parse CSV response")
-                    return None
-                for row in reader :
-                    if self.ioc in row:
-                        mod.display(self.module_name,
-                                    self.ioc,
-                                    "FOUND",
-                                    row[-1])
-                        return None
-
-        else:
+        url = "https://urlhaus.abuse.ch/downloads/"
+        paths = [
+            "csv"
+        ]
+        content = Cache(self.module_name, url, paths[0], self.search_method).content
+        # find should be faster then a simple for loop research
+        if content.find(self.ioc) == -1:
             mod.display(self.module_name,
                         self.ioc,
-                        message_type="ERROR",
-                        string="URLhause API connection status %d" % response.status_code)
+                        "INFO",
+                        "Nothing found in URLhause")
             return None
+        else:
+            try:
+                reader = csv.reader(content.split('\n'), delimiter=',')
+            except:
+                mod.display(self.module_name,
+                            self.ioc,
+                            "ERROR",
+                            "Could not parse CSV feed")
+                return None
+            for row in reader :
+                if self.ioc in row:
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "FOUND",
+                                row[-1])
+                    return None
