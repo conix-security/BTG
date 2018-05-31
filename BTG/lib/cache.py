@@ -74,7 +74,6 @@ class Cache:
                     message_type="DEBUG",
                     string="Update %s%s"%(self.url, self.filename))
         full_url = "%s%s"%(self.url, self.filename)
-        print(self.url,self.filename)
         try:
             r = requests.get(
                 full_url,

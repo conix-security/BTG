@@ -49,13 +49,11 @@ class urlhaus():
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Search in URLhause ...")
-
         url = "https://urlhaus.abuse.ch/downloads/"
         paths = [
             "csv"
         ]
         content = Cache(self.module_name, url, paths[0], self.search_method).content
-        # find should be faster then a simple for loop research
         if content.find(self.ioc) == -1:
             mod.display(self.module_name,
                         self.ioc,
