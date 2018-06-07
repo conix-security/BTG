@@ -30,7 +30,7 @@ class metadefender:
     def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        self.types = ["MD5", "SHA1", "SHA256", "SHA512", "IPv4", "IPv6"]
+        self.types = ["MD5", "SHA1", "SHA256", "SHA512"]
         self.search_method = "Online"
         self.description = "Search IOC in MetaDefender"
         self.author = "Conix"
@@ -63,50 +63,41 @@ class metadefender:
             return None
 
         # URL building
-        url="https://api.metadefender.com/"
-        branch = 0
-        if self.type in ["MD5", "SHA1", "SHA256", "SHA512"]:
-            url = url + "v2/hash/" + self.ioc
-            branch = 1
-        elif self.type in ["IPv4", "IPv6"]:
-            url = url + "v1/scan/" + self.ioc
-            branch = 2
+        url="https://api.metadefender.com/v2/hash/" + self.ioc
 
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
+            url_result = "https://www.metadefender.com/results#!/hash/"
             try:
                 json_response = json.loads(response.text)
+                print(json_response)
             except:
                 mod.display(self.module_name,
                             self.ioc,
                             message_type="WARNING",
-                            string="MetaDefender json_response was not readable. (Sleep 10sec).")
+                            string="MetaDefender json_response was not readable.")
                 return None
+
+            if json_response[self.ioc.upper()] == "Not Found":
+                return None
+            elif json_response['scan_all_result_a'] == "Clear":
+                return None
+            elif json_response['scan_all_result_a'] == "Infected" \
+                or json_response['scan_all_result_a'] == "Suspicious":
+                mod.display(self.module_name,
+                            self.ioc,
+                            message_type="FOUND",
+                            string=url_result+json_response['data_id'])
+            else:
+                mod.display(self.module_name,
+                            self.ioc,
+                            message_type="ERROR",
+                            string="MetaDefender json_response was not as expected, API may has been updated.")
+
         else:
             mod.display(self.module_name,
                         self.ioc,
                         message_type="ERROR",
                         string="MetaDefender API connection status %d" % response.status_code)
             return None
-
-        try:
-            if branch == 1:
-                if json_response["scan_results"]["total_detected_avs"] > 0:
-                    mod.display(self.module_name,
-                            self.ioc,
-                            "FOUND",
-                            "Score : %d/%d | %s" % (json_response["scan_results"]["total_detected_avs"], json_response["scan_results"]["total_avs"], url))
-            elif branch == 2:
-                if json_response["detected_by"] > 0:
-                    mod.display(self.module_name,
-                                self.ioc,
-                                "FOUND",
-                                "Score : %d/%d | %s" % (json_response["detected_by"], len(json_response["scan_results"]), url))
-            else:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "ERROR",
-                            "Oops something bad happen, if so, there must be a mistake in code.")
-        except:
-            pass

@@ -30,10 +30,13 @@ class Vxstream:
     def __init__(self, ioc, type, config):
         self.config = config
         self.module_name = __name__.split(".")[1]
-        self.types = ["MD5", "SHA1", "SHA256", "domain", "IPv4", "IPv6"]
+        self.types = ["MD5", "SHA1", "SHA256", "domain", "IPv4", "IPv6", "URL"]
         self.search_method = "Online"
         # Specifing user_agent to avoid the 403
-        self.user_agent = {'User-agent': 'VxApi Connector'}
+        # self.headers = {'User-agent': 'Falcon Sandbox'}
+        self.headers = {'User-agent': 'Falcon Sandbox',
+                        'Content-type': 'application/x-www-form-urlencoded',
+                        'accept': 'application/json'}
         self.description = "Search IOC in Hybrid Analysis"
         self.author = "Hicham Megherbi"
         self.creation_date = "20-10-2017"
@@ -41,7 +44,7 @@ class Vxstream:
         self.ioc = ioc
 
         if type in self.types and mod.allowedToSearch(self.search_method):
-            self.Search()
+            self.vxstream_api()
         else:
             mod.display(self.module_name, "", "INFO", "VXstream module not activated")
 
@@ -49,93 +52,64 @@ class Vxstream:
         """
         VXstream API Connection
         """
-        if self.type in ["MD5", "SHA1", "SHA256"]:
-            server = "https://www.hybrid-analysis.com/api/scan/"
-        if self.type in ["IPv4", "IPv6"]:
-            server = "https://www.hybrid-analysis.com/api/search?query=host:"
-        if self.type in ["domain"]:
-            server = "https://www.hybrid-analysis.com/api/search?query=domain:"
-
-        if 'vxstream_api_keys_secret' in self.config:
-            api_key_secret = choice(self.config['vxstream_api_keys_secret'])
+        if 'vxstream_api_keys' in self.config:
+            self.headers["api-key"] = choice(self.config['vxstream_api_keys'])
         else:
             mod.display(self.module_name,
-                            message_type="ERROR",
-                            string="Check if you have vxstream_api_keys_secret field in config.ini")
-
-        # User-agent is not config related anymore (always the same one, no need to let user edit it)
-        # respond = requests.get(server + self.ioc, headers=self.config['vxstream_user_agent'], verify=True, auth=HTTPBasicAuth(api_key_secret[0], api_key_secret[1]))
-        respond = requests.get(server + self.ioc, headers=self.user_agent, verify=True, auth=HTTPBasicAuth(api_key_secret[0], api_key_secret[1]))
-
-        if respond.status_code == 200:
-            respond_json = respond.json()
-            if respond_json["response_code"] == 0:
-                return respond_json
-            else:
-                if respond_json["response_code"] == -1 and ("error" in respond_json["response"]):
-                    mod.display(self.module_name,
-                            message_type="ERROR",
-                            string="%s" % respond_json["response"]["error"] )
-                return None
-        else:
-            mod.display(self.module_name,
+                        self.ioc,
                         message_type="ERROR",
-                        string="VXstream API connection status %d" % respond.status_code)
+                        string="Check if you have vxstream_api_keys_secret field in config.ini")
             return None
 
-    def Search(self):
-        mod.display(self.module_name, "", "INFO", "Search in VXstream ...")
-
-        try:
-            if "vxstream_api_keys_secret" in self.config:
-                if self.type in self.types:
-                        result_json = self.vxstream_api()
+        if self.type in ["MD5", "SHA1", "SHA256"]:
+            server = "https://www.hybrid-analysis.com/api/v2/search/hash"
+            data = "hash=%s" % self.ioc
+        else:
+            server = "https://www.hybrid-analysis.com/api/v2/search/terms"
+            if self.type in ["IPv4", "IPv6"]:
+                data = "host="+self.ioc
+            elif self.type == "URL":
+                data = "url="+self.ioc
             else:
+                data = "domain="+self.ioc
+
+        respond = requests.post(server, headers=self.headers, data=data)
+
+        if respond.status_code == 200:
+            try:
+                json_response = respond.json()
+            except:
                 mod.display(self.module_name,
-                            message_type=":",
-                            string="Please check if you have vxstream field in config.ini")
+                            self.ioc,
+                            message_type="ERROR",
+                            string="VxStream json_response was not readable.")
+                return None
 
-        except Exception as e:
-            mod.display(self.module_name, self.ioc, "ERROR", e)
-            return
-
-        try:
-            if result_json["response"]:
-                if self.type in ["MD5", "SHA1", "SHA256"]:
-                    result = result_json["response"][0]
-                    if "classification_tags" in result and result["classification_tags"]:
-                        tags = " Tags: %s |" % ",".join(result["classification_tags"])
-                    else:
-                        tags = ""
-                    if "verdict" in result:
-                        verdict = " %s |" % result["verdict"]
-                    else:
-                        verdict = ""
-                    if "threatscore" in result:
-                        threatscore = " Threatscore: %d/100 |" % result["threatscore"]
-                    else:
-                        threatscore =  ""
-                    if "sha256" in result:
-                        url = ' https://www.hybrid-analysis.com/sample/%s' % result["sha256"]
-                    else:
-                        url = ""
+            if "count" in json_response and "search_terms" in json_response:
+                if json_response["count"] > 0 :
+                    verdict = json_response["result"][0]["verdict"]
+                    threat_score = json_response["result"][0]["threat_score"]
+                    type = json_response["search_terms"][0]["id"]
+                    url = "https://www.hybrid-analysis.com/advanced-search-results?terms[%s]=%s" % (type, self.ioc)
                     mod.display(self.module_name,
                                 self.ioc,
                                 "FOUND",
-                                "%s%s%s%s" % (tags, verdict, threatscore, url))
+                                "%s | %s/100 | %s" % (verdict, threat_score, url))
+                return None
 
-                if self.type in ["domain", "IPv4", "IPv6"]:
-                    result = result_json["response"]["result"]
-                    nb_result = len(result)
-                    if nb_result > 0:
-                        if self.type in ["IPv4", "IPv6"]:
-                            url = "https://www.hybrid-analysis.com/advanced-search-results?terms[host_with_port]=%s" % self.ioc
-                        if self.type in ["domain"]:
-                            url = "https://www.hybrid-analysis.com/advanced-search-results?terms[domain]=%s" % self.ioc
-                        mod.display(self.module_name,
-                                    self.ioc,
-                                    "FOUND",
-                                    "Results: %d | %s" % (nb_result, url))
+            if json_response:
+                verdict = json_response[0]["verdict"]
+                threat_score = json_response[0]["threat_score"]
+                url = "https://www.hybrid-analysis.com/sample/"+self.ioc
+                mod.display(self.module_name,
+                            self.ioc,
+                            "FOUND",
+                            "%s | %s/100 | %s" % (verdict, threat_score, url))
+                return None
 
-        except:
-            pass
+        else:
+            mod.display(self.module_name,
+                        self.ioc,
+                        message_type="ERROR",
+                        string="VXstream API connection status %d" % respond.status_code)
+            return None

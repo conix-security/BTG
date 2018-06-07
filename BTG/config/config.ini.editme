@@ -143,8 +143,8 @@ virusshare_password = None
 
 [Vxstream]
 vxstream_enabled = False
-# vxstream_api_keys_secret = [(api_keys, secret)]
-vxstream_api_keys_secret = []
+# vxstream_api_keys = ['key1', ..., 'keyN']
+vxstream_api_keys = []
 
 [IRISH]
 irish_enabled = False
