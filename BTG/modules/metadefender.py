@@ -71,7 +71,6 @@ class metadefender:
             url_result = "https://www.metadefender.com/results#!/hash/"
             try:
                 json_response = json.loads(response.text)
-                print(json_response)
             except:
                 mod.display(self.module_name,
                             self.ioc,
