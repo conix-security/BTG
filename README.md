@@ -63,5 +63,9 @@ python3 BTG.py http://mydomain.com 1a72dca1f6a961f528007ef04b6959d8 45.34.191.17
 ```
 
 #### Authors
-- Lancelot Bogard
+CERT-Conix folks:
+- Lancelot Bogard (v1)
+- Tanguy Becam (v2)
+- Alexandra Toussaint
+- Hicham Megherbi
 - Robin Marsollier
