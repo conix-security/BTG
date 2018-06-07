@@ -3,6 +3,7 @@
 # Copyright (c) 2016-2017 Conix Cybersecurity
 # Copyright (c) 2016-2017 Robin Marsollier
 # Copyright (c) 2017 Alexandra Toussaint
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
@@ -24,9 +25,7 @@ import warnings
 
 from lib.io import module as mod
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    from pymisp import PyMISP
+from pymisp import PyMISP
 
 
 class Misp:
@@ -42,30 +41,33 @@ class Misp:
         self.ioc = ioc
 
         if type in self.types and mod.allowedToSearch(self.search_method):
-            self.Search()
+            length = len(self.config['misp_url'])
+            if length != len(self.config['misp_key']) and length <= 0:
+                mod.display(self.module_name,
+                            message_type="ERROR",
+                            string="MISP fields in config.ini are missfilled, checkout commentaries.")
+                return
+            for indice in range(len(self.config['viper_server'])):
+                misp_url = self.config['misp_url'][indice]
+                misp_key = self.config['misp_key'][indice]
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    self.Search(misp_url, misp_key)
         else:
             mod.display(self.module_name, "", "INFO", "MISP module not activated")
 
-    def Search(self):
+    def Search(self, misp_url, misp_key):
         mod.display(self.module_name, "", "INFO", "Search in misp...")
         try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                if ("misp_url" in self.config and
-                        "misp_key" in self.config and
-                        "misp_verifycert" in self.config):
-                    m = PyMISP(self.config["misp_url"],
-                               self.config["misp_key"],
-                               self.config["misp_verifycert"],
-                               'json')
-                else:
-                    mod.display(self.module_name,
-                                message_type="ERROR",
-                                string=("Check if you have misp_url, misp_key and misp_verifycert"
-                                        "in config.ini"))
-                    sys.exit()
-        except Exception as e:
-            mod.display(self.module_name, self.ioc, "ERROR", e)
+            m = PyMISP(misp_url,
+                       misp_key,
+                       self.config["misp_verifycert"],
+                       'json')
+        except:
+            mod.display(self.module_name,
+                        message_type="ERROR",
+                        string=("Could not establish connection to MISP. Check if you have misp_url,"
+                        "misp_key and misp_verifycert in config.ini"))
             return
         result = m.search_all(self.ioc)
         try:
@@ -85,22 +87,24 @@ class Misp:
                                         message_type="ERROR",
                                         string="Check if you have misp_tag_display in config.ini")
                 except:
-                    pass
+                    return
                 if len(tag_display) != 0:
                     tag_display = "%s]"%tag_display
                 mod.display(self.module_name,
                             self.ioc,
                             "FOUND",
                             "%s Event: %sevents/view/%s"%(tag_display,
-                                                          self.config["misp_url"],
+                                                          misp_url,
                                                           event["Event"]["id"]))
         except:
             try:
                 if result['message'] == "No matches":
                     pass
                 elif "Authentication failed" in result['message']:
-                    mod.display(__name__.split(".")[1],
+                    mod.display(self.module_name,
                                 message_type="ERROR",
                                 string=result['message'])
             except:
-                pass
+                mod.display(self.module_name,
+                            message_type="ERROR",
+                            string="Impossible to fetch HTTP response.")

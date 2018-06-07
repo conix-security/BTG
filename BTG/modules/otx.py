@@ -65,11 +65,15 @@ class Otx:
                 result = otx.get_indicator_details_full(indicator, self.ioc)
             else:
                 mod.display(self.module_name,
+                            self.ioc,
                             message_type="ERROR",
                             string="Please check if you have otx_api_keys field in config.ini")
-        except Exception as e:
-            mod.display(self.module_name, self.ioc, "ERROR", e)
-            return
+        except:
+            mod.display(self.module_name,
+                        self.ioc,
+                        "ERROR",
+                        "Could not perform the request, either you did not fill the otx_apièkeys field or the key maximum request is reached")
+            return None
         try:
             if self.ioc == str(result["general"]["indicator"]):
                 _id = str(result["general"]["pulse_info"]["pulses"][0]["id"])

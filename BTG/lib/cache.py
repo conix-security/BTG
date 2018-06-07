@@ -2,6 +2,7 @@
 # Copyright (c) 2016-2017 Conix Cybersecurity
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
@@ -27,7 +28,7 @@ from time import mktime
 import requests
 from requests.exceptions import ConnectionError, ReadTimeout
 
-from config_parser import Config
+from config.config_parser import Config
 from lib.io import module as mod
 
 
@@ -64,6 +65,8 @@ class Cache:
         return f
 
     def downloadFile(self):
+        # TODO
+        # This function need some patching
         """
             Get file from web
         """
@@ -103,11 +106,18 @@ class Cache:
                         f.write(chunk)
                 if to_chmod:
                     chmod(self.temp_file, 0o777)
-                remove("%s.lock"%self.temp_file)
+                try:
+                    remove("%s.lock"%self.temp_file)
+                except:
+                    raise No_such_file('Race concurency between multiple instance of BTG, \
+                                        cannot remove already deleted file')
+        elif self.module_name == "malshare" and r.status.code == 404:
+            # When we have a 404 from malshare it is a valid negative response
+            raise malshare404('Hash not found on malshare, it is alright')
         else:
             mod.display("%s.cache"%self.module_name,
                         message_type="ERROR",
-                        string="Response code: %s | %s%s"%(r.status_code, self.url, self.filename))
+                        string="Response code: %s | %s"%(r.status_code, full_url))
 
     def checkIfUpdate(self):
         """
@@ -139,7 +149,7 @@ class Cache:
                 mkdir(self.config["temporary_cache_path"])
             except:
                 mod.display("%s.cache"%self.module_name,
-                            message_type="ERROR",
+                            message_type="FATAL_ERROR",
                             string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
                 sys.exit()
             chmod(self.config["temporary_cache_path"], 0o777)

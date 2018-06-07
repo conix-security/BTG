@@ -4,6 +4,7 @@
 # Copyright (c) 2017 Lancelot Bogard
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
@@ -49,19 +50,24 @@ class Misp_Crawler:
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in misp crawler...")
         with requests.Session() as s:
-            self.loginRequest(s)
-            allEvents = self.searchAttribute(s)
-            for event in allEvents:
-                if "misp_crawler_url" in self.config:
-                    mod.display(self.module_name,
-                                self.ioc,
-                                "FOUND",
-                                "Event: %s/events/view/%s"%(self.config["misp_crawler_url"],
-                                                            event))
-                else:
-                    mod.display(self.module_name,
-                                message_type="ERROR",
-                                string="Check if you have misp_crawler_url in config.ini")
+            try:
+                self.loginRequest(s)
+                allEvents = self.searchAttribute(s)
+                for event in allEvents:
+                    if "misp_crawler_url" in self.config:
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "Event: %s/events/view/%s"%(self.config["misp_crawler_url"],
+                                                                event))
+                    else:
+                        mod.display(self.module_name,
+                                    message_type="ERROR",
+                                    string="Check if you have misp_crawler_url in config.ini")
+            except:
+                mod.display(self.module_name,
+                            message_type="ERROR",
+                            string="Could not perform the request, checkout config.ini at [%s]" % (self.module_name))
 
     def searchAttribute(self, s):
         if ("misp_crawler_url" in self.config and

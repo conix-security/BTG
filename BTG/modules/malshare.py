@@ -56,6 +56,7 @@ class Malshare():
                                                    url,
                                                    path,
                                                    self.search_method).content)
+
                         safe_urls = []
                         for malware_url in content["SOURCES"]:
                             safe_urls.append(malware_url.replace("http", "hxxp"))

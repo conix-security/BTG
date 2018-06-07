@@ -3,5 +3,8 @@ pymisp
 dnspython
 requests-cache
 netaddr
+rq
+redis
+tldextract
 -e git+https://github.com/devhub/domaintools.git#egg=domaintools
 otxv2

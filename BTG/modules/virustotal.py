@@ -41,6 +41,7 @@ class Virustotal:
         self.creation_date = "13-09-2016"
         self.type = type
         self.ioc = ioc
+
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
         else:
@@ -82,11 +83,11 @@ class Virustotal:
                     json_content = json.loads(response_content)
                     break
                 except :
-                    mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
-                    sleep(randint(5, 10))
+                    mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key?")
+                    return None
             else :
-                mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(response.getcode()))
-                return
+                mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(req.status_code))
+                return None
         try:
             if json_content["positives"]:
                 mod.display(self.module_name,
@@ -114,12 +115,8 @@ class Virustotal:
                 json_content = json.loads(req.text)
                 break
             except:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "WARNING",
-                            "Virustotal json decode fail. Blacklisted/Bad API key? (Sleep 10sec).")
-                sleep(randint(5, 10))
-                pass
+                mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key?")
+                return None
         try:
             if json_content["positives"]:
                 mod.display(self.module_name,
