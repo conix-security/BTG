@@ -1,6 +1,5 @@
 import setuptools
 import os
-import pypandoc
 
 setuptools.setup(
     name="BTG",
