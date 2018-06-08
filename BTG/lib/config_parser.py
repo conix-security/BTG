@@ -45,7 +45,8 @@ class Config():
         dir_path = os.path.dirname(os.path.realpath(__file__))
         cfile= os.path.expanduser("~/.config/BTG/btg.cfg")
         if not os.path.isfile(cfile):
-            print("BTG is not configured.\nPlease take care of config file : cp config.ini.editme config.ini; vim config.ini")
+            print("BTG is not configured.\nPlease take care of config file : %s" \
+            % (cfile))
             exit(0)
         conf.read(cfile)
         Config.__args = {option: ast.literal_eval(conf.get(section, option)) for section in conf.sections() for option in conf.options(section)}
