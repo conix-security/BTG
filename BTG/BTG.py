@@ -23,33 +23,28 @@
 
 import argparse
 import importlib
-
 import sys
 from base64 import b64decode
 from os import listdir, path, remove, kill, killpg, setsid, getpgid, mkdir, chmod
 from os.path import isfile, join, exists, abspath, isdir
-
-import validators
-from lib.io import module as mod
-from lib.io import logSearch
-from lib.io import errors as err
-from lib.io import colors
-
-from lib.worker_tasks import module_worker
-
 import re
 import tldextract
 import time
 from datetime import datetime
-
 from rq import Connection, Queue, Worker
 from redis import Redis
-from lib.redis_config import init_redis, init_queue, init_worker, number_of_worker
-
+import validators
 import subprocess
 import signal
 
+from lib.io import module as mod
+from lib.io import logSearch
+from lib.io import errors as err
+from lib.io import colors
+from lib.worker_tasks import module_worker
+from lib.redis_config import init_redis, init_queue, init_worker, number_of_worker
 from lib.config_parser import Config
+
 config = Config.get_instance()
 version = "2.0"     # BTG version
 

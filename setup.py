@@ -20,14 +20,18 @@
 import setuptools
 import os
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setuptools.setup(
     name="BTG",
-    packages=["BTG"],
-    version="2.0",
+    packages=setuptools.find_packages(),
+    version="2.0.3",
     author="Conix Security",
     author_email="robin.marsollier@conix.fr",
     description="This tool allows you to qualify one or more potential malicious observables of various type (URL, MD5, SHA1, SHA256, SHA512, IPv4, IPv6, domain etc..)",
-    url="https://github.com/conix-security/BTG",
+    long_description=long_description,
+    url="https://github.com/Guytou/BTG",
     keywords = ['ioc'],
     license="GPL-3.0",
     classifiers=(
@@ -40,4 +44,5 @@ setuptools.setup(
 	'Topic :: Internet',
     ),
     data_files=[(os.path.expanduser("~/.config/BTG"), ["BTG/config/btg.cfg"])],
+    scripts=["BTG/BTG.py"],
 )
