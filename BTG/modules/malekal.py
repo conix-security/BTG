@@ -25,7 +25,7 @@ from re import findall
 
 from requests import get
 
-from config.config_parser import Config
+from lib.config_parser import Config
 from lib.io import module as mod
 
 cfg = Config.get_instance()

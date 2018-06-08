@@ -20,7 +20,7 @@ import sys, os
 import random
 import redis
 
-from config.config_parser import Config
+from lib.config_parser import Config
 config = Config.get_instance()
 
 # Full fill connection parameter for redis, see config/config.ini

@@ -43,7 +43,7 @@ class Config():
     def _parse_config():
         conf = ConfigParser()
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        cfile="%s/config.ini"%dir_path
+        cfile= os.path.expanduser("~/.config/BTG/btg.cfg")
         if not os.path.isfile(cfile):
             print("BTG is not configured.\nPlease take care of config file : cp config.ini.editme config.ini; vim config.ini")
             exit(0)

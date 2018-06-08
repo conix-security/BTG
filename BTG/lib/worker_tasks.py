@@ -21,7 +21,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 import importlib
 from lib.io import module as mod
-from config.config_parser import Config
+from lib.config_parser import Config
 config = Config.get_instance()
 
 def module_worker(module, argument, type):

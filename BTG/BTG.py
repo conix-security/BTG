@@ -33,6 +33,7 @@ import validators
 from lib.io import module as mod
 from lib.io import logSearch
 from lib.io import errors as err
+from lib.io import colors
 
 from lib.worker_tasks import module_worker
 
@@ -48,7 +49,7 @@ from lib.redis_config import init_redis, init_queue, init_worker, number_of_work
 import subprocess
 import signal
 
-from config.config_parser import Config
+from lib.config_parser import Config
 config = Config.get_instance()
 version = "2.0"     # BTG version
 
@@ -420,8 +421,8 @@ if __name__ == '__main__':
         '''
         time.sleep(2)
         print("\n ")
-        print('\033[38;5;9m' + '\033[1m' + "A FATAL_ERROR occured or you pressed CTRL+C")
-        print("Closing the worker, and clearing pending jobs ...")
+        print(colors.FATAL_ERROR + colors.BOLD + "A FATAL_ERROR occured or you pressed CTRL+C")
+        print("Closing the worker, and clearing pending jobs ..." + colors.NORMAL)
         print("\n")
 
         try:

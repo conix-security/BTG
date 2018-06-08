@@ -27,7 +27,7 @@ from os import chmod
 from os.path import exists
 from platform import system
 
-from config.config_parser import Config
+from lib.config_parser import Config
 
 class module:
     """

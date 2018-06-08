@@ -20,12 +20,14 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
 #### Module list:
     CuckooSandbox API
     Cybercrime-tracker
+    FeodoTracker
     DShield
     Google Safe Browsing
     IRIS-H
     Lehigh
     Malekal
     Malshare
+    Malwareconfig
     Malwaredomainlist
     Malwaredomains
     MalwareTeks
@@ -39,6 +41,7 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
     SpamHaus
     SSLBlacklist
     Tor exit nodes
+    UrlHaus
     Viper
     VirusShare
     VirusTotal
@@ -52,13 +55,14 @@ sudo apt install python3 python3-pip git
 git clone https://github.com/conix-security/BTG
 cd BTG
 sudo pip3 install -r requirements.txt
-cp config.ini.editme config.ini
-vim config.ini
+python3 setup.py install --user
+vim ~/.config/BTG/btg.cfg
 ```
 Activate and fill licence key for modules you need to use.
 
 #### Usage
 ```
+cd BTG
 python3 BTG.py http://mydomain.com 1a72dca1f6a961f528007ef04b6959d8 45.34.191.173
 ```
 

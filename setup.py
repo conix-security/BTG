@@ -1,4 +1,6 @@
 import setuptools
+import os
+import pypandoc
 
 setuptools.setup(
     name="BTG",
@@ -9,6 +11,7 @@ setuptools.setup(
     description="This tool allows you to qualify one or more potential malicious observables of various type (URL, MD5, SHA1, SHA256, SHA512, IPv4, IPv6, domain etc..)",
     url="https://github.com/conix-security/BTG",
     keywords = ['ioc'],
+    license="GPL-3.0",
     classifiers=(
         'Operating System :: POSIX :: Linux',
         'Intended Audience :: Science/Research',
@@ -18,4 +21,5 @@ setuptools.setup(
         'Topic :: Security',
 	'Topic :: Internet',
     ),
+    data_files=[(os.path.expanduser("~/.config/BTG"), ["BTG/config/btg.cfg"])],
 )
