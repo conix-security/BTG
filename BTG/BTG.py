@@ -21,12 +21,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import argparse
-import importlib
-import sys
-from base64 import b64decode
+import BTG
+
+import sys, os
 from os import listdir, path, remove, kill, killpg, setsid, getpgid, mkdir, chmod
 from os.path import isfile, join, exists, abspath, isdir
+
+import argparse
+import importlib
+from base64 import b64decode
 import re
 import tldextract
 import time
@@ -342,7 +345,6 @@ class Utils:
             sys.exit()
 
         return processes
-
 
 if __name__ == '__main__':
     args = Utils.parse_args()
