@@ -59,11 +59,12 @@ python3 setup.py install --user
 vim ~/.config/BTG/btg.cfg
 ```
 Activate and fill licence key for modules you need to use.
+NB : you need a redis-server to run BTG
 
 #### Usage
 ```
 cd BTG
-python3 BTG.py http://mydomain.com 1a72dca1f6a961f528007ef04b6959d8 45.34.191.173
+btg http://mydomain.com 1a72dca1f6a961f528007ef04b6959d8 45.34.191.173
 ```
 
 #### Authors
