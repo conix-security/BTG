@@ -30,7 +30,6 @@ from BTG.lib.async_http import store_request
 cfg = Config.get_instance()
 if system() != "Windows":
     import requests_cache
-
     requests_cache.install_cache('%sBTG' % cfg["sqlite_path"])
 
 

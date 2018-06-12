@@ -18,13 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import requests
-import json
+import csv
+
 from BTG.lib.io import module as mod
 from BTG.lib.cache import Cache
-from random import choice, randint
-import time
-import csv
 
 class urlhaus():
     """

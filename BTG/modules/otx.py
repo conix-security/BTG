@@ -20,11 +20,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from BTG.lib.io import module as mod
-
-from OTXv2 import OTXv2
 import IndicatorTypes
+from OTXv2 import OTXv2
 
+from BTG.lib.io import module as mod
 
 class Otx:
     def __init__(self, ioc, type, config, queues):

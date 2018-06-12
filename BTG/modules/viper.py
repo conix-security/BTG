@@ -21,8 +21,8 @@
 
 import requests
 import json
-from BTG.lib.io import module as mod
 
+from BTG.lib.io import module as mod
 
 class Viper:
     def __init__(self, ioc, type, config, queues):

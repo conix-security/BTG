@@ -18,10 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import requests
 import json
+from random import choice
+
 from BTG.lib.io import module as mod
-from random import choice, randint
 from BTG.lib.async_http import store_request
 
 class metadefender:

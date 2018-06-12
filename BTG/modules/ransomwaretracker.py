@@ -23,7 +23,6 @@
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
-
 class Ransomwaretracker:
     def __init__(self, ioc, type, config, queues):
         self.config = config

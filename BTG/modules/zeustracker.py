@@ -20,9 +20,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import validators
+
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
-
 
 class Zeustracker:
     def __init__(self, ioc, type, config, queues):

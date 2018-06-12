@@ -22,11 +22,9 @@
 
 import sys
 import warnings
-
-from BTG.lib.io import module as mod
-
 from pymisp import PyMISP
 
+from BTG.lib.io import module as mod
 
 class Misp:
     def __init__(self, ioc, type, config, queues):

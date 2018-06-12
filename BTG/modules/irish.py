@@ -19,9 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import json
+
 from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
-import json
 
 class Irish():
     def __init__(self, ioc, type, config, queues):

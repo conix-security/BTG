@@ -19,11 +19,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import re
-
 import requests
 
 from BTG.lib.io import module as mod
-
 
 class Virusshare:
     def __init__(self, ioc, type, config, queues):

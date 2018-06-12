@@ -19,10 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from BTG.lib.cache import Cache
-from BTG.lib.io import module as mod
 from netaddr import IPAddress, IPNetwork
 
+from BTG.lib.cache import Cache
+from BTG.lib.io import module as mod
 
 class Spamhaus:
     def __init__(self, ioc, type, config, queues):
