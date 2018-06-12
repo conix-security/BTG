@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright (c) 2016-2017 Conix Cybersecurity
+# Copyright (c) 2016-2018 Conix Cybersecurity
 # Copyright (c) 2016-2017 Lancelot Bogard
 # Copyright (c) 2016-2017 Robin Marsollier
 # Copyright (c) 2017 Alexandra Toussaint
@@ -21,32 +21,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import BTG
-
-import sys, os
-from os import listdir, path, remove, kill, killpg, setsid, getpgid, mkdir, chmod
-from os.path import isfile, join, exists, abspath, isdir
-
+import sys
+from os import listdir, path, remove, kill, killpg, setsid, getpgid, mkdir, chmod, makedirs
+from os.path import isfile, join, exists, abspath, isdir, dirname
+from base64 import b64decode
 import argparse
 import importlib
-from base64 import b64decode
 import re
 import tldextract
 import time
 from datetime import datetime
 from rq import Connection, Queue, Worker
+import redis
 from redis import Redis
-import validators
 import subprocess
 import signal
+import validators
 
-from lib.io import module as mod
-from lib.io import logSearch
-from lib.io import errors as err
-from lib.io import colors
-from lib.worker_tasks import module_worker
-from lib.redis_config import init_redis, init_queue, init_worker, number_of_worker
-from lib.config_parser import Config
+from BTG.lib.io import module as mod
+from BTG.lib.io import logSearch
+from BTG.lib.io import errors as err
+from BTG.lib.io import colors
+from BTG.lib.worker_tasks import module_worker_request
+from BTG.lib.redis_config import init_redis, init_queue, init_worker, number_of_worker
+from BTG.lib.config_parser import Config
 
 config = Config.get_instance()
 version = "2.0"     # BTG version
@@ -60,24 +58,20 @@ class BTG():
         if config["debug"]:
             ret = mod.display(string="Load modules from %s"%config["modules_folder"])
 
-        global working_going
         jobs = []
         tasks = []
+        queues = [working_queue, request_queue]
 
         if args.file == "False" :
             for argument in args.observables:
-                # TODO
-                # Extending observables without doing an useless loop
                 type = self.checkType(argument)
                 if "split_observable" in config and config["split_observable"]:
                     if type == "URL":
                         self.extend_IOC(argument, observable_list)
 
-                self.run(argument,type,modules,tasks)
+                self.run(argument,type,modules,tasks,queues)
         else :
             for file in args.observables :
-                # TODO
-                # Take care of big size file ?
                 with open(file,"r") as f1 :
                     try:
                         observable_list = f1.read().strip().splitlines()
@@ -88,13 +82,11 @@ class BTG():
                     finally:
                         f1.close()
                 for argument in observable_list:
-                    # TODO
-                    # Extending observables without doing an useless loop
                     type = self.checkType(argument)
                     if "split_observable" in config and config["split_observable"]:
                         if type == "URL":
                             self.extend_IOC(argument, observable_list)
-                    self.run(argument,type,modules,tasks)
+                    self.run(argument,type,modules,tasks,queues)
 
 
     def extend_IOC(self, argument, observable_list):
@@ -141,7 +133,7 @@ class BTG():
                 observable_list.append(IP)
 
 
-    def run(self, argument, type, modules, tasks):
+    def run(self, argument, type, modules, tasks, queues):
         """
             Main observable module requests
         """
@@ -149,13 +141,13 @@ class BTG():
         if type is None:
             mod.display("MAIN",
                         message_type="WARNING",
-                        string="IOC: %s | has an undefined type: %s" % (argument, type))
+                        string="IOC : %s has an undefined type : %s" % (argument, type))
             return None
         for module in modules:
             if module+"_enabled" in config and config[module+"_enabled"]:
                 try :
-                    task = working_going.enqueue(module_worker,
-                                    args=(module, argument, type),result_ttl=0)
+                    task = working_going.enqueue(module_worker_request,
+                                    args=(module, argument, type, queues),result_ttl=0)
                     tasks.append(task)
                 except :
                     mod.display("MAIN",
@@ -188,10 +180,6 @@ class BTG():
         elif validators.domain(argument):
             return "domain"
         else:
-            # mod.display("MAIN",
-            #             argument,
-            #             "ERROR",
-            #             "Unable to retrieve observable type")
             return None
 
 
@@ -262,7 +250,8 @@ class Utils:
     def createLoggingFolder():
         if not isdir(config["log_folder"]):
             try:
-                mkdir(config["log_folder"])
+                print(config["log_folder"])
+                makedirs(config["log_folder"])
             except:
                 mod.display("MAIN",
                             message_type="FATAL_ERROR",
@@ -313,6 +302,7 @@ class Utils:
                     break
                 is_busy = False
             time.sleep(1)
+        time.sleep(3)
 
     def shut_down(processes, working_going, failed_queue, sig_int=True):
         if not sig_int:
@@ -335,9 +325,12 @@ class Utils:
         """
         processes = []
         max_worker = number_of_worker()
+        worker_path = dirname(__file__)+'/lib/run_worker.py '
+        poller_path = dirname(__file__)+'/lib/poller.py '
         try :
             for i in range(max_worker):
-                processes.append(subprocess.Popen(['python3 ./lib/run_worker.py '+working_queue], shell=True, preexec_fn = setsid))
+                processes.append(subprocess.Popen(['python3 '+ worker_path + working_queue], shell=True, preexec_fn = setsid))
+            processes.append(subprocess.Popen(['python3 '+ poller_path + working_queue +' '+ request_queue], shell=True, preexec_fn = setsid))
         except :
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
@@ -346,7 +339,8 @@ class Utils:
 
         return processes
 
-if __name__ == '__main__':
+
+def main(argv=None):
     args = Utils.parse_args()
     # Check if the parameter is a file or a list of observables
     if exists(args.observables[0]):
@@ -371,20 +365,21 @@ if __name__ == '__main__':
     if config["display_motd"] and not args.silent:
         Utils.motd()
 
+    global working_queue, working_going, request_queue, failed_queue
     try:
-        # mkdir logging log_folder
         Utils.createLoggingFolder()
         if path.exists(config["temporary_cache_path"]):
             Utils.cleanups_lock_cache(config["temporary_cache_path"])
         logSearch(args)
         # Connecting to Redis
         redis_host, redis_port, redis_password = init_redis()
-
         try :
             with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
-                working_queue = init_queue(redis_host, redis_port, redis_password)
+                working_queue, request_queue = init_queue(redis_host, redis_port, redis_password)
                 working_going = Queue(working_queue, connection=conn)
                 failed_queue = Queue('failed', connection=conn)
+            r = redis.StrictRedis(host=redis_host, port=redis_port,
+                                  password=redis_password)
         except :
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
@@ -396,7 +391,9 @@ if __name__ == '__main__':
         start_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
         BTG(args, modules)
         # waiting for all jobs to be done
-        while len(working_going.jobs) > 0:
+        while True:
+            if len(working_going.jobs) == 0 and r.llen(request_queue) == 0:
+                break;
             time.sleep(1)
 
         try:
@@ -406,24 +403,20 @@ if __name__ == '__main__':
                         message_type="FATAL_ERROR",
                         string="Could not close subprocesses, maybe there were not any to begin with.")
             sys.exit()
-
         end_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
         errors_to_display = Utils.show_up_errors(start_time, end_time, modules)
         err.display(dict_list=errors_to_display)
-        print("\nAll works done: %s -- %s" %(start_time, end_time))
-
+        print("\n%sAll works done :\n   from %s to %s%s" % (colors.FOUND, start_time, end_time, colors.NORMAL))
     except (KeyboardInterrupt, SystemExit):
         '''
         Exit if user press CTRL+C
         '''
         time.sleep(2)
-        print("\n ")
-        print(colors.FATAL_ERROR + colors.BOLD + "A FATAL_ERROR occured or you pressed CTRL+C")
-        print("Closing the worker, and clearing pending jobs ..." + colors.NORMAL)
-        print("\n")
+        print("\n%s%sA FATAL_ERROR occured or you pressed CTRL+C" % (colors.BOLD, colors.FATAL_ERROR))
+        print("Closing the worker, and clearing pending jobs ...%s\n" % (colors.NORMAL))
 
         try:
-            Utils.shut_down(processes, working_going, failed_queue, sig_int=True)
+            Utils.shut_down(processes, working_going, failed_queue)
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",

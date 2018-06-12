@@ -23,18 +23,17 @@
 
 import re
 import warnings
-
 import requests
 
-from lib.io import module as mod
+from BTG.lib.io import module as mod
 
 warnings.filterwarnings("ignore")
 
 
 class Misp_Crawler:
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
         self.search_method = "Online"
         self.description = "Crawl MISP searching for IOC"

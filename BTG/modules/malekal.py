@@ -3,6 +3,7 @@
 # Copyright (c) 2016-2017 Conix Cybersecurity
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
@@ -22,11 +23,11 @@
 import os
 from platform import system
 from re import findall
+import json
 
-from requests import get
-
-from lib.config_parser import Config
-from lib.io import module as mod
+from BTG.lib.config_parser import Config
+from BTG.lib.io import module as mod
+from BTG.lib.async_http import store_request
 
 cfg = Config.get_instance()
 if system() != "Windows":
@@ -39,9 +40,9 @@ class Malekal:
         This module allow you to search IOC in Malekal website (HTTP Requests)
         or local directory specified in BTG configuration file.
     """
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         if "malekal_local" in self.config and "malekal_remote" in self.config:
             if self.config["malekal_local"] and not self.config["malekal_remote"]:
                 self.types = ["MD5"]
@@ -53,7 +54,7 @@ class Malekal:
         else:
             mod.display(self.module_name,
                         message_type="ERROR",
-                        string=("Check if you have malekal_local and malekal_remote"
+                        string=("Check if you have malekal_local or malekal_remote"
                                 "fields in config.ini "))
         self.search_method = "Online"
         self.description = "Search IOC in malekal database"
@@ -61,6 +62,11 @@ class Malekal:
         self.creation_date = "13-09-2016"
         self.type = type
         self.ioc = ioc
+        self.queues = queues
+        self.verbose = "GET"
+        self.headers = self.config["user_agent"]
+        self.proxy = self.config["proxy_host"]
+
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
         else:
@@ -72,7 +78,7 @@ class Malekal:
             if self.config["malekal_local"]:
                 self.localSearch()
         if "malekal_remote" in self.config:
-            if self.config["malekal_remote"] and mod.allowedToSearch(self.search_method):
+            if self.config["malekal_remote"]:
                 self.remoteSearch()
 
     def remoteSearch(self):
@@ -90,27 +96,18 @@ class Malekal:
             base = "url="
         elif self.type in ["IPv4", "IPv6"]:
             base = "domaine="
-        try:
-            if ("user_agent" in self.config and
-                    "proxy_host" in self.config and
-                    "requests_timeout" in self.config):
-                page = get(
-                    "%s%s%s"%(url, base, self.ioc),
-                    headers=self.config["user_agent"],
-                    proxies=self.config["proxy_host"],
-                    timeout=self.config["requests_timeout"]
-                ).text
-                if len(findall("hash=([a-z0-9]{32})\"", page)) > 1:
-                    mod.display("%s_remote"%self.module_name, self.ioc, "FOUND", "%s%s%s"%(
-                        url, base,
-                        self.ioc))
-            else:
-                mod.display(self.module_name,
-                            message_type="ERROR",
-                            string=("Check if you have user_agent, proxy_host and"
-                                    "requests_timeout fields in config.ini "))
-        except:
-            mod.display("%s_remote"%self.module_name, self.ioc, "INFO", "MalekalTimeout")
+        self.url = url+base+self.ioc
+
+        request = {'url' : self.url,
+                   'headers' : self.headers,
+                   'module' : self.module_name,
+                   'ioc' : self.ioc,
+                   'verbose' : self.verbose,
+                   'proxy' : self.proxy
+                   }
+
+        json_request = json.dumps(request)
+        store_request(self.queues, json_request)
 
     def localSearch(self):
         """ Search in local directory """
@@ -132,3 +129,17 @@ class Malekal:
             mod.display(self.module_name,
                         message_type="ERROR",
                         string="Check if you have malekal_files_path field in config.ini ")
+
+def response_handler(response_text, response_status, module, ioc, server_id=None):
+    if response_status == 200 :
+        matches = findall("hash=([a-z0-9]{32})\"", response_text)
+        if len(matches) >= 1:
+            mod.display("%s_remote"%module,
+                        ioc,
+                        "FOUND",
+                        "http://malwaredb.malekal.com/index.php?hash="+matches[0])
+    else:
+        mod.display(module,
+                    ioc,
+                    message_type="ERROR",
+                    string="Malekal connection status : %d" % (response_status))

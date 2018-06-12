@@ -23,10 +23,9 @@
 import json
 from platform import system
 
-from requests import get
-
-from lib.config_parser import Config
-from lib.io import module as mod
+from BTG.lib.config_parser import Config
+from BTG.lib.io import module as mod
+from BTG.lib.async_http import store_request
 
 cfg = Config.get_instance()
 if system() != "Windows":
@@ -39,10 +38,9 @@ class Cuckoosandbox:
     """
         This module allow you to search IOC in CuckooSandbox database
     """
-
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         self.types = [
             "MD5", "SHA256"
         ]
@@ -52,22 +50,28 @@ class Cuckoosandbox:
         self.creation_date = "02-03-2017"
         self.type = type
         self.ioc = ioc
+        self.queues = queues
+        self.verbose = "GET"
+        self.headers = self.config["user_agent"]
+        self.proxy = self.config["proxy_host"]
+
         if type in self.types and mod.allowedToSearch(self.search_method):
             length = len(self.config['cuckoosandbox_api_url'])
             if  length != len(self.config['cuckoosandbox_web_url']) and length <= 0:
                 mod.display(self.module_name,
                             message_type="ERROR",
                             string="Cuckoosandbox fields in config.ini are missfilled, checkout commentaries.")
-                return
+                return None
 
             for indice in range(len(self.config['cuckoosandbox_api_url'])):
                 api_url = self.config['cuckoosandbox_api_url'][indice]
                 web_url = self.config['cuckoosandbox_web_url'][indice]
-                self.search(api_url, web_url)
+                self.search(api_url, web_url, indice)
         else:
             mod.display(self.module_name, "", "INFO", "Cuckoosandbox module not activated")
+            return None
 
-    def search(self, api_url, web_url):
+    def search(self, api_url, web_url, indice):
         mod.display(self.module_name, "", "INFO", "Searching...")
         if ("cuckoosandbox_api_url" in self.config and
             "user_agent" in self.config and
@@ -78,32 +82,37 @@ class Cuckoosandbox:
                 url = "%s/files/view/md5/%s" % (api_url, self.ioc)
             elif self.type in ["SHA256"]:
                 url = "%s/files/view/sha256/%s" % (api_url, self.ioc)
+
+            request = {'url' : url,
+                       'headers' : self.headers,
+                       'module' : self.module_name,
+                       'ioc' : self.ioc,
+                       'verbose' : self.verbose,
+                       'proxy' : self.proxy,
+                       'server_id' : indice
+                       }
+            json_request = json.dumps(request)
+            store_request(self.queues, json_request)
+
+def response_handler(response_text, response_status, module, ioc, server_id):
+        web_url = cfg['cuckoosandbox_api_url'][server_id]
+        if response_status == 200 :
             try:
-                page = get(
-                    url,
-                    headers=self.config["user_agent"],
-                    proxies=self.config["proxy_host"],
-                    timeout=self.config["requests_timeout"]
-                )
+                json_response = json.loads(response_text)
             except:
-                mod.display(self.module_name,
+                mod.display(module,
+                            ioc,
                             message_type="ERROR",
-                            string="Unable to contact CuckooSandbox API")
-                return
-            if page.status_code == 200:
-                if "Error: 404 Not Found" not in page.text and "File not found" not in page.text:
-                    id_analysis = json.loads(page.text)["sample"]["id"]
-                    if "cuckoosandbox_web_url" in self.config:
-                        mod.display("%s_remote" % self.module_name,
-                                    self.ioc,
-                                    "FOUND",
-                                    "%s/view/%s" % (web_url, id_analysis))
-                    else:
-                        mod.display(self.module_name,
-                                    message_type="ERROR",
-                                    string="Check if you have cuckoosandbox_web_url in config.ini")
+                            string="CuckooSandbox json_response was not readable.")
+                return None
+
+            id_analysis = json_response["sample"]["id"]
+            mod.display("%s_remote" % self.module_name,
+                        self.ioc,
+                        "FOUND",
+                        "%s/view/%s" % (web_url, id_analysis))
         else:
-            mod.display(self.module_name,
+            mod.display(module,
+                        ioc,
                         message_type="ERROR",
-                        string=("Check if you have cuckoosandbox_api_url,user_agent,proxy_host and"
-                                "requests_timeout field in config.ini"))
+                        string="CuckooSandbox connection status : %d for server : %s" % (response_status,web_url))

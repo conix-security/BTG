@@ -16,25 +16,37 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys, os
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
-
 import importlib
-from lib.io import module as mod
-from lib.config_parser import Config
+from rq import Queue
+
+from BTG.lib.io import module as mod
+from BTG.lib.config_parser import Config
+
 config = Config.get_instance()
 
-def module_worker(module, argument, type):
+def module_worker_request(module, argument, type, queues):
     """
-        Load modules in python instance
+        Load modules in python instance to build url to request
     """
     mod.display(string="Load: %s/%s.py"%(config["modules_folder"], module))
-    obj = importlib.import_module("modules."+module)
+    obj = importlib.import_module("BTG.modules."+module)
     for c in dir(obj):
         if module+"_enabled" in config:
             if module == c.lower() and config[module+"_enabled"]:
-                attr = getattr(obj, c)(argument, type, config)
+                attr = getattr(obj, c)(argument, type, config, queues)
         else:
-            mod.display("MAIN",
+            mod.display("worker_tasks",
                         "INFO",
                         "Module : %s -- not configured" % (module))
+
+def module_worker_response(response_text, response_status, module, ioc, server_id):
+    """
+        Load modules in python instance to treat the response
+    """
+    obj = importlib.import_module("BTG.modules."+module)
+    try:
+        obj.response_handler(response_text, response_status, module, ioc, server_id)
+    except:
+        mod.display("worker_tasks",
+                    "ERROR",
+                    "Something went wrong when worker try to load response_handler from %s" % (module))

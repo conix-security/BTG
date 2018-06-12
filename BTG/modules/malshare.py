@@ -21,14 +21,14 @@
 
 import json
 
-from lib.cache import Cache
-from lib.io import module as mod
+from BTG.lib.cache import Cache
+from BTG.lib.io import module as mod
 
 
 class Malshare():
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         self.types = ["MD5", "SHA256", "SHA1"]
         self.search_method = "Online"
         self.description = "Search IOC in Malshare database"

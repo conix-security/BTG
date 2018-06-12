@@ -16,11 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys, os
 import random
 import redis
 
-from lib.config_parser import Config
+from BTG.lib.config_parser import Config
+
 config = Config.get_instance()
 
 # Full fill connection parameter for redis, see config/config.ini
@@ -39,9 +39,14 @@ def init_queue(redis_host, redis_port, redis_password):
     # Producing a large enough random name for the queue, thus we can run multiple instance of BTG
     random.seed()
     hash = hex(random.getrandbits(32))
+
     while r.get(hash) is not None:
         hash = hex(random.getrandbits(32))
-    return hash
+
+    working_queue = hash
+    request_queue = hex(int(hash, base=16) + 1)
+
+    return working_queue, request_queue
 
 # Specifying worker options : [burst, logging_level]
 def init_worker():

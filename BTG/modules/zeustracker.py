@@ -20,14 +20,14 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import validators
-from lib.cache import Cache
-from lib.io import module as mod
+from BTG.lib.cache import Cache
+from BTG.lib.io import module as mod
 
 
 class Zeustracker:
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         self.types = ["domain", "IPv4", "URL"]
         self.search_method = "Online"
         self.description = "Search domain in Lehigh feeds"

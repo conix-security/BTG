@@ -22,13 +22,13 @@ import re
 
 import requests
 
-from lib.io import module as mod
+from BTG.lib.io import module as mod
 
 
 class Virusshare:
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         self.types = ["MD5", "SHA1", "SHA256"]
         self.search_method = "Online"
         self.description = "Search IOC malware in VirusShare"
@@ -36,6 +36,9 @@ class Virusshare:
         self.creation_date = "15-11-2017"
         self.type = type
         self.ioc = ioc
+        self.queues = queues
+        self.verbose = "POST"
+        self.headers = self.config["user_agent"]
 
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
@@ -130,7 +133,7 @@ class Virusshare:
         Check if IOC Hash is found in VirusShare
         '''
         if not 'Search for "%s" returned no results.' % self.ioc in data:
-            
+
             hashs = [extract_info['MD5'],
                      extract_info['SHA1'],
                      extract_info['SHA256'],

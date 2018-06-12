@@ -20,16 +20,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from lib.io import module as mod
+from BTG.lib.io import module as mod
 
 from OTXv2 import OTXv2
 import IndicatorTypes
 
 
 class Otx:
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256"]
         self.search_method = "Online"
         self.description = "Search IOC in Alienvault database"

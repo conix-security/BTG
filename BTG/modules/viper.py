@@ -3,7 +3,6 @@
 # Copyright (c) 2017 Conix Cybersecurity
 # Copyright (c) 2017 Hicham Megherbi
 # Copyright (c) 2017 Lancelot Bogard
-# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
@@ -22,13 +21,13 @@
 
 import requests
 import json
-from lib.io import module as mod
+from BTG.lib.io import module as mod
 
 
 class Viper:
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         self.types = ["MD5", "SHA1", "SHA256", "URL", "domain", "IPv4"]
         self.search_method = "Onpremises"
         self.description = "Search IOC in Viper Database"
@@ -38,28 +37,19 @@ class Viper:
         self.ioc = ioc
 
         if type in self.types and mod.allowedToSearch(self.search_method):
-            length = len(self.config['viper_server'])
-            if  length != len(self.config['viper_api_key']) and length <= 0:
-                mod.display(self.module_name,
-                            message_type="ERROR",
-                            string="Viper fields in config.ini are missfilled, checkout commentaries.")
-                return
-            for indice in range(len(self.config['viper_server'])):
-                server = self.config['viper_server'][indice]
-                api_key = self.config['viper_api_key'][indice]
-                self.Search(server,api_key)
+            self.Search()
         else:
             mod.display(self.module_name, "", "INFO", "Viper module not activated")
 
-    def viper_api(self, server, api_key):
+    def viper_api(self):
         """
         Viper API Connection
         """
         if self.type in ["MD5", "SHA1", "SHA256"]:
-            url = "%s/api/v3/project/default/malware/?search=%s" %(server, self.ioc)
+            url = "%s/api/v3/project/default/malware/?search=%s" %(self.config["viper_server"], self.ioc)
         if self.type in ["domain", "URL", "IPv4"]:
-            url = "%s/api/v3/project/default/note/?search=%s"%(server, self.ioc)
-        headers = {'Authorization': 'Token %s' % api_key}
+            url = "%s/api/v3/project/default/note/?search=%s"%(self.config["viper_server"], self.ioc)
+        headers = {'Authorization': 'Token %s'%self.config["viper_api_key"]}
         response = requests.get(url,
                                 headers=headers,
                                 proxies=self.config["proxy_host"],
@@ -76,9 +66,9 @@ class Viper:
                         string="Viper API connection status %d" % response.status_code)
             return None
 
-    def checkToken(self, server, api_key):
-        headers = {'Authorization': 'Token %s'% api_key}
-        response = requests.get("%s/api/v3/test-auth/"%(server), headers=headers)
+    def checkToken(self):
+        headers = {'Authorization': 'Token %s'%self.config["viper_api_key"]}
+        response = requests.get("%s/api/v3/test-auth/"%(self.config["viper_server"]), headers=headers)
         content = json.loads(response.text)
         try:
             if "Authentication validated successfully" in content["message"]:
@@ -87,20 +77,21 @@ class Viper:
             return False
 
 
-    def Search(self, server, api_key):
+    def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in Viper ...")
 
         try:
             if "viper_server" in self.config and "viper_api_key" in self.config:
-                if not self.checkToken(server, api_key):
+                if not self.checkToken():
                     mod.display(self.module_name, self.ioc, "ERROR", "Bad API key")
                     return
                 if self.type in self.types:
-                    result_json = self.viper_api(server, api_key)
+                    result_json = self.viper_api()
             else:
                 mod.display(self.module_name,
                             message_type=":",
                             string="Please check if you have viper fields in config.ini")
+
         except Exception as e:
             mod.display(self.module_name, self.ioc, "ERROR", e)
             return

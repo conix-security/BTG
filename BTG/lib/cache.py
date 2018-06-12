@@ -1,5 +1,6 @@
 #!/usr/bin/python
-# Copyright (c) 2016-2017 Conix Cybersecurity
+# -*- coding: utf-8 -*-
+# Copyright (c) 2016-2018 Conix Cybersecurity
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
 # Copyright (c) 2018 Tanguy Becam
@@ -21,16 +22,14 @@
 
 import datetime
 import sys
-from os import chmod, mkdir, remove, stat
+from os import chmod, mkdir, makedirs, remove, stat
 from os.path import exists, isdir
 from time import mktime
-
 import requests
 from requests.exceptions import ConnectionError, ReadTimeout
 
-from lib.config_parser import Config
-from lib.io import module as mod
-
+from BTG.lib.config_parser import Config
+from BTG.lib.io import module as mod
 
 class Cache:
     def __init__(self, module_name, url, filename, search_method):
@@ -146,7 +145,7 @@ class Cache:
     def createModuleFolder(self):
         if not isdir(self.config["temporary_cache_path"]):
             try:
-                mkdir(self.config["temporary_cache_path"])
+                makedirs(self.config["temporary_cache_path"])
             except:
                 mod.display("%s.cache"%self.module_name,
                             message_type="FATAL_ERROR",

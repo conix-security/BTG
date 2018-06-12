@@ -2,3 +2,7 @@
 /BTG.egg-info
 /build
 /dist
+
+# Logging folder
+/logs
+/dumps

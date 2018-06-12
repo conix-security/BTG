@@ -16,13 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys, os
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
-
-from lib.io import module as mod
+import sys
 from rq import Connection, Queue, Worker
 from redis import Redis
-from redis_config import init_redis, init_worker
+
+from BTG.lib.redis_config import init_redis, init_queue, init_worker
 
 if __name__ == '__main__':
     # Connecting to Redis

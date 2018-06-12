@@ -3,6 +3,7 @@
 # Copyright (c) 2016-2017 Conix Cybersecurity
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
+# Copyright (c) 2018 Tanguy Becam
 #
 # This file is part of BTG.
 #
@@ -23,17 +24,18 @@ from requests import post
 from json import loads
 from random import choice, randint
 from time import sleep
-from lib.io import module as mod
+from BTG.lib.io import module as mod
 import ast
 import json
+from BTG.lib.async_http import store_request
 
 class Virustotal:
     """
         This module allow you to search IOC in Virustotal
     """
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         self.types = ["MD5", "SHA1", "SHA256", "URL", "IPv4", "domain"]
         self.search_method = "Online"
         self.description = "Search IOC in VirusTotal database"
@@ -41,6 +43,10 @@ class Virustotal:
         self.creation_date = "13-09-2016"
         self.type = type
         self.ioc = ioc
+        self.queues = queues
+        self.verbose = "POST"
+        self.headers = self.config["user_agent"]
+        self.proxy = self.config["proxy_host"]
 
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
@@ -60,70 +66,63 @@ class Virustotal:
             mod.display(self.module_name, self.ioc, "ERROR", "Please provide your authkey.")
             return
         if self.type in ["URL", "domain", "IPv4"]:
-            self.searchURL()
+            request = self.searchURL()
         else:
-            self.searchReport()
+            request = self.searchReport()
+        store_request(self.queues, request)
 
     def searchReport(self):
         self.url = "https://www.virustotal.com/vtapi/v2/file/report"
         parameters = {"resource": self.ioc,
                       "apikey": self.key,
-                      "allinfo": 1}
-        while True:
-            req = post(
-                        self.url,
-                        headers=self.config["user_agent"],
-                        proxies=self.config["proxy_host"],
-                        timeout=self.config["requests_timeout"],
-                        data = parameters
-                    )
-            if req.status_code == 200 :
-                response_content = req.text
-                try:
-                    json_content = json.loads(response_content)
-                    break
-                except :
-                    mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key?")
-                    return None
-            else :
-                mod.display(self.module_name, self.ioc, "ERROR", "VirusTotal returned "+ str(req.status_code))
-                return None
-        try:
-            if json_content["positives"]:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "FOUND",
-                            "Score: %s/%s | %s"%(json_content["positives"],
-                                                 json_content["total"],
-                                                 json_content["permalink"]))
-        except:
-            pass
+                      "allinfo": 1
+                      }
+        request = {"url" : self.url,
+                   "headers" : self.headers,
+                   "data" : parameters,
+                   "module" : self.module_name,
+                   "ioc" : self.ioc,
+                   "verbose" : self.verbose,
+                   "proxy" : self.proxy
+                   }
+        json_request = json.dumps(request)
+        return json_request
 
     def searchURL(self):
         self.url = "http://www.virustotal.com/vtapi/v2/url/report"
         parameters = {"resource": self.ioc,
-                      "apikey": self.key}
-        while True:
-            req = post(
-                self.url,
-                headers=self.config["user_agent"],
-                proxies=self.config["proxy_host"],
-                timeout=self.config["requests_timeout"],
-                data = parameters
-            )
-            try:
-                json_content = json.loads(req.text)
-                break
-            except:
-                mod.display(self.module_name, self.ioc, "WARNING", "Virustotal json decode fail. Blacklisted/Bad API key?")
-                return None
+                      "apikey": self.key
+                      }
+        request = {"url" : self.url,
+                   "headers" : self.headers,
+                   "data" : parameters,
+                   "module" : self.module_name,
+                   "ioc" : self.ioc,
+                   "verbose" : self.verbose,
+                   "proxy" : self.proxy
+                   }
+        json_request = json.dumps(request)
+        return json_request
+
+def response_handler(response_text, response_status, module, ioc, server_id=None):
+    if response_status == 200 :
         try:
-            if json_content["positives"]:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "FOUND",
-                            "Score: %s/%s | %s"%(json_content["positives"],
-                                                 json_content["total"],
-                                                 json_content["permalink"]))
+            json_content = json.loads(response_text)
         except:
-            pass
+            mod.display(module,
+                        ioc,
+                        message_type="ERROR",
+                        string="VirusTotal json_response was not readable.")
+            return None
+        if "positives" in json_content and json_content["positives"] > 0:
+            mod.display(module,
+                        ioc,
+                        "FOUND",
+                        "Score: %d/%d | %s"%(json_content["positives"],
+                                             json_content["total"],
+                                             json_content["permalink"]))
+    else:
+        mod.display(module,
+                    ioc,
+                    message_type="ERROR",
+                    string="VirusTotal response.code_status : %d" % (response_status))

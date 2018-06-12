@@ -20,16 +20,17 @@
 
 import requests
 import json
-from lib.io import module as mod
+from BTG.lib.io import module as mod
 from random import choice, randint
+from BTG.lib.async_http import store_request
 
 class metadefender:
     """
         This module performs a Safe Browsing Lookup to Google API
     """
-    def __init__(self, ioc, type, config):
+    def __init__(self, ioc, type, config, queues):
         self.config = config
-        self.module_name = __name__.split(".")[1]
+        self.module_name = __name__.split(".")[-1]
         self.types = ["MD5", "SHA1", "SHA256", "SHA512"]
         self.search_method = "Online"
         self.description = "Search IOC in MetaDefender"
@@ -37,21 +38,23 @@ class metadefender:
         self.creation_date = "13-04-2018"
         self.type = type
         self.ioc = ioc
+        self.queues = queues
+        self.verbose = "GET"
+        self.headers = self.config["user_agent"]
+        self.proxy = self.config["proxy_host"]
 
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.Search()
         else:
             mod.display(self.module_name, "", "INFO", "MetaDefender module not activated")
 
-
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in MetaDefender ...")
 
-        headers = {'apikey' : ''}
         try:
             if 'metadefender_api_keys' in self.config:
                 api_key = choice(self.config['metadefender_api_keys'])
-                headers['apikey'] = api_key
+                self.headers['apikey'] = api_key
             else:
                 mod.display(self.module_name,
                             self.ioc,
@@ -63,40 +66,47 @@ class metadefender:
             return None
 
         # URL building
-        url="https://api.metadefender.com/v2/hash/" + self.ioc
+        self.url="https://api.metadefender.com/v2/hash/" + self.ioc
 
-        response = requests.get(url, headers=headers)
+        request = {'url' : self.url,
+                   'headers' : self.headers,
+                   'module' : self.module_name,
+                   'ioc' : self.ioc,
+                   'verbose' : self.verbose,
+                   'proxy' : self.proxy
+                   }
 
-        if response.status_code == 200:
-            url_result = "https://www.metadefender.com/results#!/hash/"
-            try:
-                json_response = json.loads(response.text)
-            except:
-                mod.display(self.module_name,
-                            self.ioc,
-                            message_type="WARNING",
-                            string="MetaDefender json_response was not readable.")
-                return None
+        json_request = json.dumps(request)
+        store_request(self.queues, json_request)
 
-            if json_response[self.ioc.upper()] == "Not Found":
-                return None
-            elif json_response['scan_all_result_a'] == "Clear":
-                return None
-            elif json_response['scan_all_result_a'] == "Infected" \
-                or json_response['scan_all_result_a'] == "Suspicious":
-                mod.display(self.module_name,
-                            self.ioc,
-                            message_type="FOUND",
-                            string=url_result+json_response['data_id'])
-            else:
-                mod.display(self.module_name,
-                            self.ioc,
-                            message_type="ERROR",
-                            string="MetaDefender json_response was not as expected, API may has been updated.")
-
-        else:
-            mod.display(self.module_name,
-                        self.ioc,
+def response_handler(response_text, response_status, module, ioc, server_id=None):
+    if response_status == 200 :
+        url_result = "https://www.metadefender.com/results#!/hash/"
+        try:
+            json_response = json.loads(response_text)
+        except:
+            mod.display(module,
+                        ioc,
                         message_type="ERROR",
-                        string="MetaDefender API connection status %d" % response.status_code)
+                        string="MetaDefender json_response was not readable.")
             return None
+        if json_response[ioc.upper()] == "Not Found":
+            return None
+        elif json_response['scan_all_result_a'] == "Clear":
+            return None
+        elif json_response['scan_all_result_a'] == "Infected" \
+            or json_response['scan_all_result_a'] == "Suspicious":
+            mod.display(module,
+                        ioc,
+                        message_type="FOUND",
+                        string=url_result+json_response['data_id'])
+        else:
+            mod.display(module,
+                        ioc,
+                        message_type="ERROR",
+                        string="MetaDefender json_response was not as expected, API may has been updated.")
+    else:
+        mod.display(module,
+                    ioc,
+                    message_type="ERROR",
+                    string="MetaDefender response.code_status : %d" % (response_status))

@@ -1,5 +1,6 @@
 #!/usr/bin/python
-# Copyright (c) 2016-2017 Conix Cybersecurity
+# -*- coding: utf-8 -*-
+# Copyright (c) 2016-2018 Conix Cybersecurity
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
 # Copyright (c) 2018 Tanguy Becam
@@ -19,15 +20,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys, os
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
-
 from datetime import datetime
 from os import chmod
 from os.path import exists
 from platform import system
 
-from lib.config_parser import Config
+from BTG.lib.config_parser import Config
 
 class module:
     """
@@ -81,6 +79,7 @@ class module:
             elif message_type == "FATAL_ERROR":
                 log_path = log_folder + config["log_error_file"]
                 if not exists(log_path):
+                    print(log_path)
                     open(log_path, 'a').close()
                     chmod(log_path, 0o777)
                 f = open(log_path, 'a')
