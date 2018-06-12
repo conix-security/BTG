@@ -49,7 +49,7 @@ setuptools.setup(
     data_files=[(os.path.expanduser("~/.config/BTG"), ["BTG/config/btg.cfg"])],
     entry_points={
         'console_scripts':[
-            'shortcut_BTG = BTG.BTG:main'
+            'btg = BTG.BTG:main'
         ],
     },
 )
