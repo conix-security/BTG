@@ -22,7 +22,7 @@ import setuptools, sys, os, BTG
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'BTG'))
 
 
-with open("README.md", "r") as fh:
+with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
