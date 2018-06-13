@@ -250,7 +250,6 @@ class Utils:
     def createLoggingFolder():
         if not isdir(config["log_folder"]):
             try:
-                print(config["log_folder"])
                 makedirs(config["log_folder"])
             except:
                 mod.display("MAIN",
