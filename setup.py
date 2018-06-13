@@ -20,6 +20,11 @@
 import setuptools, sys, os, BTG
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'BTG'))
+if not 'SUDO_USER' in os.environ:
+    HOME_PATH = os.path.expanduser("~/.config/BTG")
+else:
+    USER = os.environ['SUDO_USER']
+    HOME_PATH = "/home/%s/.config/BTG" % USER
 
 
 with open("README.rst", "r") as fh:
@@ -46,7 +51,7 @@ setuptools.setup(
         'Topic :: Security',
 	    'Topic :: Internet',
     ),
-    data_files=[(os.path.expanduser("~/.config/BTG"), ["BTG/config/btg.cfg"])],
+    data_files=[(HOME_PATH, ["BTG/config/btg.cfg"])],
     entry_points={
         'console_scripts':[
             'btg = BTG.BTG:main'
