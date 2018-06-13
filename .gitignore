@@ -1,8 +1,11 @@
 # Pypi packaging
-/BTG.egg-info
+/**.egg-info
 /build
 /dist
 
 # Logging folder
 /logs
 /dumps
+
+# .gitignore because I have to
+.gitignore
