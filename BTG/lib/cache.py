@@ -64,8 +64,6 @@ class Cache:
         return f
 
     def downloadFile(self):
-        # TODO
-        # This function need some patching
         """
             Get file from web
         """

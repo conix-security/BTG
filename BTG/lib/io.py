@@ -79,7 +79,6 @@ class module:
             elif message_type == "FATAL_ERROR":
                 log_path = log_folder + config["log_error_file"]
                 if not exists(log_path):
-                    print(log_path)
                     open(log_path, 'a').close()
                     chmod(log_path, 0o777)
                 f = open(log_path, 'a')

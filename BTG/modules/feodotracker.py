@@ -42,8 +42,6 @@ class feodotracker():
             mod.display(self.module_name, "", "INFO", "FeodoTracker module not activated")
             return None
 
-    # TODO
-    # OFFLINE research from local .txt
     def search(self):
         mod.display(self.module_name, "", "INFO", "Search in FeodoTracker ...")
         url = "https://feodotracker.abuse.ch/blocklist/?download="
