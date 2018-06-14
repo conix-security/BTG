@@ -90,12 +90,16 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                         message_type="ERROR",
                         string="MetaDefender json_response was not readable.")
             return None
-        if json_response[ioc.upper()] == "Not Found":
+        if ioc in json_response:
+            if json_response[ioc] == "Not Found":
+                return None
+        elif ioc.upper() in json_response:
+            if json_response[ioc.upper()] == "Not Found":
+                return None
+        elif json_response['scan_results']['scan_all_result_a'] == "Clear":
             return None
-        elif json_response['scan_all_result_a'] == "Clear":
-            return None
-        elif json_response['scan_all_result_a'] == "Infected" \
-            or json_response['scan_all_result_a'] == "Suspicious":
+        elif json_response['scan_results']['scan_all_result_a'] == "Infected" \
+            or json_response['scan_results']['scan_all_result_a'] == "Suspicious":
             mod.display(module,
                         ioc,
                         message_type="FOUND",
