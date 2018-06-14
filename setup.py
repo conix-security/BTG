@@ -39,7 +39,7 @@ setuptools.setup(
     description="This tool allows you to qualify one or more potential malicious observables of various type (URL, MD5, SHA1, SHA256, SHA512, IPv4, IPv6, domain etc..)",
     long_description=long_description,
     include_package_data=True,
-    url="https://github.com/Guytou/BTG",
+    url="https://github.com/conix-security/BTG",
     keywords = ['ioc'],
     license="GPLv3",
     classifiers=(

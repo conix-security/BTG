@@ -55,15 +55,14 @@ sudo apt install python3 python3-pip git
 git clone https://github.com/conix-security/BTG
 cd BTG
 sudo pip3 install -r requirements.txt
-python3 setup.py install --user
+sudo python3 setup.py install
 vim ~/.config/BTG/btg.cfg
 ```
-Activate and fill licence key for modules you need to use.
+Activate and fill licence key for modules you need to use.  
 NB : you need a redis-server to run BTG
 
 #### Usage
 ```
-cd BTG
 btg http://mydomain.com 1a72dca1f6a961f528007ef04b6959d8 45.34.191.173
 ```
 
