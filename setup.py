@@ -33,7 +33,7 @@ with open("README.rst", "r") as fh:
 setuptools.setup(
     name="BTG test",
     packages=setuptools.find_packages(),
-    version="2.0.1",
+    version="2.1.0",
     author="Conix Security",
     author_email="robin.marsollier@conix.fr",
     description="This tool allows you to qualify one or more potential malicious observables of various type (URL, MD5, SHA1, SHA256, SHA512, IPv4, IPv6, domain etc..)",
@@ -58,3 +58,5 @@ setuptools.setup(
         ],
     },
 )
+
+os.chmod(HOME_PATH+"/btg.cfg", 0o666)
