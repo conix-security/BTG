@@ -301,7 +301,7 @@ class Utils:
                     break
                 is_busy = False
             time.sleep(1)
-        time.sleep(3)
+        time.sleep(1)
 
     def shut_down(processes, working_going, failed_queue, sig_int=True):
         if not sig_int:
@@ -313,8 +313,10 @@ class Utils:
         for process in processes:
             pgrp = getpgid(process.pid)
             killpg(pgrp, signal.SIGTERM)
-        time.sleep(3)
+        time.sleep(1)
         # Clearing potentially failed jobs because of the previous kill
+        # TODO
+        # Those should have been timed out, can we log them before clearing queue ? 
         failed_queue.empty()
 
 

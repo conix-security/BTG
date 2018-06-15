@@ -150,7 +150,7 @@ class errors:
                 error_encountered = True
         if error_encountered :
             log_error_path = config["log_folder"] + config["log_error_file"]
-            print("\n --- ERRORS ---")
+            print("--- ERRORS ---")
             print("See %s for detailed errors."%(log_error_path))
 
 class logSearch:
