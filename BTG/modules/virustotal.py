@@ -60,7 +60,7 @@ class Virustotal:
             else:
                 mod.display(self.module_name,
                             message_type="ERROR",
-                            string="Check if you have virustotal_api_keys field in config.ini")
+                            string="Check if you have virustotal_api_keys field in btg.cfg")
         except:
             mod.display(self.module_name, self.ioc, "ERROR", "Please provide your authkey.")
             return

@@ -55,7 +55,7 @@ class Malekal:
             mod.display(self.module_name,
                         message_type="ERROR",
                         string=("Check if you have malekal_local or malekal_remote"
-                                "fields in config.ini "))
+                                "fields in btg.cfg "))
         self.search_method = "Online"
         self.description = "Search IOC in malekal database"
         self.author = "Conix"
@@ -128,7 +128,7 @@ class Malekal:
         else:
             mod.display(self.module_name,
                         message_type="ERROR",
-                        string="Check if you have malekal_files_path field in config.ini ")
+                        string="Check if you have malekal_files_path field in btg.cfg ")
 
 def response_handler(response_text, response_status, module, ioc, server_id=None):
     if response_status == 200 :

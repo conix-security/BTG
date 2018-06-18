@@ -42,7 +42,7 @@ class Viper:
             if  length != len(self.config['viper_api_key']) and length <= 0:
                 mod.display(self.module_name,
                             message_type="ERROR",
-                            string="Viper fields in config.ini are missfilled, checkout commentaries.")
+                            string="Viper fields in btg.cfg are missfilled, checkout commentaries.")
                 return
             for indice in range(len(self.config['viper_server'])):
                 server = self.config['viper_server'][indice]
@@ -100,7 +100,7 @@ class Viper:
             else:
                 mod.display(self.module_name,
                             message_type=":",
-                            string="Please check if you have viper fields in config.ini")
+                            string="Please check if you have viper fields in btg.cfg")
         except Exception as e:
             mod.display(self.module_name, self.ioc, "ERROR", e)
             return

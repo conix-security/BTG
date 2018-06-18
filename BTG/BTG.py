@@ -218,7 +218,7 @@ class Utils:
                 except:
                     mod.display("MAIN",
                                 message_type="FATAL_ERROR",
-                                string="Could not open the log_error_file, checkout your config.ini.")
+                                string="Could not open the log_error_file, checkout your btg.cfg.")
                 finally:
                     f.close()
         except:
@@ -300,8 +300,8 @@ class Utils:
                 if state == 'busy':
                     break
                 is_busy = False
-            time.sleep(1)
-        time.sleep(3)
+            time.sleep(2)
+        time.sleep(1)
 
     def shut_down(processes, working_going, failed_queue, sig_int=True):
         if not sig_int:
@@ -313,8 +313,10 @@ class Utils:
         for process in processes:
             pgrp = getpgid(process.pid)
             killpg(pgrp, signal.SIGTERM)
-        time.sleep(3)
+        time.sleep(2)
         # Clearing potentially failed jobs because of the previous kill
+        # TODO
+        # Those should have been timed out, can we log them before clearing queue ?
         failed_queue.empty()
 
 
@@ -360,7 +362,7 @@ def main(argv=None):
         mod.display("MAIN",
                     message_type="FATAL_ERROR",
                     string="Please check if you have log_folder, modules_folder and temporary_cache_path \
-                            field in config.ini")
+                            field in btg.cfg")
     if config["display_motd"] and not args.silent:
         Utils.motd()
 
@@ -382,7 +384,7 @@ def main(argv=None):
         except :
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
-                        string="Could not establish connection with Redis, check if you have redis_host, redis_port and maybe redis_password in /config/config.ini")
+                        string="Could not establish connection with Redis, check if you have redis_host, redis_port and maybe redis_password in /config/btg.cfg")
             sys.exit()
 
         processes = Utils.subprocess_launcher()

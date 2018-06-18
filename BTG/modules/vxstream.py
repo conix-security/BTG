@@ -60,7 +60,7 @@ class Vxstream:
             mod.display(self.module_name,
                         self.ioc,
                         message_type="ERROR",
-                        string="Check if you have vxstream_api_keys_secret field in config.ini")
+                        string="Check if you have vxstream_api_keys_secret field in btg.cfg")
             return None
 
         if self.type in ["MD5", "SHA1", "SHA256"]:

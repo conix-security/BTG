@@ -61,11 +61,11 @@ class Misp_Crawler:
                     else:
                         mod.display(self.module_name,
                                     message_type="ERROR",
-                                    string="Check if you have misp_crawler_url in config.ini")
+                                    string="Check if you have misp_crawler_url in btg.cfg")
             except:
                 mod.display(self.module_name,
                             message_type="ERROR",
-                            string="Could not perform the request, checkout config.ini at [%s]" % (self.module_name))
+                            string="Could not perform the request, checkout btg.cfg at [%s]" % (self.module_name))
 
     def searchAttribute(self, s):
         if ("misp_crawler_url" in self.config and
@@ -105,7 +105,7 @@ class Misp_Crawler:
             mod.display(self.module_name,
                         message_type="ERROR",
                         string=("Please check if you have misp_crawler_url, user_agent and"
-                                "misp_crawler_verifycert fields in config.ini"))
+                                "misp_crawler_verifycert fields in btg.cfg"))
 
     def loginRequest(self, s):
         if ("misp_crawler_url" in self.config and
@@ -135,7 +135,7 @@ class Misp_Crawler:
             mod.display(self.module_name,
                         message_type="ERROR",
                         string=("Please check if you have misp_crawler_url, user_agent and"
-                                "misp_crawler_verifycert fields in config.ini"))
+                                "misp_crawler_verifycert fields in btg.cfg"))
 
     def getAllEvents(self, response):
         events = []

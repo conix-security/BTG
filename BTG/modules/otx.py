@@ -66,7 +66,7 @@ class Otx:
                 mod.display(self.module_name,
                             self.ioc,
                             message_type="ERROR",
-                            string="Please check if you have otx_api_keys field in config.ini")
+                            string="Please check if you have otx_api_keys field in btg.cfg")
         except:
             mod.display(self.module_name,
                         self.ioc,

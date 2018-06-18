@@ -94,9 +94,10 @@ def parse_redis_string(string):
 # --------------------------------------------------------------------------- #
 
 # code from aiohttp.readthedocs.io
-async def fetch_get(url, session, headers, proxy, module, ioc, timeout, auth, server_id):
+async def fetch_get(url, session, headers, proxy, module, ioc, timeout, auth, server_id, verify):
     try:
-        async with session.get(url, headers=headers, proxy=proxy, timeout=timeout, auth=auth) as response:
+        async with session.get(url, headers=headers, proxy=proxy,
+                               timeout=timeout, auth=auth, ssl=verify) as response:
             return await response.text(), response.status, module, ioc, server_id
     except:
         mod.display(module,
@@ -104,9 +105,10 @@ async def fetch_get(url, session, headers, proxy, module, ioc, timeout, auth, se
                     message_type="ERROR",
                     string="Failed to connect to %s" % (url))
 
-async def fetch_post(url, session, headers, proxy, data, module, ioc, timeout, auth, server_id):
+async def fetch_post(url, session, headers, proxy, data, module, ioc, timeout, auth, server_id, verify):
     try:
-        async with session.post(url, data=data, headers=headers, proxy=proxy, timeout=timeout, auth=auth) as response:
+        async with session.post(url, data=data, headers=headers, proxy=proxy,
+                                timeout=timeout, auth=auth, ssl=verify) as response:
             return await response.text(), response.status, module, ioc, server_id
     except:
         mod.display(module,
@@ -140,26 +142,31 @@ def filler(request):
     else:
         auth = None
 
-    if module_name in ['cuckoosandbox', 'viper']:
+    if module_name in ['cuckoosandbox', 'viper', 'misp']:
         server_id = request['server_id']
     else:
         server_id = None
 
-    return url,module_name,ioc,verbose,headers,proxy,auth,server_id
+    if 'verify' in request:
+        verify = request['verify']
+    else:
+        verify = None
+
+    return url,module_name,ioc,verbose,headers,proxy,auth,server_id,verify
 
 async def bound_fetch(sem, session, request, timeout):
-    url,module_name,ioc,verbose,headers,proxy,auth,server_id = filler(request)
+    url,module_name,ioc,verbose,headers,proxy,auth,server_id,verify = filler(request)
     if verbose == "GET":
         # Getter function with semaphore.
         async with sem:
             return await fetch_get(url, session, headers, proxy,
-                                   module_name, ioc, timeout, auth, server_id)
+                                   module_name, ioc, timeout, auth, server_id, verify)
     elif verbose == "POST":
         data = request['data']
         # Getter function with semaphore.
         async with sem:
-            return await fetch_post(url, session, headers, proxy,
-                                    data, module_name, ioc, timeout, auth, server_id)
+            return await fetch_post(url, session, headers, proxy, data,
+                                    module_name, ioc, timeout, auth, server_id, verify)
     else:
         mod.display("ASYNC_HTTP",
                     message_type="ERROR",

@@ -60,7 +60,7 @@ class googlesb():
             mod.display(self.module_name,
                         self.ioc,
                         message_type="ERROR",
-                        string="Check if you have googlesb_api_keys field in config.ini")
+                        string="Check if you have googlesb_api_keys field in btg.cfg")
             return None
 
         self.url = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+api_key

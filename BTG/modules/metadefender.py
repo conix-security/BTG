@@ -59,7 +59,7 @@ class metadefender:
                 mod.display(self.module_name,
                             self.ioc,
                             message_type="ERROR",
-                            string="Check if you have metadefender_api_keys field in config.ini")
+                            string="Check if you have metadefender_api_keys field in btg.cfg")
                 return None
         except:
             mod.display(self.module_name, self.ioc, "ERROR", "Please provide your MetaDefender key")

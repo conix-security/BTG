@@ -59,7 +59,7 @@ class Cuckoosandbox:
             if  length != len(self.config['cuckoosandbox_web_url']) and length <= 0:
                 mod.display(self.module_name,
                             message_type="ERROR",
-                            string="Cuckoosandbox fields in config.ini are missfilled, checkout commentaries.")
+                            string="Cuckoosandbox fields in btg.cfg are missfilled, checkout commentaries.")
                 return None
 
             for indice in range(len(self.config['cuckoosandbox_api_url'])):
@@ -92,6 +92,12 @@ class Cuckoosandbox:
                        }
             json_request = json.dumps(request)
             store_request(self.queues, json_request)
+        else:
+            mod.display(module,
+                        ioc,
+                        message_type="ERROR",
+                        string="Check if you have filled cuckoosandbox fields in btg.cfg")
+
 
 def response_handler(response_text, response_status, module, ioc, server_id):
         web_url = cfg['cuckoosandbox_api_url'][server_id]
