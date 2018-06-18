@@ -300,7 +300,7 @@ class Utils:
                 if state == 'busy':
                     break
                 is_busy = False
-            time.sleep(2)
+            time.sleep(1)
         time.sleep(1)
 
     def shut_down(processes, working_going, failed_queue, sig_int=True):
