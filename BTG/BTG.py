@@ -37,6 +37,7 @@ from redis import Redis
 import subprocess
 import signal
 import validators
+from string import Formatter
 
 from BTG.lib.io import module as mod
 from BTG.lib.io import logSearch
@@ -47,7 +48,7 @@ from BTG.lib.redis_config import init_redis, init_queue, init_worker, number_of_
 from BTG.lib.config_parser import Config
 
 config = Config.get_instance()
-version = "2.0"     # BTG version
+version = "2.1"     # BTG version
 
 class BTG():
     """
@@ -225,6 +226,8 @@ class Utils:
             return dict_list
 
         regex = re.compile("(?<=\[).*?(?=\])")
+        start_time = start_time.strftime('%d-%m-%Y %H:%M:%S')
+        end_time = end_time.strftime('%d-%m-%Y %H:%M:%S')
         for line in lines :
             match = regex.findall(line)
             log_time = match[0]
@@ -256,7 +259,7 @@ class Utils:
                             message_type="FATAL_ERROR",
                             string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
                 sys.exit()
-            chmod(config["log_folder"], 0o777)
+            chmod(config["log_folder"], 0o666)
 
 
     def parse_args():
@@ -298,9 +301,10 @@ class Utils:
                 states.append(state)
             for state in states:
                 if state == 'busy':
+                    is_busy = True
                     break
                 is_busy = False
-            time.sleep(2)
+            time.sleep(1)
         time.sleep(1)
 
     def shut_down(processes, working_going, failed_queue, sig_int=True):
@@ -313,7 +317,7 @@ class Utils:
         for process in processes:
             pgrp = getpgid(process.pid)
             killpg(pgrp, signal.SIGTERM)
-        time.sleep(2)
+        time.sleep(1)
         # Clearing potentially failed jobs because of the previous kill
         # TODO
         # Those should have been timed out, can we log them before clearing queue ?
@@ -340,6 +344,18 @@ class Utils:
 
         return processes
 
+    def strfdelta(tdelta, fmt):
+        f = Formatter()
+        d = {}
+        l = {'H': 3600, 'M': 60, 'S': 1}
+        k = map( lambda x: x[1], list(f.parse(fmt)))
+        rem = int(tdelta.total_seconds())
+
+        for i in ('H', 'M', 'S'):
+            if i in k and i in l.keys():
+                d[i], rem = divmod(rem, l[i])
+
+        return f.format(fmt, **d)
 
 def main(argv=None):
     args = Utils.parse_args()
@@ -389,7 +405,7 @@ def main(argv=None):
 
         processes = Utils.subprocess_launcher()
         modules = Utils.gen_module_list()
-        start_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+        start_time = datetime.now()
         BTG(args, modules)
         # waiting for all jobs to be done
         while True:
@@ -404,15 +420,16 @@ def main(argv=None):
                         message_type="FATAL_ERROR",
                         string="Could not close subprocesses, maybe there were not any to begin with.")
             sys.exit()
-        end_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+        end_time = datetime.now()
         errors_to_display = Utils.show_up_errors(start_time, end_time, modules)
         err.display(dict_list=errors_to_display)
-        print("\n%sAll works done :\n   from %s to %s%s" % (colors.FOUND, start_time, end_time, colors.NORMAL))
+        delta_time = Utils.strfdelta((end_time - start_time), "{H:02}h {M:02}m {S:02}s")
+        print("\nAll works done :\n   in %s" % (delta_time))
     except (KeyboardInterrupt, SystemExit):
         '''
         Exit if user press CTRL+C
         '''
-        time.sleep(2)
+        time.sleep(1)
         print("\n%s%sA FATAL_ERROR occured or you pressed CTRL+C" % (colors.BOLD, colors.FATAL_ERROR))
         print("Closing the worker, and clearing pending jobs ...%s\n" % (colors.NORMAL))
 

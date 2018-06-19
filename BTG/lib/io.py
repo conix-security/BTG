@@ -61,7 +61,7 @@ class module:
                 log_path = log_folder + config["log_found_file"]
                 if not exists(log_path):
                     open(log_path, 'a').close()
-                    chmod(log_path, 0o777)
+                    chmod(log_path, 0o666)
                 f = open(log_path, 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
@@ -70,7 +70,7 @@ class module:
                 log_path = log_folder + config["log_error_file"]
                 if not exists(log_path):
                     open(log_path, 'a').close()
-                    chmod(log_path, 0o777)
+                    chmod(log_path, 0o666)
                 f = open(log_path, 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
@@ -80,7 +80,7 @@ class module:
                 log_path = log_folder + config["log_error_file"]
                 if not exists(log_path):
                     open(log_path, 'a').close()
-                    chmod(log_path, 0o777)
+                    chmod(log_path, 0o666)
                 f = open(log_path, 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
@@ -138,6 +138,7 @@ class errors:
     def display(self, dict_list=[]):
         config = Config.get_instance()
         error_encountered = False
+        outputs = []
         for dict in dict_list:
             if dict['nb_error'] > 0:
                 output = "[%s%s%s] encountered %s%d%s errors"%(colors.MODULE,
@@ -146,11 +147,13 @@ class errors:
                                                             colors.NB_ERROR,
                                                             dict['nb_error'],
                                                             colors.NORMAL)
-                print(output)
+                outputs.append(output)
                 error_encountered = True
         if error_encountered :
             log_error_path = config["log_folder"] + config["log_error_file"]
-            print("--- ERRORS ---")
+            print("\n--- ERRORS ---")
+            for output in outputs:
+                print(output)
             print("See %s for detailed errors."%(log_error_path))
 
 class logSearch:
@@ -160,7 +163,7 @@ class logSearch:
         log_path = log_folder + config["log_search_file"]
         if not exists(log_path):
             open(log_path, 'a').close()
-            chmod(log_path, 0o777)
+            chmod(log_path, 0o666)
         f = open(log_path, 'a')
         if args.file == "False" :
             for ioc in args.observables :

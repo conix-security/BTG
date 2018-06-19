@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from random import choice, randint
+import random
 from time import sleep
 import ast
 import json
@@ -56,7 +56,7 @@ class Virustotal:
         mod.display(self.module_name, "", "INFO", "Search in VirusTotal ...")
         try:
             if "virustotal_api_keys" in self.config:
-                self.key = choice(self.config["virustotal_api_keys"])
+                self.key = random.Random(self.ioc).choice(self.config["virustotal_api_keys"])
             else:
                 mod.display(self.module_name,
                             message_type="ERROR",

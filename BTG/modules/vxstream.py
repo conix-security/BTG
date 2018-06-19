@@ -19,11 +19,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from random import choice
+import random
 import json
+
 from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
-
 
 class Vxstream:
     def __init__(self, ioc, type, config, queues):
@@ -55,7 +55,7 @@ class Vxstream:
         """
 
         if 'vxstream_api_keys' in self.config:
-            self.headers["api-key"] = choice(self.config['vxstream_api_keys'])
+            self.headers["api-key"] = random.Random(self.ioc).choice(self.config['vxstream_api_keys'])
         else:
             mod.display(self.module_name,
                         self.ioc,

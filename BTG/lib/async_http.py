@@ -26,6 +26,9 @@ from rq import Connection, Queue, Worker
 import re
 import json
 
+import random
+random.seed(1)
+
 from BTG.lib.worker_tasks import module_worker_response
 from BTG.lib.io import module as mod
 from BTG.lib.redis_config import init_redis, init_queue, init_worker

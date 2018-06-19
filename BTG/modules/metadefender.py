@@ -19,7 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import json
-from random import choice
+import random
 
 from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
@@ -53,7 +53,7 @@ class metadefender:
 
         try:
             if 'metadefender_api_keys' in self.config:
-                api_key = choice(self.config['metadefender_api_keys'])
+                api_key = random.Random(self.ioc).choice(self.config['metadefender_api_keys'])
                 self.headers['apikey'] = api_key
             else:
                 mod.display(self.module_name,

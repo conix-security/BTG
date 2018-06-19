@@ -21,10 +21,13 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import sys
-import warnings
-from pymisp import PyMISP
+import json
 
+from BTG.lib.config_parser import Config
 from BTG.lib.io import module as mod
+from BTG.lib.async_http import store_request
+
+cfg = Config.get_instance()
 
 class Misp:
     def __init__(self, ioc, type, config, queues):
@@ -37,72 +40,72 @@ class Misp:
         self.creation_date = "07-10-2016"
         self.type = type
         self.ioc = ioc
+        self.queues = queues
+        self.verbose = "POST"
+        self.headers = {'Content-Type': 'application/json','Accept': 'application/json'}
+        self.proxy = self.config['proxy_host']
+        self.verify = self.config['misp_verifycert']
 
         if type in self.types and mod.allowedToSearch(self.search_method):
             length = len(self.config['misp_url'])
             if length != len(self.config['misp_key']) and length <= 0:
                 mod.display(self.module_name,
                             message_type="ERROR",
-                            string="MISP fields in config.ini are missfilled, checkout commentaries.")
+                            string="MISP fields in btg.cfg are missfilled, checkout commentaries.")
                 return
-            for indice in range(len(self.config['viper_server'])):
+            for indice in range(len(self.config['misp_url'])):
                 misp_url = self.config['misp_url'][indice]
                 misp_key = self.config['misp_key'][indice]
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    self.Search(misp_url, misp_key)
+                self.Search(misp_url, misp_key, indice)
         else:
             mod.display(self.module_name, "", "INFO", "MISP module not activated")
 
-    def Search(self, misp_url, misp_key):
+    def Search(self, misp_url, misp_key, indice):
         mod.display(self.module_name, "", "INFO", "Search in misp...")
+
+        url = '%sattributes/restSearch/json' % (misp_url)
+        self.headers['Authorization'] = misp_key
+        payload = {'value' : self.ioc, 'searchall' : 1}
+        data = json.dumps(payload)
+
+        request = {'url' : url,
+                   'headers' : self.headers,
+                   'data' : data,
+                   'module' : self.module_name,
+                   'ioc' : self.ioc,
+                   'verbose' : self.verbose,
+                   'proxy' : self.proxy,
+                   'verify' : self.verify,
+                   'server_id' : indice
+                   }
+        json_request = json.dumps(request)
+        store_request(self.queues, json_request)
+
+def response_handler(response_text, response_status, module, ioc, server_id):
+    web_url = cfg['misp_url'][server_id]
+    if response_status == 200 :
         try:
-            m = PyMISP(misp_url,
-                       misp_key,
-                       self.config["misp_verifycert"],
-                       'json')
+            json_response = json.loads(response_text)
         except:
-            mod.display(self.module_name,
+            mod.display(module,
+                        ioc,
                         message_type="ERROR",
-                        string=("Could not establish connection to MISP. Check if you have misp_url,"
-                        "misp_key and misp_verifycert in config.ini"))
-            return
-        result = m.search_all(self.ioc)
-        try:
-            for event in result["response"]:
-                tag_display = ""
-                try:
-                    for tag in event["Event"]["Tag"]:
-                        if "misp_tag_display" in self.config:
-                            if tag["name"].split(":")[0] in self.config["misp_tag_display"]:
-                                if len(tag_display) == 0:
-                                    tag_display = "["
-                                else:
-                                    tag_display = "%s|"%tag_display
-                                tag_display = "%s%s"%(tag_display, tag["name"])
-                        else:
-                            mod.display(self.module_name,
-                                        message_type="ERROR",
-                                        string="Check if you have misp_tag_display in config.ini")
-                except:
-                    return
-                if len(tag_display) != 0:
-                    tag_display = "%s]"%tag_display
-                mod.display(self.module_name,
-                            self.ioc,
-                            "FOUND",
-                            "%s Event: %sevents/view/%s"%(tag_display,
-                                                          misp_url,
-                                                          event["Event"]["id"]))
-        except:
-            try:
-                if result['message'] == "No matches":
-                    pass
-                elif "Authentication failed" in result['message']:
-                    mod.display(self.module_name,
-                                message_type="ERROR",
-                                string=result['message'])
-            except:
-                mod.display(self.module_name,
-                            message_type="ERROR",
-                            string="Impossible to fetch HTTP response.")
+                        string="Misp json_response was not readable.")
+            return None
+
+        if "Attribute" in json_response["response"]:
+            displayed = []
+            for attr in json_response["response"]["Attribute"]:
+                event_id = attr["event_id"]
+                if event_id not in displayed:
+                    displayed.append(event_id)
+                    mod.display(module,
+                                ioc,
+                                "FOUND",
+                                "Event: %sevents/view/%s"%(web_url,
+                                                           event_id))
+    else:
+        mod.display(module,
+                    ioc,
+                    message_type="ERROR",
+                    string="Misp connection status : %d" % (response_status))

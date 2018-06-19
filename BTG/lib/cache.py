@@ -93,7 +93,7 @@ class Cache:
         if r.status_code == 200:
             if not exists("%s.lock"%self.temp_file):
                 open("%s.lock"%self.temp_file, 'a').close()
-                chmod("%s.lock"%self.temp_file, 0o777)
+                chmod("%s.lock"%self.temp_file, 0o666)
                 if exists(self.temp_file):
                     to_chmod = False
                 else:
@@ -102,7 +102,7 @@ class Cache:
                     for chunk in r:
                         f.write(chunk)
                 if to_chmod:
-                    chmod(self.temp_file, 0o777)
+                    chmod(self.temp_file, 0o666)
                 try:
                     remove("%s.lock"%self.temp_file)
                 except:
@@ -149,7 +149,7 @@ class Cache:
                             message_type="FATAL_ERROR",
                             string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
                 sys.exit()
-            chmod(self.config["temporary_cache_path"], 0o777)
+            chmod(self.config["temporary_cache_path"], 0o666)
         if not isdir(self.temp_folder):
             mkdir(self.temp_folder)
-            chmod(self.temp_folder, 0o777)
+            chmod(self.temp_folder, 0o666)

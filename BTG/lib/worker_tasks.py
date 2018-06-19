@@ -22,6 +22,7 @@ from rq import Queue
 from BTG.lib.io import module as mod
 from BTG.lib.config_parser import Config
 
+
 config = Config.get_instance()
 
 def module_worker_request(module, argument, type, queues):
