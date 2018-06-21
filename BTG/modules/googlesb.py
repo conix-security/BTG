@@ -31,7 +31,6 @@ class googlesb():
     def __init__(self, ioc, type, config, queues):
         self.config = config
         self.module_name = __name__.split(".")[-1]
-        # supported type : hash and digest SHA256, URL
         self.types = ["URL", "domain"]
         # googleSB can run on a local database with a 30min refresh by default
         self.search_method = "Online"

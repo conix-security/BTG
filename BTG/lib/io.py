@@ -140,8 +140,17 @@ class errors:
         error_encountered = False
         outputs = []
         for dict in dict_list:
-            if dict['nb_error'] > 0:
+            if dict['nb_error'] > 1:
                 output = "[%s%s%s] encountered %s%d%s errors"%(colors.MODULE,
+                                                            dict['module_name'],
+                                                            colors.NORMAL,
+                                                            colors.NB_ERROR,
+                                                            dict['nb_error'],
+                                                            colors.NORMAL)
+                outputs.append(output)
+                error_encountered = True
+            elif dict['nb_error'] == 1:
+                output = "[%s%s%s] encountered %s%d%s error"%(colors.MODULE,
                                                             dict['module_name'],
                                                             colors.NORMAL,
                                                             colors.NB_ERROR,

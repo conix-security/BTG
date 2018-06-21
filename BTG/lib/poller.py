@@ -61,14 +61,13 @@ def time_based_poller(working_queue, request_queue):
         try :
             with Connection(Redis()) as conn:
                 q = Queue(queue_1, connection=conn)
-            # print("POLLER : enqueueing %d jobs" % (len) )
             job = q.enqueue(async_http.request_poller, args=(queue_1, queue_2, len) ,result_ttl=0)
         except:
             mod.display("POLLER",
                         message_type="ERROR",
                         string="Could not establish connection with Redis, check if you have redis_host, \
                         redis_port and maybe redis_password in /config/config.ini")
-        time.sleep(3.0 - ((time.time() - starttime) % 3.0))
+        time.sleep(1.0 - ((time.time() - starttime) % 1.0))
 
 if __name__ == '__main__':
     working_queue = sys.argv[1]

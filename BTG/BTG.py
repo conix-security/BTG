@@ -55,10 +55,6 @@ class BTG():
         BTG Main class
     """
     def __init__(self, args, modules):
-        # Import modules
-        if config["debug"]:
-            ret = mod.display(string="Load modules from %s"%config["modules_folder"])
-
         jobs = []
         tasks = []
         queues = [working_queue, request_queue]
@@ -238,7 +234,6 @@ class Utils:
                         dict["nb_error"] = dict["nb_error"] + 1
         return dict_list
 
-
     def motd():
         """
             Display Message Of The Day in console
@@ -249,7 +244,6 @@ class Utils:
             ==""".strip()).decode("utf-8"), version)
         print(motd.replace("\\n", "\n"))
 
-
     def createLoggingFolder():
         if not isdir(config["log_folder"]):
             try:
@@ -259,8 +253,7 @@ class Utils:
                             message_type="FATAL_ERROR",
                             string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
                 sys.exit()
-            chmod(config["log_folder"], 0o666)
-
+            chmod(config["log_folder"], 0o770)
 
     def parse_args():
         """
@@ -276,7 +269,6 @@ class Utils:
         parser.add_argument("-s", "--silent", action="store_true", help="Disable MOTD")
         return parser.parse_args()
 
-
     def cleanups_lock_cache(real_path):
         for file in listdir(real_path):
             file_path = "%s%s/"%(real_path, file)
@@ -288,7 +280,6 @@ class Utils:
             else:
                 if path.isdir(file_path):
                     Utils.cleanups_lock_cache(file_path)
-
 
     def graceful_shutdown(working_going):
         # DO-WHILE loop to check if a worker is still working
@@ -323,7 +314,6 @@ class Utils:
         # Those should have been timed out, can we log them before clearing queue ?
         failed_queue.empty()
 
-
     def subprocess_launcher():
         """
             Subprocess loop to launch rq-worker
@@ -341,7 +331,6 @@ class Utils:
                         message_type="FATAL_ERROR",
                         string="Could not launch workers as subprocess")
             sys.exit()
-
         return processes
 
     def strfdelta(tdelta, fmt):
@@ -350,12 +339,11 @@ class Utils:
         l = {'H': 3600, 'M': 60, 'S': 1}
         k = map( lambda x: x[1], list(f.parse(fmt)))
         rem = int(tdelta.total_seconds())
-
         for i in ('H', 'M', 'S'):
             if i in k and i in l.keys():
                 d[i], rem = divmod(rem, l[i])
-
         return f.format(fmt, **d)
+
 
 def main(argv=None):
     args = Utils.parse_args()

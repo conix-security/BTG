@@ -25,9 +25,7 @@ from redis import Redis
 from rq import Connection, Queue, Worker
 import re
 import json
-
-import random
-random.seed(1)
+from itertools import groupby
 
 from BTG.lib.worker_tasks import module_worker_response
 from BTG.lib.io import module as mod
@@ -106,7 +104,7 @@ async def fetch_get(url, session, headers, proxy, module, ioc, timeout, auth, se
         mod.display(module,
                     ioc,
                     message_type="ERROR",
-                    string="Failed to connect to %s" % (url))
+                    string="Failed to connect to %s, server was probably too slow and request has been dropped out" % (url))
 
 async def fetch_post(url, session, headers, proxy, data, module, ioc, timeout, auth, server_id, verify):
     try:
@@ -137,7 +135,7 @@ def filler(request):
     if 'auth' in request:
         type = request['auth'][0]
         # TODO
-        # add other if any
+        # add other condition if any
         if type == "BASIC":
             auth = BasicAuth(request['auth'][1][0],request['auth'][1][1])
         else:
@@ -171,7 +169,8 @@ async def bound_fetch(sem, session, request, timeout):
             return await fetch_post(url, session, headers, proxy, data,
                                     module_name, ioc, timeout, auth, server_id, verify)
     else:
-        mod.display("ASYNC_HTTP",
+        mod.display(module_name,
+                    ioc,
                     message_type="ERROR",
                     string="Associated HTTP verbose for %s, is neither GET nor POST" % (url))
 
@@ -205,6 +204,7 @@ def request_poller(queue_1, queue_2, nb_to_do):
                     message_type="ERROR",
                     string="Could not establish connection with Redis, check if you have redis_host, \
                     redis_port and maybe redis_password in /config/config.ini")
+
     loop = asyncio.get_event_loop()
     future = asyncio.ensure_future(run(requests))
     x = loop.run_until_complete(future)

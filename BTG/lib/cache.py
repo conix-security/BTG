@@ -149,7 +149,7 @@ class Cache:
                             message_type="FATAL_ERROR",
                             string="Unable to create %s directory. (Permission denied)"%self.config["temporary_cache_path"])
                 sys.exit()
-            chmod(self.config["temporary_cache_path"], 0o666)
+            chmod(self.config["temporary_cache_path"], 0o770)
         if not isdir(self.temp_folder):
             mkdir(self.temp_folder)
-            chmod(self.temp_folder, 0o666)
+            chmod(self.temp_folder, 0o770)
