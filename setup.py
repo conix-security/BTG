@@ -19,13 +19,14 @@
 
 import setuptools, sys, os, BTG
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'BTG'))
+_PATH = os.path.dirname(__file__)
+sys.path.insert(0, os.path.join(_PATH, 'BTG'))
+
 if not 'SUDO_USER' in os.environ:
-    HOME_PATH = os.path.expanduser("~/.config/BTG")
+    CONFIG_PATH = os.path.expanduser("~/.config/BTG")
 else:
     USER = os.environ['SUDO_USER']
-    HOME_PATH = "/home/%s/.config/BTG" % USER
-
+    CONFIG_PATH = "/home/%s/.config/BTG" % USER
 
 with open("README.rst", "r") as fh:
     long_description = fh.read()
@@ -38,9 +39,8 @@ setuptools.setup(
     author_email="robin.marsollier@conix.fr",
     description="This tool allows you to qualify one or more potential malicious observables of various type (URL, MD5, SHA1, SHA256, SHA512, IPv4, IPv6, domain etc..)",
     long_description=long_description,
-    include_package_data=True,
     url="https://github.com/conix-security/BTG",
-    keywords = ['ioc'],
+    keywords=["ioc"],
     license="GPLv3",
     classifiers=(
         'Operating System :: POSIX :: Linux',
@@ -51,7 +51,9 @@ setuptools.setup(
         'Topic :: Security',
 	    'Topic :: Internet',
     ),
-    data_files=[(HOME_PATH, ["BTG/config/btg.cfg"])],
+    package_data={'BTG': ["data/modules_descriptor.csv"]},
+    include_package_data=True,
+    data_files=[(CONFIG_PATH, ["BTG/config/btg.cfg"])],
     entry_points={
         'console_scripts':[
             'btg = BTG.BTG:main'
@@ -59,4 +61,5 @@ setuptools.setup(
     },
 )
 
-os.chmod(HOME_PATH+"/btg.cfg", 0o666)
+os.chmod(CONFIG_PATH+"/btg.cfg", 0o666)
+os.chmod(_PATH+"BTG/data/modules_descriptor.csv", 0o666)

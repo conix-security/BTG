@@ -85,4 +85,7 @@ class Otx:
                             "FOUND",
                             "Tags: %s| https://otx.alienvault.com/pulse/%s/"%(tags, _id))
         except:
-            pass
+            mod.display(self.module_name,
+                        self.ioc,
+                        message_type="NOT_FOUND",
+                        string="Nothing found in OTX")

@@ -120,7 +120,7 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
         else:
             mod.display(module,
                         ioc,
-                        message_type="INFO",
+                        message_type="NOT_FOUND",
                         string="Nothing found in Google Safe Browsing")
     else:
         mod.display(module,

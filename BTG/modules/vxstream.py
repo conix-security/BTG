@@ -55,7 +55,7 @@ class Vxstream:
         """
 
         if 'vxstream_api_keys' in self.config:
-            self.headers["api-key"] = random.Random(self.ioc).choice(self.config['vxstream_api_keys'])
+            self.headers['api-key'] = random.Random(self.ioc).choice(self.config['vxstream_api_keys'])
         else:
             mod.display(self.module_name,
                         self.ioc,

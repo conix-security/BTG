@@ -38,13 +38,15 @@ import subprocess
 import signal
 import validators
 from string import Formatter
+import csv
 
+from BTG.lib.utils import cluster
 from BTG.lib.io import module as mod
 from BTG.lib.io import logSearch
 from BTG.lib.io import errors as err
 from BTG.lib.io import colors
 from BTG.lib.worker_tasks import module_worker_request
-from BTG.lib.redis_config import init_redis, init_queue, init_worker, number_of_worker
+from BTG.lib.redis_config import init_redis, init_queue, init_worker, number_of_worker, key_generator
 from BTG.lib.config_parser import Config
 
 config = Config.get_instance()
@@ -55,35 +57,46 @@ class BTG():
         BTG Main class
     """
     def __init__(self, args, modules):
-        jobs = []
-        tasks = []
+        redis_host, redis_port, redis_password = init_redis()
+        try:
+            conn = redis.StrictRedis(host=redis_host, port=redis_port,
+                                     password=redis_password)
+        except:
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Cannot establish connection with Redis")
+            sys.exit()
+
+        clusters = []
         queues = [working_queue, request_queue]
+        # lockname, dictname = key_generator(conn)
+        lockname, dictname = 'toto', 'tata'
+        cluster.set_keys(lockname, dictname)
 
         if args.file == "False" :
-            for argument in args.observables:
-                type = self.checkType(argument)
-                if "split_observable" in config and config["split_observable"]:
-                    if type == "URL":
-                        self.extend_IOC(argument, observable_list)
-
-                self.run(argument,type,modules,tasks,queues)
+            observable_list = args.observables
         else :
+            observable_list = []
             for file in args.observables :
                 with open(file,"r") as f1 :
                     try:
-                        observable_list = f1.read().strip().splitlines()
+                        observable_list = list(set(observable_list +
+                                                f1.read().strip().splitlines()))
                     except:
                         mod.display("MAIN",
                                     message_type="FATAL_ERROR",
                                     string="Something went wrong with the argument file")
                     finally:
                         f1.close()
-                for argument in observable_list:
-                    type = self.checkType(argument)
-                    if "split_observable" in config and config["split_observable"]:
-                        if type == "URL":
-                            self.extend_IOC(argument, observable_list)
-                    self.run(argument,type,modules,tasks,queues)
+
+        for argument in observable_list:
+            type = self.checkType(argument)
+            if "split_observable" in config and config["split_observable"]:
+                if type == "URL":
+                    self.extend_IOC(argument, observable_list)
+            matching_list = Utils.gen_matching_type_modules_list(modules, type)
+            cluster.add_cluster(argument, matching_list, dictname, conn)
+            self.run(argument,type,matching_list,queues)
 
 
     def extend_IOC(self, argument, observable_list):
@@ -92,6 +105,7 @@ class BTG():
         """
         if config['offline']:
             # Cache search
+            # TODO
             if "TLDE_cache" in config:
                 cache_extract = tldextract.TLDExtract(cache_file=config['TLDE_cache'])
                 extract = cache_extract(argument)
@@ -130,7 +144,7 @@ class BTG():
                 observable_list.append(IP)
 
 
-    def run(self, argument, type, modules, tasks, queues):
+    def run(self, argument, type, modules, queues):
         """
             Main observable module requests
         """
@@ -140,16 +154,15 @@ class BTG():
                         message_type="WARNING",
                         string="IOC : %s has an undefined type : %s" % (argument, type))
             return None
+
         for module in modules:
-            if module+"_enabled" in config and config[module+"_enabled"]:
-                try :
-                    task = working_going.enqueue(module_worker_request,
-                                    args=(module, argument, type, queues),result_ttl=0)
-                    tasks.append(task)
-                except :
-                    mod.display("MAIN",
-                                message_type="FATAL_ERROR",
-                                string="Could not enqueue the job : %s, %s, %s " % (module, argument, type))
+            try :
+                working_going.enqueue(module_worker_request,
+                                args=(module, argument, type, queues),result_ttl=0)
+            except :
+                mod.display("MAIN",
+                            message_type="FATAL_ERROR",
+                            string="Could not enqueue the job : %s, %s, %s " % (module, argument, type))
 
 
     def checkType(self, argument):
@@ -201,6 +214,37 @@ class Utils:
                 enabled_list.append(module)
         return enabled_list
 
+    # List all modules which can support a type
+    def gen_matching_type_modules_list(modules, type):
+        matching_list = []
+        script_dir = dirname(__file__)
+        rel_path = 'data/modules_descriptor.csv'
+        abs_path = join(script_dir, rel_path)
+        try:
+            with open(abs_path, 'r') as csvfile:
+                try:
+                    reader = csv.reader(csvfile, delimiter=';')
+                    for row in reader:
+                        for module in modules:
+                            if row:
+                                if module == row[0]:
+                                    types = row[1].split(', ')
+                                    if type in types:
+                                        matching_list.append(module)
+                except:
+                    mod.display("MAIN",
+                                message_type="FATAL_ERROR",
+                                string="Could not read %s" % abs_path)
+                    sys.exit()
+                finally:
+                    csvfile.close()
+        except:
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Could not open %s" % abs_path)
+            sys.exit()
+        return matching_list
+
     # Count errors encountered during execution
     def show_up_errors(start_time, end_time, modules):
         enabled_list = Utils.gen_enabled_modules_list(modules)
@@ -215,11 +259,15 @@ class Utils:
                 except:
                     mod.display("MAIN",
                                 message_type="FATAL_ERROR",
-                                string="Could not open the log_error_file, checkout your btg.cfg.")
+                                string="Could not read %s, checkout your btg.cfg."%(log_error_file))
+                    sys.exit()
                 finally:
                     f.close()
         except:
-            return dict_list
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Could not open %s, checkout your btg.cfg."%(log_error_file))
+            sys.exit()
 
         regex = re.compile("(?<=\[).*?(?=\])")
         start_time = start_time.strftime('%d-%m-%Y %H:%M:%S')
@@ -345,6 +393,7 @@ class Utils:
         return f.format(fmt, **d)
 
 
+
 def main(argv=None):
     args = Utils.parse_args()
     # Check if the parameter is a file or a list of observables
@@ -393,8 +442,9 @@ def main(argv=None):
 
         processes = Utils.subprocess_launcher()
         modules = Utils.gen_module_list()
+        enabled_modules = Utils.gen_enabled_modules_list(modules)
         start_time = datetime.now()
-        BTG(args, modules)
+        BTG(args, enabled_modules)
         # waiting for all jobs to be done
         while True:
             if len(working_going.jobs) == 0 and r.llen(request_queue) == 0:

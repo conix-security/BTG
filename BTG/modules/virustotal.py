@@ -120,6 +120,11 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                         "Score: %d/%d | %s"%(json_content["positives"],
                                              json_content["total"],
                                              json_content["permalink"]))
+        else:
+            mod.display(module,
+                        ioc,
+                        "NOT_FOUND",
+                        "Nothing found in Virustotal")
     else:
         mod.display(module,
                     ioc,

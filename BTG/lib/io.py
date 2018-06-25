@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright (c) 2016-2018 Conix Cybersecurity
+# Copyright (c) 2016-2017 Conix Cybersecurity
 # Copyright (c) 2017 Alexandra Toussaint
 # Copyright (c) 2017 Robin Marsollier
 # Copyright (c) 2018 Tanguy Becam
@@ -21,10 +21,13 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from os import chmod
+from os import chmod, getpid
 from os.path import exists
 from platform import system
+import redis
 
+from BTG.lib.utils import cluster
+from BTG.lib.redis_config import init_redis
 from BTG.lib.config_parser import Config
 
 class module:
@@ -38,6 +41,16 @@ class module:
     def display(self, module="INIT", ioc="", message_type="DEBUG", string=""):
         exec("colorize = colors.%s"%message_type, None, globals())
         config = Config.get_instance()
+        redis_host, redis_port, redis_password = init_redis()
+        try:
+            conn = redis.StrictRedis(host=redis_host, port=redis_port,
+                                     password=redis_password)
+        except:
+            mod.display(module,
+                        ioc,
+                        message_type="ERROR",
+                        string="Cannot establish connection with Redis")
+
         if not config["debug"] and (message_type == "INFO" or message_type == "DEBUG"):
             pass
         else:
@@ -57,35 +70,41 @@ class module:
                                              colors.NORMAL)
 
             log_folder = config["log_folder"]
-            if message_type == "FOUND":
-                log_path = log_folder + config["log_found_file"]
-                if not exists(log_path):
-                    open(log_path, 'a').close()
-                    chmod(log_path, 0o666)
-                f = open(log_path, 'a')
-                f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
-                f.close()
-                print(output)
-            elif message_type == "ERROR" or message_type == "WARNING":
-                log_path = log_folder + config["log_error_file"]
-                if not exists(log_path):
-                    open(log_path, 'a').close()
-                    chmod(log_path, 0o666)
-                f = open(log_path, 'a')
-                f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
-                f.close()
-                if config['debug']:
-                    print(output)
+            if message_type in ["FOUND", "NOT_FOUND", "ERROR", "WARNING"]:
+                if message_type == "FOUND":
+                    log_path = log_folder + config["log_found_file"]
+                    if not exists(log_path):
+                        open(log_path, 'a').close()
+                        chmod(log_path, 0o777)
+                    f = open(log_path, 'a')
+                    f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
+                    f.close()
+                elif message_type == "ERROR" or message_type == "WARNING":
+                    log_path = log_folder + config["log_error_file"]
+                    if not exists(log_path):
+                        open(log_path, 'a').close()
+                        chmod(log_path, 0o777)
+                    f = open(log_path, 'a')
+                    f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
+                    f.close()
+
+                lockname, dictname = 'toto', 'tata'
+                c = cluster.edit_cluster(ioc, module, output, conn, lockname, dictname)
+                if message_type in ["FOUND", "ERROR", "WARNING"]:
+                    print(message_type)
+                    cluster.print_cluster(c, conn)
+                return None
+
             elif message_type == "FATAL_ERROR":
                 log_path = log_folder + config["log_error_file"]
                 if not exists(log_path):
                     open(log_path, 'a').close()
-                    chmod(log_path, 0o666)
+                    chmod(log_path, 0o777)
                 f = open(log_path, 'a')
                 f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
                 print(output)
-
+                return None
 
     @classmethod
     def allowedToSearch(self, status):
@@ -138,31 +157,19 @@ class errors:
     def display(self, dict_list=[]):
         config = Config.get_instance()
         error_encountered = False
-        outputs = []
         for dict in dict_list:
-            if dict['nb_error'] > 1:
+            if dict['nb_error'] > 0:
                 output = "[%s%s%s] encountered %s%d%s errors"%(colors.MODULE,
                                                             dict['module_name'],
                                                             colors.NORMAL,
                                                             colors.NB_ERROR,
                                                             dict['nb_error'],
                                                             colors.NORMAL)
-                outputs.append(output)
-                error_encountered = True
-            elif dict['nb_error'] == 1:
-                output = "[%s%s%s] encountered %s%d%s error"%(colors.MODULE,
-                                                            dict['module_name'],
-                                                            colors.NORMAL,
-                                                            colors.NB_ERROR,
-                                                            dict['nb_error'],
-                                                            colors.NORMAL)
-                outputs.append(output)
+                print(output)
                 error_encountered = True
         if error_encountered :
             log_error_path = config["log_folder"] + config["log_error_file"]
-            print("\n--- ERRORS ---")
-            for output in outputs:
-                print(output)
+            print("\n --- ERRORS ---")
             print("See %s for detailed errors."%(log_error_path))
 
 class logSearch:
@@ -172,7 +179,7 @@ class logSearch:
         log_path = log_folder + config["log_search_file"]
         if not exists(log_path):
             open(log_path, 'a').close()
-            chmod(log_path, 0o666)
+            chmod(log_path, 0o777)
         f = open(log_path, 'a')
         if args.file == "False" :
             for ioc in args.observables :
@@ -203,6 +210,7 @@ class colors:
         DEBUG = '\033[38;5;13m' # LIGHT_MAGENTA
         INFO = '\033[38;5;117m' # LIGHT_BLUE
         FOUND = '\033[38;5;10m' # GREEN
+        NOT_FOUND = FOUND
         WARNING = '\033[38;5;11m' # YELLOW
         ERROR = '\033[38;5;202m' # ORANGE
         FATAL_ERROR = '\033[38;5;9m' # RED

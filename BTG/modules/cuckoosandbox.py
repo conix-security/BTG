@@ -58,8 +58,9 @@ class Cuckoosandbox:
             length = len(self.config['cuckoosandbox_api_url'])
             if  length != len(self.config['cuckoosandbox_web_url']) and length <= 0:
                 mod.display(self.module_name,
-                            message_type="ERROR",
-                            string="Cuckoosandbox fields in btg.cfg are missfilled, checkout commentaries.")
+                            self.ioc,
+                            "ERROR",
+                            "Cuckoosandbox fields in btg.cfg are missfilled, checkout commentaries.")
                 return None
 
             for indice in range(len(self.config['cuckoosandbox_api_url'])):
@@ -93,10 +94,10 @@ class Cuckoosandbox:
             json_request = json.dumps(request)
             store_request(self.queues, json_request)
         else:
-            mod.display(module,
-                        ioc,
-                        message_type="ERROR",
-                        string="Check if you have filled cuckoosandbox fields in btg.cfg")
+            mod.display(self.module,
+                        self.ioc,
+                        "ERROR",
+                        "Check if you have filled cuckoosandbox fields in btg.cfg")
 
 
 def response_handler(response_text, response_status, module, ioc, server_id):
@@ -107,17 +108,17 @@ def response_handler(response_text, response_status, module, ioc, server_id):
             except:
                 mod.display(module,
                             ioc,
-                            message_type="ERROR",
-                            string="CuckooSandbox json_response was not readable.")
+                            "ERROR",
+                            "CuckooSandbox json_response was not readable.")
                 return None
 
             id_analysis = json_response["sample"]["id"]
-            mod.display("%s_remote" % self.module_name,
-                        self.ioc,
+            mod.display("%s_remote" % module,
+                        ioc,
                         "FOUND",
                         "%s/view/%s" % (web_url, id_analysis))
         else:
             mod.display(module,
                         ioc,
-                        message_type="ERROR",
-                        string="CuckooSandbox connection status : %d for server : %s" % (response_status,web_url))
+                        "ERROR",
+                        "CuckooSandbox connection status : %d for server : %s" % (response_status,web_url))

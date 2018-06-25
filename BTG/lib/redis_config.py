@@ -39,14 +39,19 @@ def init_queue(redis_host, redis_port, redis_password):
     # Producing a large enough random name for the queue, thus we can run multiple instance of BTG
     random.seed()
     hash = hex(random.getrandbits(32))
-
     while r.get(hash) is not None:
         hash = hex(random.getrandbits(32))
-
     working_queue = hash
     request_queue = hex(int(hash, base=16) + 1)
-
     return working_queue, request_queue
+
+def key_generator(conn):
+    random.seed()
+    lockname = hex(random.getrandbits(16))
+    while conn.get(lockname) is not None:
+        lockname = hex(random.getrandbits(16))
+    dictname = hex(int(lockname, base=16) + 1)
+    return lockname, dictname
 
 # Specifying worker options : [burst, logging_level]
 def init_worker():

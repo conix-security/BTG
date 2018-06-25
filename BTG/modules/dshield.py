@@ -52,6 +52,9 @@ class Dshield:
                 try:
                     if line[0] != '#':
                         if line.lower() == self.ioc.lower():
-                            mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                            mod.display(self.module_name,
+                                        self.ioc, 
+                                        "FOUND",
+                                        "%s%s"%(url, path))
                 except:
                     pass
