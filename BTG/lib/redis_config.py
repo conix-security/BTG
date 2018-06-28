@@ -18,8 +18,10 @@
 
 import random
 import redis
+from os import getpid
 
 from BTG.lib.config_parser import Config
+from BTG.lib.utils import cluster
 
 config = Config.get_instance()
 
@@ -34,24 +36,30 @@ def init_redis():
         redis_password = config['redis_password']
     return redis_host, redis_port, redis_password
 
-def init_queue(redis_host, redis_port, redis_password):
+def init_variables(redis_host, redis_port, redis_password, fp):
     r = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password)
-    # Producing a large enough random name for the queue, thus we can run multiple instance of BTG
+    # Producing a random name for global variables : queues, lock, dict,
+    # thus we can run multiple instance of BTG
     random.seed()
     hash = hex(random.getrandbits(32))
-    while r.get(hash) is not None:
-        hash = hex(random.getrandbits(32))
-    working_queue = hash
-    request_queue = hex(int(hash, base=16) + 1)
-    return working_queue, request_queue
-
-def key_generator(conn):
-    random.seed()
-    lockname = hex(random.getrandbits(16))
-    while conn.get(lockname) is not None:
-        lockname = hex(random.getrandbits(16))
-    dictname = hex(int(lockname, base=16) + 1)
-    return lockname, dictname
+    cond = True
+    while cond:
+        temp = r.get(hash)
+        if temp is not None:
+            hash = hex(random.getrandbits(32))
+            continue
+        else:
+            cond = False
+            for i in range(1,2):
+                temp = r.get(hex(int(hash, base=16) + i))
+                if temp is not None:
+                    hash = hex(random.getrandbits(32))
+                    cond = True
+                    break
+    working_queue = hex(int(hash, base=16) + 1)
+    request_queue = hex(int(hash, base=16) + 2)
+    lockname, dictname = cluster.get_keys(fp)
+    return working_queue, request_queue, lockname, dictname
 
 # Specifying worker options : [burst, logging_level]
 def init_worker():

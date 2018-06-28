@@ -44,11 +44,10 @@ class googlesb():
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.lookup_API()
         else:
             mod.display(self.module_name, "", "INFO", "googlesb module not activated")
-            return None
 
     def lookup_API(self):
         mod.display(self.module_name, "", "INFO", "Search in Google Safe Browsing ...")
@@ -127,3 +126,4 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                     ioc,
                     message_type="ERROR",
                     string="GoogleSafeBrowsing connection status : %d" % (response_status))
+    return None

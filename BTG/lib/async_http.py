@@ -29,7 +29,7 @@ from itertools import groupby
 
 from BTG.lib.worker_tasks import module_worker_response
 from BTG.lib.io import module as mod
-from BTG.lib.redis_config import init_redis, init_queue, init_worker
+from BTG.lib.redis_config import init_redis
 from BTG.lib.config_parser import Config
 
 config = Config.get_instance()

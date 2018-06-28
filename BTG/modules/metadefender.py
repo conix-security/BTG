@@ -43,7 +43,7 @@ class metadefender:
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.Search()
         else:
             mod.display(self.module_name, "", "INFO", "MetaDefender module not activated")
@@ -96,36 +96,31 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                             ioc,
                             message_type="NOT_FOUND",
                             string="Nothing found in MetaDefender")
-                return None
         elif ioc.upper() in json_response:
             if json_response[ioc.upper()] == "Not Found":
                 mod.display(module,
                             ioc,
                             message_type="NOT_FOUND",
                             string="Nothing found in MetaDefender")
-                return None
         elif json_response['scan_results']['scan_all_result_a'] == "Clear":
             mod.display(module,
                         ioc,
                         message_type="FOUND",
-                        string="Nothing found in MetaDefender")
-            return None
+                        string=url_result+json_response['data_id'])
         elif json_response['scan_results']['scan_all_result_a'] == "Infected" \
             or json_response['scan_results']['scan_all_result_a'] == "Suspicious":
             mod.display(module,
                         ioc,
                         message_type="FOUND",
                         string=url_result+json_response['data_id'])
-            return None
         else:
             mod.display(module,
                         ioc,
                         message_type="ERROR",
                         string="MetaDefender json_response was not as expected, API may has been updated.")
-            return None
     else:
         mod.display(module,
                     ioc,
                     message_type="ERROR",
                     string="MetaDefender response.code_status : %d" % (response_status))
-        return None
+    return None

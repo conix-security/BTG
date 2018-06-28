@@ -37,7 +37,7 @@ class Otx:
         self.type = type
         self.ioc = ioc
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.Search()
         else:
             mod.display(self.module_name, "", "INFO", "Alienvault OTX module not activated")
@@ -67,6 +67,7 @@ class Otx:
                             self.ioc,
                             message_type="ERROR",
                             string="Please check if you have otx_api_keys field in btg.cfg")
+                return None
         except:
             mod.display(self.module_name,
                         self.ioc,
@@ -76,7 +77,6 @@ class Otx:
         try:
             if self.ioc == str(result["general"]["indicator"]):
                 _id = str(result["general"]["pulse_info"]["pulses"][0]["id"])
-
                 tags = ""
                 for tag in result["general"]["pulse_info"]["pulses"][0]["tags"]:
                     tags = tags + "%s " % tag
@@ -89,3 +89,4 @@ class Otx:
                         self.ioc,
                         message_type="NOT_FOUND",
                         string="Nothing found in OTX")
+        return None

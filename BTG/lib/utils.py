@@ -20,28 +20,37 @@
 
 import redis
 import json
-import re
 import time
 import uuid
-from os import getpid
+import os
+import sys
+import signal
+from rq import Connection, Queue, Worker
 
 class cluster:
-
     def __init__():
         return None
 
-    def set_keys(k1, k2):
-        global lockname
-        global dictname
-        lockname = k1
-        dictname = k2
+    def get_keys(fp):
+        lockname = None
+        dictname = None
+        with open(fp, 'r') as pf:
+                main_pid = pf.read().strip().splitlines()
+                lockname = "lock:%s"%(main_pid[0])
+                dictname = "dict:%s"%(main_pid[0])
+                pf.close()
+        return lockname, dictname
+
+    def remove_keys(conn, lockname, dictname):
+        conn.delete(lockname)
+        conn.delete(dictname)
 
     def acquire_lock(conn, lockname):
         id = str(uuid.uuid4())
         while True:
             if conn.setnx(lockname, id):
                 return id
-            time.sleep(0.5)
+            time.sleep(0.1)
         return False
 
     def release_lock(conn, lockname, id):
@@ -50,7 +59,7 @@ class cluster:
             if value == id:
                 conn.delete(lockname)
                 return True
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def add_cluster(ioc, modules, dictname, conn):
         cluster = {'ioc':ioc,
@@ -63,22 +72,23 @@ class cluster:
     def edit_cluster(ioc, module, message, conn, lockname, dictname):
         c = None
         locked = cluster.acquire_lock(conn, lockname)
-        # print('locked')
         bytes_clusters = conn.lrange(dictname, 0, -1)
 
         for bytes_cluster in bytes_clusters:
-            c = json.loads(bytes_cluster.decode("utf-8"))
-            if c['ioc'] == ioc and module in c['modules']:
-                c['nb_module'] = c['nb_module']-1
-                c['messages'].append(message)
-                conn.lrem(dictname, 1, bytes_cluster)
-                json_cluster = json.dumps(c)
-                conn.lpush(dictname, json.dumps(c))
-                break
-            else:
+            try:
+                c = json.loads(bytes_cluster.decode("utf-8"))
+                if c['ioc'] == ioc and module in c['modules']:
+                    c['nb_module'] = c['nb_module']-1
+                    c['messages'].append(message)
+                    conn.lrem(dictname, 1, bytes_cluster)
+                    json_cluster = json.dumps(c)
+                    conn.lpush(dictname, json.dumps(c))
+                    break
+                else:
+                    c = None
+            except:
                 c = None
         unlocked = cluster.release_lock(conn, lockname, locked)
-        # print('unlocked\n\n')
         return c
 
     def print_cluster(cluster, conn):
@@ -86,15 +96,117 @@ class cluster:
             return None
         if len(cluster['modules'])==len(cluster['messages']) and cluster['nb_module']==0:
             for message in cluster['messages']:
-                print(message)
+                if message['type'] == "FOUND":
+                    print(message['string'])
             print('')
-            # remove_cluster(cluster['ioc'], conn)
 
-    # def remove_cluster(ioc, conn):
-    #     clusters = conn.lrange('clusters', 0, -1)
-    #     for cluster in clusters:
-    #         if cluster['ioc'] == ioc:
-    #             try:
-    #                 conn.lrem('clusters', dict)
-    #             except Exception as e:
-    #                 print(e)
+
+class pidfile:
+    def __init__():
+        return None
+
+    # Make directory for temporary pidfile if it does not exist
+    def make_pidfile_dir():
+        abs_path = "/tmp/BTG/data"
+        if not os.path.isdir(abs_path):
+            try:
+                os.makedirs(abs_path)
+                os.chmod(abs_path, 0o770)
+            except:
+                raise MakeDirError("Could not make directory :/tmp/BTG/data",)
+        return abs_path
+
+    # Check if pidfile exists and return his path
+    def exists_pidfile(dir):
+        for file in os.listdir(dir):
+            if file.endswith(".pid"):
+                file_path = os.path.join(dir, file)
+                return file_path
+        return dir
+
+    def store_pid_in_file(pid):
+        try:
+            dir_path = pidfile.make_pidfile_dir()
+        except:
+            raise MakeDirError("Could not make directory :/tmp/BTG/data",)
+        file_path = pidfile.exists_pidfile(dir_path)
+        if file_path != dir_path:
+            # An instance of BTG has been found, we should wait to avoid conflict
+            print('\033[38;5;9m'+"An instance of BTG is already running, we will wait 30s or until its completion"+'\033[0m')
+            timeout = time.time() + 30
+            while time.time() < timeout:
+                time.sleep(3)
+                file_path = pidfile.exists_pidfile(dir_path)
+                if file_path == dir_path:
+                    print('\033[38;5;10m'+"Previous BTG instance is over, we start processing\n"+'\033[0m')
+                    filename = "%s.pid"%pid
+                    file_path = os.path.join(dir_path, filename)
+                    try:
+                        with open(file_path, "w+") as pf:
+                            try:
+                                pf.write('%d'%pid)
+                            except:
+                                raise WriteError("Could not write in %s"%file_path)
+                                return None
+                            finally:
+                                pf.close()
+                    except:
+                        raise OpenError("Could not open %s"%file_path)
+                        return None
+                    return file_path
+            raise TimeoutError("We have reached maximum waiting time, BTG is closing ...\n")
+            return None
+        else:
+            filename = "%s.pid"%pid
+            file_path = os.path.join(dir_path, filename)
+            try:
+                with open(file_path, "w+") as pf:
+                    try:
+                        pf.write('%d'%pid)
+                    except:
+                        raise WriteFileError("Could not write in %s"%(file_path))
+                    finally:
+                        pf.close()
+            except:
+                raise OpenFileError("Could not open %s"%(file_path))
+        return file_path
+
+
+class redis_utils:
+    def __init__():
+        return None
+
+    def graceful_shutdown(working_going):
+        # DO-WHILE loop to check if a worker is still working
+        is_busy = True
+        while is_busy:
+            states = []
+            workers = Worker.all(queue=working_going)
+            for worker in workers:
+                state = worker.get_state()
+                states.append(state)
+            for state in states:
+                if state == 'busy':
+                    is_busy = True
+                    break
+                is_busy = False
+            time.sleep(1)
+        time.sleep(1)
+
+    def shutdown(processes_pid, working_going, failed_queue, lockname, dictname,
+                 redis_conn, sig_int=True):
+        if not sig_int:
+            redis_utils.graceful_shutdown(working_going)
+
+        # Removing undone jobs
+        working_going.delete(delete_jobs=True)
+        # Killing all processes in the group
+        for process_pid in processes_pid:
+            pgrp = int(process_pid)
+            os.killpg(pgrp, signal.SIGTERM)
+        time.sleep(1)
+        # Clearing potentially failed jobs because of the previous kill
+        # TODO
+        # Those should have been timed out, can we log them before clearing queue ?
+        failed_queue.empty()
+        cluster.remove_keys(redis_conn, lockname, dictname)

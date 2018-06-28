@@ -47,7 +47,7 @@ class Virustotal:
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "VirusTotal module not activated")
@@ -113,6 +113,7 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                         message_type="ERROR",
                         string="VirusTotal json_response was not readable.")
             return None
+
         if "positives" in json_content and json_content["positives"] > 0:
             mod.display(module,
                         ioc,
@@ -130,3 +131,4 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                     ioc,
                     message_type="ERROR",
                     string="VirusTotal response.code_status : %d" % (response_status))
+    return None

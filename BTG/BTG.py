@@ -22,7 +22,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import sys
-from os import listdir, path, remove, kill, killpg, setsid, getpgid, mkdir, chmod, makedirs
+from os import listdir, path, remove, kill, killpg, setsid, getpid, getpgid, mkdir, chmod, makedirs
 from os.path import isfile, join, exists, abspath, isdir, dirname
 from base64 import b64decode
 import argparse
@@ -40,17 +40,17 @@ import validators
 from string import Formatter
 import csv
 
-from BTG.lib.utils import cluster
+from BTG.lib.utils import cluster, pidfile, redis_utils
 from BTG.lib.io import module as mod
 from BTG.lib.io import logSearch
 from BTG.lib.io import errors as err
 from BTG.lib.io import colors
 from BTG.lib.worker_tasks import module_worker_request
-from BTG.lib.redis_config import init_redis, init_queue, init_worker, number_of_worker, key_generator
+from BTG.lib.redis_config import init_redis, init_variables, init_worker, number_of_worker
 from BTG.lib.config_parser import Config
 
 config = Config.get_instance()
-version = "2.1"     # BTG version
+version = "2.2"     # BTG version
 
 class BTG():
     """
@@ -69,9 +69,6 @@ class BTG():
 
         clusters = []
         queues = [working_queue, request_queue]
-        # lockname, dictname = key_generator(conn)
-        lockname, dictname = 'toto', 'tata'
-        cluster.set_keys(lockname, dictname)
 
         if args.file == "False" :
             observable_list = args.observables
@@ -313,7 +310,7 @@ class Utils:
         parser.add_argument("-d", "--debug", action="store_true", help="Display debug informations",)
         parser.add_argument("-o", "--offline", action="store_true",
                             help=("Set BTG in offline mode, meaning all modules"
-                                  "described as online (i.e. VirusTotal) are deactivated"))
+                                  "described as online (i.e. VirusTotal) are desactivated"))
         parser.add_argument("-s", "--silent", action="store_true", help="Disable MOTD")
         return parser.parse_args()
 
@@ -329,39 +326,6 @@ class Utils:
                 if path.isdir(file_path):
                     Utils.cleanups_lock_cache(file_path)
 
-    def graceful_shutdown(working_going):
-        # DO-WHILE loop to check if a worker is still working
-        is_busy = True
-        while is_busy:
-            states = []
-            workers = Worker.all(queue=working_going)
-            for worker in workers:
-                state = worker.get_state()
-                states.append(state)
-            for state in states:
-                if state == 'busy':
-                    is_busy = True
-                    break
-                is_busy = False
-            time.sleep(1)
-        time.sleep(1)
-
-    def shut_down(processes, working_going, failed_queue, sig_int=True):
-        if not sig_int:
-            Utils.graceful_shutdown(working_going)
-
-        # Removing undone jobs
-        working_going.delete(delete_jobs=True)
-        # Killing all processes in the group
-        for process in processes:
-            pgrp = getpgid(process.pid)
-            killpg(pgrp, signal.SIGTERM)
-        time.sleep(1)
-        # Clearing potentially failed jobs because of the previous kill
-        # TODO
-        # Those should have been timed out, can we log them before clearing queue ?
-        failed_queue.empty()
-
     def subprocess_launcher():
         """
             Subprocess loop to launch rq-worker
@@ -369,15 +333,35 @@ class Utils:
         processes = []
         max_worker = number_of_worker()
         worker_path = dirname(__file__)+'/lib/run_worker.py '
+        worker_params = '%s' % (working_queue)
+        worker_call = 'python3 '+worker_path+worker_params
         poller_path = dirname(__file__)+'/lib/poller.py '
+        poller_params = '%s %s' % (working_queue,request_queue)
+        poller_call = 'python3 '+poller_path+poller_params
         try :
             for i in range(max_worker):
-                processes.append(subprocess.Popen(['python3 '+ worker_path + working_queue], shell=True, preexec_fn = setsid))
-            processes.append(subprocess.Popen(['python3 '+ poller_path + working_queue +' '+ request_queue], shell=True, preexec_fn = setsid))
+                processes.append(subprocess.Popen([worker_call],
+                                                  shell=True, preexec_fn = setsid).pid)
+            processes.append(subprocess.Popen([poller_call],
+                                              shell=True, preexec_fn = setsid).pid)
         except :
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
-                        string="Could not launch workers as subprocess")
+                        string="Could not launch workers and/or poller subprocesses")
+            sys.exit()
+
+        supervisor_path = dirname(__file__)+'/lib/hypervisor.py '
+        supervisor_params = '%d %s %s'%(getpid(),fp, working_queue)
+        for process in processes:
+            supervisor_params += ' '+str(process)
+        supervisor_call = 'python3 '+supervisor_path+supervisor_params
+        try:
+            processes.append(subprocess.Popen([supervisor_call],
+                                              shell=True, preexec_fn = setsid).pid)
+        except:
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Could not launch supervisor subprocess")
             sys.exit()
         return processes
 
@@ -391,7 +375,6 @@ class Utils:
             if i in k and i in l.keys():
                 d[i], rem = divmod(rem, l[i])
         return f.format(fmt, **d)
-
 
 
 def main(argv=None):
@@ -419,7 +402,15 @@ def main(argv=None):
     if config["display_motd"] and not args.silent:
         Utils.motd()
 
-    global working_queue, working_going, request_queue, failed_queue
+    global working_queue, working_going, request_queue, failed_queue, lockname, dictname, fp
+    try:
+        fp = pidfile.store_pid_in_file(getpid())
+    except Exception as e:
+        mod.display("MAIN",
+                    message_type="FATAL_ERROR",
+                    string=e.args[0])
+        sys.exit()
+
     try:
         Utils.createLoggingFolder()
         if path.exists(config["temporary_cache_path"]):
@@ -427,14 +418,14 @@ def main(argv=None):
         logSearch(args)
         # Connecting to Redis
         redis_host, redis_port, redis_password = init_redis()
-        try :
+        try:
             with Connection(Redis(redis_host, redis_port, redis_password)) as conn:
-                working_queue, request_queue = init_queue(redis_host, redis_port, redis_password)
+                working_queue, request_queue, lockname, dictname = init_variables(redis_host, redis_port, redis_password, fp)
                 working_going = Queue(working_queue, connection=conn)
                 failed_queue = Queue('failed', connection=conn)
             r = redis.StrictRedis(host=redis_host, port=redis_port,
                                   password=redis_password)
-        except :
+        except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
                         string="Could not establish connection with Redis, check if you have redis_host, redis_port and maybe redis_password in /config/btg.cfg")
@@ -451,18 +442,42 @@ def main(argv=None):
                 break;
             time.sleep(1)
 
+        # toto = azerty
+
         try:
-            Utils.shut_down(processes, working_going, failed_queue, sig_int=False)
+            redis_utils.shutdown(processes, working_going, failed_queue,
+                                  lockname, dictname, r, sig_int=False)
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
-                        string="Could not close subprocesses, maybe there were not any to begin with.")
+                        string="Could not close subprocesses, here are their pid :" + "".join(['%s ' % i.pid for i in processes]))
+            try:
+                remove(fp)
+            except FileNotFound:
+                pass
+            except:
+                mod.display("MAIN",
+                            message_type="FATAL_ERROR",
+                            string="Could not delete %s, make sure to delete it for next usage" % fp)
+                sys.exit()
             sys.exit()
+
         end_time = datetime.now()
         errors_to_display = Utils.show_up_errors(start_time, end_time, modules)
         err.display(dict_list=errors_to_display)
         delta_time = Utils.strfdelta((end_time - start_time), "{H:02}h {M:02}m {S:02}s")
         print("\nAll works done :\n   in %s" % (delta_time))
+        try:
+            remove(fp)
+        except FileNotFound:
+            pass
+        except:
+            mod.display("UTILS",
+                        message_type="FATAL_ERROR",
+                        string="Could not delete %s, make sure to delete it for next usage" % fp)
+            sys.exit()
+
+
     except (KeyboardInterrupt, SystemExit):
         '''
         Exit if user press CTRL+C
@@ -472,11 +487,19 @@ def main(argv=None):
         print("Closing the worker, and clearing pending jobs ...%s\n" % (colors.NORMAL))
 
         try:
-            Utils.shut_down(processes, working_going, failed_queue)
+            redis_utils.shutdown(processes, working_going, failed_queue,
+                                 lockname, dictname, r)
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
-                        string="Could not close subprocesses, maybe there were not any to begin with.")
+                        string="Could not close subprocesses, here are their pid :" + "".join(['%s ' % i.pid for i in processes]))
+        try:
+            remove(fp)
+        except FileNotFound:
+            pass
+        except:
+            mod.display("MAIN",
+                        message_type="FATAL_ERROR",
+                        string="Could not delete %s, make sure to delete it for next usage" % fp)
             sys.exit()
-
         sys.exit()

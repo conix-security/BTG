@@ -19,8 +19,9 @@
 import sys
 from rq import Connection, Queue, Worker
 from redis import Redis
+from os import getpid, getppid
 
-from BTG.lib.redis_config import init_redis, init_queue, init_worker
+from BTG.lib.redis_config import init_redis, init_worker
 
 if __name__ == '__main__':
     # Connecting to Redis

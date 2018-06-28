@@ -1,31 +1,31 @@
-name;types
-cuckoosandbox;MD5, SHA256
-cybercrimetracker;domain, IPv4, URL
-dshield;domain
-feodotracker;IPv4, domain
-googlesb;URL, domain
-irish;MD5, SHA256, SHA1
-lehigh;domain
-malekal;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256, SHA512
-malshare;MD5, SHA256, SHA1
-malwareconfig;MD5, SHA256, IPv4, IPv6, domain
-malwaredomainlist;domain
-malwaredomains;domain
-malwareteks;domain
-metadefender;MD5, SHA1, SHA256, SHA512
-misp_crawler;MD5, SHA5, domain, IPv4,IPv6, URL, SHA256, SHA512
-misp;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256, SHA512
-nothink;IPv4
-openphish;domain, URL, IPv4
-otx;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256
-ransomwaretracker;domain, URL, IPv4, IPv6
-spamhaus;IPv4, IPv6
-sslblacklist;SHA1
-torips;IPv4
-urlhaus;URL, domain
-viper;MD5, SHA1, SHA256, URL, domain, IPv4
-virusshare;MD5, SHA1, SHA256
-virustotal;MD5, SHA1, SHA256, URL, IPv4, domain
-vxstream;MD5, SHA1, SHA256, domain, IPv4, IPv6, URL
-vxvault;IPv4, domain, URL
-zeustracker;domain, IPv4, URL
+name;types;method
+cuckoosandbox;MD5, SHA256;Onpremises
+cybercrimetracker;domain, IPv4, URL;Online
+dshield;domain;Online
+feodotracker;IPv4, domain;Online
+googlesb;URL, domain;Online
+irish;MD5, SHA256, SHA1;Online
+lehigh;domain;Online
+malekal;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256, SHA512;Online
+malshare;MD5, SHA256, SHA1;Online
+malwareconfig;MD5, SHA256, IPv4, IPv6, domain;Online
+malwaredomainlist;domain;Online
+malwaredomains;domain;Online
+malwareteks;domain;Online
+metadefender;MD5, SHA1, SHA256, SHA512;Online
+misp_crawler;MD5, SHA5, domain, IPv4,IPv6, URL, SHA256, SHA512;Online
+misp;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256, SHA512;Onpremises
+nothink;IPv4;Online
+openphish;domain, URL, IPv4;Online
+otx;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256;Online
+ransomwaretracker;domain, URL, IPv4, IPv6;Online
+spamhaus;IPv4, IPv6;Online
+sslblacklist;SHA1;Online
+torips;IPv4;Online
+urlhaus;URL, domain;Online
+viper;MD5, SHA1, SHA256, URL, domain, IPv4;Onpremises
+virusshare;MD5, SHA1, SHA256;Online
+virustotal;MD5, SHA1, SHA256, URL, IPv4, domain;Online
+vxstream;MD5, SHA1, SHA256, domain, IPv4, IPv6, URL;Online
+vxvault;IPv4, domain, URL;Online
+zeustracker;domain, IPv4, URL;Online
