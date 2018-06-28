@@ -34,7 +34,7 @@ class Nothink:
             self.creation_date = "18-04-2016"
             self.type = type
             self.ioc = ioc
-            if type in self.types and mod.allowedToSearch(self.search_method):
+            if mod.allowedToSearch(self.search_method):
                 self.search()
             else:
                 mod.display(self.module_name, "", "INFO", "Nothink module not activated")
@@ -51,4 +51,12 @@ class Nothink:
             content = Cache(self.module_name, url, path, self.search_method).content
             for line in content.split("\n"):
                 if self.ioc in line:
-                    mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "FOUND",
+                                "%s%s"%(url, path))
+                    return None
+        mod.display(self.module_name,
+                    self.ioc,
+                    "NOT_FOUND",
+                    "Nothing found in nothink feeds")

@@ -40,7 +40,7 @@ class Misp_Crawler:
         self.creation_date = "21-03-2017"
         self.type = type
         self.ioc = ioc
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.Search()
         else:
             mod.display(self.module_name, "", "INFO", "MISP_crawler module not activated")

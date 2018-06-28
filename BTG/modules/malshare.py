@@ -35,7 +35,7 @@ class Malshare():
         self.creation_date = "12-04-2017"
         self.type = type
         self.ioc = ioc
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "Malshare module not activated")
@@ -44,29 +44,31 @@ class Malshare():
         mod.display(self.module_name, "", "INFO", "Searching...")
         url = "http://malshare.com/"
         if "malshare_api_key" in self.config:
-            if self.config["malshare_api_key"]:
-                paths = [
-                    "api.php?api_key=%s&action=details&hash=%s" % (self.config["malshare_api_key"],
-                                                                   self.ioc)
-                ]
-                for path in paths:
-                    try:
-                        content = json.loads(Cache(self.module_name,
-                                                   url,
-                                                   path,
-                                                   self.search_method).content)
-
-                        safe_urls = []
-                        for malware_url in content["SOURCES"]:
-                            safe_urls.append(malware_url.replace("http", "hxxp"))
-                        mod.display(self.module_name,
-                                    self.ioc,
-                                    "FOUND",
-                                    "%s | %s%s" % (safe_urls, url, path))
-                        return
-                    except:
-                        pass
+            paths = [
+                "api.php?api_key=%s&action=details&hash=%s" % (self.config["malshare_api_key"],
+                                                               self.ioc)
+            ]
+            for path in paths:
+                try:
+                    content = json.loads(Cache(self.module_name,
+                                               url,
+                                               path,
+                                               self.search_method).content)
+                    safe_urls = []
+                    for malware_url in content["SOURCES"]:
+                        safe_urls.append(malware_url.replace("http", "hxxp"))
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "FOUND",
+                                "%s | %s%s" % (safe_urls, url, path))
+                    return None
+                except:
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "NOT_FOUND",
+                                "Nothing Found in Malshare feeds")
         else:
             mod.display(self.module_name,
                         message_type="ERROR",
                         string="You must have a malshare api key to use this module ")
+            return None

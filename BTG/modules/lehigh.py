@@ -33,7 +33,7 @@ class Lehigh:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "Lehigh module not activated")
@@ -54,3 +54,8 @@ class Lehigh:
                                     self.ioc,
                                     "FOUND",
                                     "[%s] %s%s"%(base.split("\t")[1], url, path))
+                        return None
+        mod.display(self.module_name,
+                    self.ioc,
+                    "NOT_FOUND",
+                    "Nothing found in lehigh feed")

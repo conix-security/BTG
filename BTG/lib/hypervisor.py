@@ -60,8 +60,7 @@ class supervisor:
         try:
             redis_utils.shutdown(subprocesses_pid, working_going, failed_queue, lockname, dictname,
                                  redis_conn, sig_int=False)
-        except Exception as e:
-            print(e)
+        except:
             mod.display("HYPERVISOR",
                         message_type="FATAL_ERROR",
                         string="Could not close subprocesses, here are their pid :"+"".join(['%s ' % i for i in subprocesses_pid]))
@@ -74,6 +73,7 @@ class supervisor:
             mod.display("HYPERVISOR",
                         message_type="FATAL_ERROR",
                         string="Could not delete %s, make sure to delete it for next usage" % fp)
+        sys.exit()
 
 if __name__ == '__main__':
     try:
@@ -89,8 +89,7 @@ if __name__ == '__main__':
                 failed_queue = Queue('failed', connection=conn)
             redis_conn = redis.StrictRedis(host=redis_host, port=redis_port,
                                            password=redis_password)
-        except Exception as e:
-            print(e)
+        except:
             mod.display("HYPERVISOR",
                         message_type="FATAL_ERROR",
                         string="Could not establish connection with Redis, check if you have redis_host, redis_port and maybe redis_password in /config/btg.cfg")
@@ -100,4 +99,8 @@ if __name__ == '__main__':
         supervisor.observe_parent_process(main_pid, subprocesses_pid, pf, redis_conn,
                                           working_going, failed_queue, lockname, dictname)
     except (KeyboardInterrupt, SystemExit):
-        os.killpg(main_pid, signal.SIGTERM)
+        try:
+            os.killpg(main_pid, signal.SIGTERM)
+        except:
+            pass
+        print("%sEverything is cleared, BTG is terminated\n%s"%(colors.FOUND,colors.NORMAL))

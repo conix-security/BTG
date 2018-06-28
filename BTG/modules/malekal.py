@@ -56,6 +56,7 @@ class Malekal:
                         message_type="ERROR",
                         string=("Check if you have malekal_local or malekal_remote"
                                 "fields in btg.cfg "))
+            return None
         self.search_method = "Online"
         self.description = "Search IOC in malekal database"
         self.author = "Conix"
@@ -118,17 +119,24 @@ class Malekal:
                 folder = os.path.basename(root)
                 for file in files:
                     if file == self.ioc:
-                        mod.display(
-                            "%s_local"%self.module_name, self.ioc, "FOUND", "%s%s/%s"%(
-                                self.config["malekal_files_path"],
-                                folder,
-                                file
-                            )
-                        )
+                        mod.display("%s_local"%self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "%s%s/%s"%(self.config["malekal_files_path"],
+                                               folder,
+                                               file))
+                        return None
+            mod.display("%s_local"%self.module_name,
+                        self.ioc,
+                        message_type="NOT_FOUND",
+                        string="Nothing found in Malekal_local")
+            return None
         else:
-            mod.display(self.module_name,
+            mod.display("%s_local"%self.module_name,
+                        self.ioc,
                         message_type="ERROR",
                         string="Check if you have malekal_files_path field in btg.cfg ")
+            return None
 
 def response_handler(response_text, response_status, module, ioc, server_id=None):
     if response_status == 200 :
@@ -138,8 +146,14 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                         ioc,
                         "FOUND",
                         "http://malwaredb.malekal.com/index.php?hash="+matches[0])
+            return None
+        else:
+            mod.display("%s_remote"%module,
+                        ioc,
+                        "NOT_FOUND",
+                        "Nothing found in Malekal_remote")
     else:
-        mod.display(module,
+        mod.display("%s_remote"%module,
                     ioc,
                     message_type="ERROR",
                     string="Malekal connection status : %d" % (response_status))

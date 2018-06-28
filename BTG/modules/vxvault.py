@@ -33,7 +33,7 @@ class Vxvault:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "VXvault module not activated")
@@ -49,4 +49,8 @@ class Vxvault:
             for line in content.split("\n"):
                 if self.ioc in line:
                     mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-                    return
+                    return None
+        mod.display(self.module_name,
+                    self.ioc,
+                    "NOT_FOUND",
+                    "Nothing found in vxvault feeds")

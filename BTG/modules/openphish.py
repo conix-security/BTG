@@ -35,7 +35,7 @@ class Openphish:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "OpenPhish module not activated")
@@ -56,12 +56,16 @@ class Openphish:
                 if self.type == "URL":
                     if self.ioc in line:
                         mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-                        return
+                        return None
                 elif self.type == "IPv4" and validators.ipv4(midle):
                     if self.ioc == midle:
                         mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-                        return
+                        return None
                 elif self.type == "domain" and validators.domain(midle):
                     if midle == self.ioc:
                         mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-                        return
+                        return None
+        mod.display(self.module_name,
+                    self.ioc,
+                    "FOUND",
+                    "Nothing found in openphish feeds")

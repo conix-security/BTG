@@ -38,12 +38,12 @@ class Virusshare:
         self.verbose = "POST"
         self.headers = self.config["user_agent"]
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "VirusShare module not activated")
 
-    def serach_ioc(self):
+    def search_ioc(self):
         search_url = "https://virusshare.com/search.4n6"
         login_url = "https://virusshare.com/processlogin.4n6"
         login_page = "https://virusshare.com/login.4n6"
@@ -149,7 +149,7 @@ class Virusshare:
     def search(self):
         try:
             mod.display(self.module_name, "", "INFO", "Searching...")
-            data_page = self.serach_ioc()
+            data_page = self.search_ioc()
             extract_info = self.extract_information(data_page)
             if self.check_ioc(data_page, extract_info):
                 mod.display(self.module_name,
@@ -158,4 +158,7 @@ class Virusshare:
                             "Score: %d | %s" % (len(extract_info['DETECTIONS'].split("\n"))-1, "https://virusshare.com/"))
 
         except:
-            pass
+            mod.display(self.module_name,
+                        self.ioc,
+                        "NOT_FOUND",
+                        "Nothing found in virusshare DB")

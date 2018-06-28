@@ -74,6 +74,9 @@ class cluster:
         locked = cluster.acquire_lock(conn, lockname)
         bytes_clusters = conn.lrange(dictname, 0, -1)
 
+        # Exceptions where module name logged isn't the same as module.py
+        if len(module.split("malekal"))>1:
+            module = "malekal"
         for bytes_cluster in bytes_clusters:
             try:
                 c = json.loads(bytes_cluster.decode("utf-8"))
@@ -81,6 +84,7 @@ class cluster:
                     c['nb_module'] = c['nb_module']-1
                     c['messages'].append(message)
                     conn.lrem(dictname, 1, bytes_cluster)
+                    # print(c['ioc'], c['nb_module'])
                     json_cluster = json.dumps(c)
                     conn.lpush(dictname, json.dumps(c))
                     break
@@ -205,8 +209,5 @@ class redis_utils:
             pgrp = int(process_pid)
             os.killpg(pgrp, signal.SIGTERM)
         time.sleep(1)
-        # Clearing potentially failed jobs because of the previous kill
-        # TODO
-        # Those should have been timed out, can we log them before clearing queue ?
         failed_queue.empty()
         cluster.remove_keys(redis_conn, lockname, dictname)

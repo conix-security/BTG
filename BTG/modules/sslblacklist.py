@@ -33,7 +33,7 @@ class Sslblacklist():
         self.creation_date = "12-04-2017"
         self.type = type
         self.ioc = ioc
-        if type in self.types:
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "SSLblacklist module not activated")
@@ -52,4 +52,8 @@ class Sslblacklist():
                     infos = line.split(',')
                     mod.display(self.module_name,
                                 self.ioc, "FOUND", "%s | %s%s" % (infos[2], url, path))
-                    return
+                    return None
+        mod.display(self.module_name,
+                    self.ioc,
+                    "NOT_FOUND",
+                    "Nothing found in sslblacklist feeds")

@@ -36,7 +36,7 @@ class feodotracker():
         self.type = type
         self.ioc = ioc
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "FeodoTracker module not activated")
@@ -65,7 +65,7 @@ class feodotracker():
         if content.find(self.ioc) == -1:
             mod.display(self.module_name,
                         self.ioc,
-                        "INFO",
+                        "NOT_FOUND",
                         "Nothing found in FeodoTracker")
             return None
         else:

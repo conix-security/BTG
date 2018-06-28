@@ -40,7 +40,7 @@ class Irish():
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "IRIS-H module not activated")
@@ -75,10 +75,22 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                         ioc,
                         "FOUND",
                         "URL: https://iris-h.services/report/%s" % (ioc))
+            return None
+        else:
+            mod.display(module,
+                        ioc,
+                        "NOT_FOUND",
+                        "Nothing found in irsih DB")
+            return None
     elif response_status == 404:
+        mod.display(module,
+                    ioc,
+                    "NOT_FOUND",
+                    "Nothing found in irsih DB")
         return None
     else:
         mod.display(module,
                     ioc,
                     message_type="ERROR",
                     string="Irish connection status : %d" % (response_status))
+        return None

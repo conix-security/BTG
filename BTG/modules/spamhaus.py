@@ -35,7 +35,7 @@ class Spamhaus:
         self.creation_date = "20-03-2017"
         self.type = type
         self.ioc = ioc
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "Spamhaus module not activated")
@@ -57,3 +57,8 @@ class Spamhaus:
                             mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                 except:
                     pass
+
+        mod.display(self.module_name,
+                    self.ioc,
+                    "NOT_FOUND",
+                    "Nothing found in SpamHaus feeds")

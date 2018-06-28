@@ -34,7 +34,7 @@ class Ransomwaretracker:
         self.creation_date = "12-04-2017"
         self.type = type
         self.ioc = ioc
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "RansomwareTracker module not activated")
@@ -57,3 +57,8 @@ class Ransomwaretracker:
                                              paths[0]))
             except:
                 pass
+
+        mod.display(self.module_name,
+                    self.ioc,
+                    "NOT_FOUND",
+                    "Nothing found in RansomwareTracker feeds")

@@ -37,13 +37,13 @@ class Viper:
         self.type = type
         self.ioc = ioc
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             length = len(self.config['viper_server'])
             if  length != len(self.config['viper_api_key']) and length <= 0:
                 mod.display(self.module_name,
                             message_type="ERROR",
                             string="Viper fields in btg.cfg are missfilled, checkout commentaries.")
-                return
+                return None
             for indice in range(len(self.config['viper_server'])):
                 server = self.config['viper_server'][indice]
                 api_key = self.config['viper_api_key'][indice]
@@ -69,9 +69,14 @@ class Viper:
             if response_json["count"] != 0:
                 return response_json
             else:
+                mod.display(self.module_name,
+                            seff.ioc,
+                            message_type="NOT_FOUND",
+                            string="Nothing found in Viper DB")
                 return None
         else:
             mod.display(self.module_name,
+                        self.ioc,
                         message_type="ERROR",
                         string="Viper API connection status %d" % response.status_code)
             return None
@@ -94,16 +99,18 @@ class Viper:
             if "viper_server" in self.config and "viper_api_key" in self.config:
                 if not self.checkToken(server, api_key):
                     mod.display(self.module_name, self.ioc, "ERROR", "Bad API key")
-                    return
+                    return None
                 if self.type in self.types:
                     result_json = self.viper_api(server, api_key)
             else:
                 mod.display(self.module_name,
+                            self.ioc,
                             message_type=":",
                             string="Please check if you have viper fields in btg.cfg")
+                return None
         except Exception as e:
             mod.display(self.module_name, self.ioc, "ERROR", e)
-            return
+            return None
 
         if result_json:
             if self.type in ["MD5", "SHA1", "SHA256"]:
@@ -127,6 +134,7 @@ class Viper:
                             self.ioc,
                             "FOUND",
                             "%s%s%s" % (tags, id, name))
+                return None
 
             elif self.type in ["URL", "domain", "IPv4"]:
                 for element in result_json["results"]:
@@ -138,3 +146,14 @@ class Viper:
                                     malware["data"]["id"],
                                     malware["data"]["name"],
                                     malware["data"]["sha1"]))
+                        return None
+            else:
+                mod.display(self.module_name,
+                            seff.ioc,
+                            message_type="ERROR",
+                            string="Json response from Viper is not as expected.")
+        else:
+            mod.display(self.module_name,
+                        seff.ioc,
+                        message_type="NOT_FOUND",
+                        string="Nothing found in Viper DB")

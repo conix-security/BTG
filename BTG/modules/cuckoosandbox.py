@@ -54,7 +54,7 @@ class Cuckoosandbox:
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             length = len(self.config['cuckoosandbox_api_url'])
             if  length != len(self.config['cuckoosandbox_web_url']) and length <= 0:
                 mod.display(self.module_name,
@@ -113,10 +113,15 @@ def response_handler(response_text, response_status, module, ioc, server_id):
                 return None
 
             id_analysis = json_response["sample"]["id"]
-            mod.display("%s_remote" % module,
+            mod.display(module,
                         ioc,
                         "FOUND",
                         "%s/view/%s" % (web_url, id_analysis))
+        elif response_status == 404:
+            mod.display(module,
+                        ioc,
+                        "NOT_FOUND",
+                        "Nothing found in CuckooSandbox")
         else:
             mod.display(module,
                         ioc,

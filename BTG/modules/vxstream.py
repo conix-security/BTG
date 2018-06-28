@@ -44,7 +44,7 @@ class Vxstream:
                         'accept': 'application/json'}
         self.proxy = self.config["proxy_host"]
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.vxstream_api()
         else:
             mod.display(self.module_name, "", "INFO", "VXstream module not activated")
@@ -119,7 +119,10 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                         "FOUND",
                         "%s | %s/100 | %s" % (verdict, threat_score, url))
             return None
-
+        mod.display(module,
+                    ioc,
+                    "NOT_FOUND",
+                    "Nothing found in vxstream DB")
     else:
         mod.display(module,
                     ioc,

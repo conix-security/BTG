@@ -227,7 +227,17 @@ class Utils:
                                 if module == row[0]:
                                     types = row[1].split(', ')
                                     if type in types:
-                                        matching_list.append(module)
+                                        if module == "cuckoosandbox":
+                                            for url in config['cuckoosandbox_api_url']:
+                                                matching_list.append(module)
+                                        elif module == "viper":
+                                            for url in config['viper_server']:
+                                                matching_list.append(module)
+                                        elif module == "misp":
+                                            for url in config['misp_url']:
+                                                matching_list.append(module)
+                                        else:
+                                            matching_list.append(module)
                 except:
                     mod.display("MAIN",
                                 message_type="FATAL_ERROR",
@@ -441,8 +451,6 @@ def main(argv=None):
             if len(working_going.jobs) == 0 and r.llen(request_queue) == 0:
                 break;
             time.sleep(1)
-
-        # toto = azerty
 
         try:
             redis_utils.shutdown(processes, working_going, failed_queue,

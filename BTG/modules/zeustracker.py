@@ -35,7 +35,7 @@ class Zeustracker:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             self.search()
         else:
             mod.display(self.module_name, "", "INFO", "ZeusTracker module not activated")
@@ -70,8 +70,12 @@ class Zeustracker:
                 if self.type == "domain" and validators.domain(line.strip()):
                     if line.strip() == self.ioc:
                         mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-                        return
+                        return None
                 elif self.type == "IPv4" and validators.ipv4(line.strip()):
                     if line.strip() == self.ioc:
                         mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
-                        return
+                        return None
+        mod.display(self.module_name,
+                    self.ioc,
+                    "NOT_FOUND",
+                    "Nothing found in zeustracker feeds")

@@ -46,19 +46,20 @@ class Misp:
         self.proxy = self.config['proxy_host']
         self.verify = self.config['misp_verifycert']
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if mod.allowedToSearch(self.search_method):
             length = len(self.config['misp_url'])
             if length != len(self.config['misp_key']) and length <= 0:
                 mod.display(self.module_name,
                             message_type="ERROR",
                             string="MISP fields in btg.cfg are missfilled, checkout commentaries.")
-                return
+                return None
             for indice in range(len(self.config['misp_url'])):
                 misp_url = self.config['misp_url'][indice]
                 misp_key = self.config['misp_key'][indice]
                 self.Search(misp_url, misp_key, indice)
         else:
             mod.display(self.module_name, "", "INFO", "MISP module not activated")
+            return None
 
     def Search(self, misp_url, misp_key, indice):
         mod.display(self.module_name, "", "INFO", "Search in misp...")
@@ -104,8 +105,14 @@ def response_handler(response_text, response_status, module, ioc, server_id):
                                 "FOUND",
                                 "Event: %sevents/view/%s"%(web_url,
                                                            event_id))
+                    return None
+            mod.display(module,
+                        ioc,
+                        "NOT_FOUND",
+                        "Nothing found in Misp:%s database"%(web_url))
+            return None
     else:
         mod.display(module,
                     ioc,
                     message_type="ERROR",
-                    string="Misp connection status : %d" % (response_status))
+                    string="Misp connection status : %d"%(response_status))
