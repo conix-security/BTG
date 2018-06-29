@@ -52,6 +52,7 @@ from BTG.lib.config_parser import Config
 config = Config.get_instance()
 version = "2.2"     # BTG version
 
+
 class BTG():
     """
         BTG Main class
@@ -191,6 +192,7 @@ class BTG():
 
 
 class Utils:
+
     def __init__():
         return None
 
@@ -260,16 +262,19 @@ class Utils:
             dict_list.append({"module_name" : module, "nb_error" : 0})
         log_error_file = config["log_folder"] + config["log_error_file"]
         try:
-            with open(log_error_file,"r") as f :
+            with open(log_error_file,"r+") as f :
                 try:
                     lines = f.read().strip().splitlines()
-                except:
+                except Exception as e:
+                    print(e)
                     mod.display("MAIN",
                                 message_type="FATAL_ERROR",
                                 string="Could not read %s, checkout your btg.cfg."%(log_error_file))
                     sys.exit()
                 finally:
                     f.close()
+        except FileNotFoundError:
+            return None
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
@@ -308,7 +313,7 @@ class Utils:
                             message_type="FATAL_ERROR",
                             string="Unable to create %s directory. (Permission denied)"%config["log_folder"])
                 sys.exit()
-            chmod(config["log_folder"], 0o770)
+            chmod(config["log_folder"], 0o777)
 
     def parse_args():
         """

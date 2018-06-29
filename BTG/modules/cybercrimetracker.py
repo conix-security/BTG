@@ -33,6 +33,7 @@ class Cybercrimetracker:
         self.creation_date = "03-03-2016"
         self.type = type
         self.ioc = ioc
+
         if mod.allowedToSearch(self.search_method):
             self.search()
         else:
@@ -52,7 +53,7 @@ class Cybercrimetracker:
                 if self.ioc in line:
                     mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
                     return None
-            mod.display(self.module_name,
-                        self.ioc,
-                        "NOT_FOUND",
-                        "Nothing found in Cybercrimetracker")
+        mod.display(self.module_name,
+                    self.ioc,
+                    "NOT_FOUND",
+                    "Nothing found in Cybercrimetracker")

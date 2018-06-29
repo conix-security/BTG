@@ -108,9 +108,8 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                             ioc,
                             "FOUND",
                             "%s | %s/100 | %s" % (verdict, threat_score, url))
-            return None
-
-        if json_response:
+                return None
+        elif json_response:
             verdict = json_response[0]["verdict"]
             threat_score = json_response[0]["threat_score"]
             url = "https://www.hybrid-analysis.com/sample/"+ioc
@@ -123,6 +122,7 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                     ioc,
                     "NOT_FOUND",
                     "Nothing found in vxstream DB")
+        return None
     else:
         mod.display(module,
                     ioc,

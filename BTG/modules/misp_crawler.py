@@ -53,6 +53,7 @@ class Misp_Crawler:
                 allEvents = self.searchAttribute(s)
                 for event in allEvents:
                     if "misp_crawler_url" in self.config:
+                        # TODO: And what is the response is empty, NOT_FOUND ?
                         mod.display(self.module_name,
                                     self.ioc,
                                     "FOUND",
@@ -60,10 +61,12 @@ class Misp_Crawler:
                                                                 event))
                     else:
                         mod.display(self.module_name,
+                                    self.ioc,
                                     message_type="ERROR",
                                     string="Check if you have misp_crawler_url in btg.cfg")
             except:
                 mod.display(self.module_name,
+                            self.ioc,
                             message_type="ERROR",
                             string="Could not perform the request, checkout btg.cfg at [%s]" % (self.module_name))
 
@@ -103,6 +106,7 @@ class Misp_Crawler:
             return self.getAllEvents(response.text)
         else:
             mod.display(self.module_name,
+                        self.ioc,
                         message_type="ERROR",
                         string=("Please check if you have misp_crawler_url, user_agent and"
                                 "misp_crawler_verifycert fields in btg.cfg"))
@@ -133,6 +137,7 @@ class Misp_Crawler:
             )
         else:
             mod.display(self.module_name,
+                        self.ioc,
                         message_type="ERROR",
                         string=("Please check if you have misp_crawler_url, user_agent and"
                                 "misp_crawler_verifycert fields in btg.cfg"))

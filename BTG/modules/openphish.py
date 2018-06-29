@@ -67,5 +67,5 @@ class Openphish:
                         return None
         mod.display(self.module_name,
                     self.ioc,
-                    "FOUND",
+                    "NOT_FOUND",
                     "Nothing found in openphish feeds")
