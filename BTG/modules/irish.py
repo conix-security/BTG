@@ -24,6 +24,7 @@ import json
 from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
 
+
 class Irish():
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -43,25 +44,29 @@ class Irish():
         if mod.allowedToSearch(self.search_method):
             self.search()
         else:
-            mod.display(self.module_name, "", "INFO", "IRIS-H module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "IRIS-H module not activated")
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
         self.url = "https://iris-h.services/api/search?hash=" + self.ioc
 
-        request = {'url' : self.url,
-                   'headers' : self.headers,
-                   'module' : self.module_name,
-                   'ioc' : self.ioc,
-                   'verbose' : self.verbose,
-                   'proxy' : self.proxy
+        request = {'url': self.url,
+                   'headers': self.headers,
+                   'module': self.module_name,
+                   'ioc': self.ioc,
+                   'verbose': self.verbose,
+                   'proxy': self.proxy
                    }
         json_request = json.dumps(request)
         store_request(self.queues, json_request)
 
 
-def response_handler(response_text, response_status, module, ioc, server_id=None):
-    if response_status == 200 :
+def response_handler(response_text, response_status, module,
+                     ioc, server_id=None):
+    if response_status == 200:
         try:
             json_content = json.loads(response_text)
         except:
@@ -70,7 +75,7 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
                         message_type="ERROR",
                         string="Irish json_response was not readable.")
             return None
-        if not ("No report exists for %s hash"%(ioc)) in json_content:
+        if not ("No report exists for %s hash" % (ioc)) in json_content:
             mod.display(module,
                         ioc,
                         "FOUND",

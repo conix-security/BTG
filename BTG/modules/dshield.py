@@ -22,6 +22,7 @@
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class Dshield:
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -36,7 +37,10 @@ class Dshield:
         if mod.allowedToSearch(self.search_method):
             self.search()
         else:
-            mod.display(self.module_name, "", "INFO", "Dshield module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "Dshield module not activated")
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -55,7 +59,7 @@ class Dshield:
                             mod.display(self.module_name,
                                         self.ioc,
                                         "FOUND",
-                                        "%s%s"%(url, path))
+                                        "%s%s" % (url, path))
                             return None
                 except:
                     pass

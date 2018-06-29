@@ -25,12 +25,12 @@ from os import chmod
 from os.path import exists
 from platform import system
 import redis
-import time
 import sys
 
 from BTG.lib.utils import cluster, pidfile
 from BTG.lib.redis_config import init_redis
 from BTG.lib.config_parser import Config
+
 
 class module:
     """
@@ -41,7 +41,7 @@ class module:
 
     @classmethod
     def display(self, module="INIT", ioc="", message_type="DEBUG", string=""):
-        exec("colorize = colors.%s"%message_type, None, globals())
+        exec("colorize = colors.%s" % message_type, None, globals())
         config = Config.get_instance()
 
         pidfile_dir = "/tmp/BTG/data"
@@ -53,25 +53,26 @@ class module:
         else:
             lockname, dictname = cluster.get_keys(pidfile_path)
 
-        if not config["debug"] and (message_type == "INFO" or message_type == "DEBUG"):
+        if not config["debug"] and \
+           (message_type == "INFO" or message_type == "DEBUG"):
             pass
         else:
             if ioc != "":
                 if len(ioc) >= 67:
-                    ioc = '%s%s...'%(ioc[:64], colors.NORMAL)
-                ioc_show = "{%s%s%s} "%(colors.INFO, ioc, colors.NORMAL)
+                    ioc = '%s%s...' % (ioc[:64], colors.NORMAL)
+                ioc_show = "{%s%s%s} " % (colors.INFO, ioc, colors.NORMAL)
             else:
                 ioc_show = " "
-            output = "[%s%s%s][%s%s%s]%s%s%s%s"%(colors.MODULE,
-                                                 module,
-                                                 colors.NORMAL,
-                                                 colorize,
-                                                 message_type,
-                                                 colors.NORMAL,
-                                                 ioc_show,
-                                                 colors.BOLD,
-                                                 string,
-                                                 colors.NORMAL)
+            output = "[%s%s%s][%s%s%s]%s%s%s%s" % (colors.MODULE,
+                                                   module,
+                                                   colors.NORMAL,
+                                                   colorize,
+                                                   message_type,
+                                                   colors.NORMAL,
+                                                   ioc_show,
+                                                   colors.BOLD,
+                                                   string,
+                                                   colors.NORMAL)
 
             log_folder = config["log_folder"]
             if message_type in ["FOUND", "NOT_FOUND", "ERROR", "WARNING"]:
@@ -81,7 +82,7 @@ class module:
                         open(log_path, 'a+').close()
                         chmod(log_path, 0o777)
                     f = open(log_path, 'a')
-                    f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'),
+                    f.write("%s%s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'),
                             output))
                     f.close()
                 elif message_type == "ERROR" or message_type == "WARNING":
@@ -90,7 +91,7 @@ class module:
                         open(log_path, 'a+').close()
                         chmod(log_path, 0o777)
                     f = open(log_path, 'a')
-                    f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'),
+                    f.write("%s%s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'),
                             output))
                     f.close()
 
@@ -99,10 +100,11 @@ class module:
                 conn = redis.StrictRedis(host=redis_host, port=redis_port,
                                          password=redis_password)
 
-                message = {'type':message_type,
-                           'string':output
+                message = {'type': message_type,
+                           'string': output
                            }
-                c = cluster.edit_cluster(ioc, module, message, conn, lockname, dictname)
+                c = cluster.edit_cluster(ioc, module, message,
+                                         conn, lockname, dictname)
                 cluster.print_cluster(c, conn)
                 return None
 
@@ -112,7 +114,7 @@ class module:
                     open(log_path, 'a+').close()
                     chmod(log_path, 0o777)
                 f = open(log_path, 'a')
-                f.write("%s%s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
+                f.write("%s%s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
                 print(output)
                 return None
@@ -174,29 +176,30 @@ class errors:
             outputs = []
             for dict in dict_list:
                 if dict['nb_error'] > 1:
-                    output = "[%s%s%s] encountered %s%d%s errors"%(colors.MODULE,
-                                                                   dict['module_name'],
-                                                                   colors.NORMAL,
-                                                                   colors.NB_ERROR,
-                                                                   dict['nb_error'],
-                                                                   colors.NORMAL)
+                    output = "[%s%s%s] encountered %s%d%s errors" % (colors.MODULE,
+                                                                     dict['module_name'],
+                                                                     colors.NORMAL,
+                                                                     colors.NB_ERROR,
+                                                                     dict['nb_error'],
+                                                                     colors.NORMAL)
                     outputs.append(output)
                     error_encountered = True
                 elif dict['nb_error'] == 1:
-                    output = "[%s%s%s] encountered %s%d%s error"%(colors.MODULE,
-                                                                  dict['module_name'],
-                                                                  colors.NORMAL,
-                                                                  colors.NB_ERROR,
-                                                                  dict['nb_error'],
-                                                                  colors.NORMAL)
+                    output = "[%s%s%s] encountered %s%d%s error" % (colors.MODULE,
+                                                                    dict['module_name'],
+                                                                    colors.NORMAL,
+                                                                    colors.NB_ERROR,
+                                                                    dict['nb_error'],
+                                                                    colors.NORMAL)
                     outputs.append(output)
                     error_encountered = True
-            if error_encountered :
+            if error_encountered:
                 log_error_path = config["log_folder"] + config["log_error_file"]
                 print("\n--- ERRORS ---")
                 for output in outputs:
                     print(output)
-                    print("See %s for detailed errors"%(log_error_path))
+                    print("See %s for detailed errors" % (log_error_path))
+
 
 class logSearch:
     def __init__(self, args):
@@ -207,13 +210,13 @@ class logSearch:
             open(log_path, 'a').close()
             chmod(log_path, 0o777)
         f = open(log_path, 'a')
-        if args.file == "False" :
-            for ioc in args.observables :
+        if args.file == "False":
+            for ioc in args.observables:
                 f.write("%s %s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))
             f.close()
-        else :
-            for file in args.observables :
-                with open(file, "r") as f2 :
+        else:
+            for file in args.observables:
+                with open(file, "r") as f2:
                     for ioc in f2.readlines():
                         f.write("%s %s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc.strip('\n')))
             f.close()
@@ -233,14 +236,14 @@ class colors:
         MODULE = ''
         NB_ERROR = ''
     else:
-        DEBUG = '\033[38;5;13m' # LIGHT_MAGENTA
-        INFO = '\033[38;5;117m' # LIGHT_BLUE
-        FOUND = '\033[38;5;10m' # GREEN
+        DEBUG = '\033[38;5;13m'  # LIGHT_MAGENTA
+        INFO = '\033[38;5;117m'  # LIGHT_BLUE
+        FOUND = '\033[38;5;10m'  # GREEN
         NOT_FOUND = FOUND
-        WARNING = '\033[38;5;11m' # YELLOW
-        ERROR = '\033[38;5;202m' # ORANGE
-        FATAL_ERROR = '\033[38;5;9m' # RED
+        WARNING = '\033[38;5;11m'  # YELLOW
+        ERROR = '\033[38;5;202m'  # ORANGE
+        FATAL_ERROR = '\033[38;5;9m'  # RED
         NORMAL = '\033[0m'
         BOLD = '\033[1m'
-        MODULE = '\033[38;5;199m' # PURPLE
-        NB_ERROR = '\033[38;5;9m' # RED
+        MODULE = '\033[38;5;199m'  # PURPLE
+        NB_ERROR = '\033[38;5;9m'  # RED

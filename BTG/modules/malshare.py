@@ -24,6 +24,7 @@ import json
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class Malshare():
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -38,7 +39,10 @@ class Malshare():
         if mod.allowedToSearch(self.search_method):
             self.search()
         else:
-            mod.display(self.module_name, "", "INFO", "Malshare module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "Malshare module not activated")
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -69,6 +73,7 @@ class Malshare():
                                 "Nothing Found in Malshare feeds")
         else:
             mod.display(self.module_name,
-                        message_type="ERROR",
-                        string="You must have a malshare api key to use this module ")
+                        self.ioc,
+                        "ERROR",
+                        "You must have a malshare api key to use this module ")
             return None

@@ -32,7 +32,7 @@ from BTG.lib.async_http import store_request
 cfg = Config.get_instance()
 if system() != "Windows":
     import requests_cache
-    requests_cache.install_cache('%sBTG'%cfg["sqlite_path"])
+    requests_cache.install_cache('%sBTG' % cfg["sqlite_path"])
 
 
 class Malekal:
@@ -44,7 +44,8 @@ class Malekal:
         self.config = config
         self.module_name = __name__.split(".")[-1]
         if "malekal_local" in self.config and "malekal_remote" in self.config:
-            if self.config["malekal_local"] and not self.config["malekal_remote"]:
+            if self.config["malekal_local"] \
+               and not self.config["malekal_remote"]:
                 self.types = ["MD5"]
             else:
                 self.types = [
@@ -53,6 +54,7 @@ class Malekal:
                 ]
         else:
             mod.display(self.module_name,
+                        self.ioc,
                         message_type="ERROR",
                         string=("Check if you have malekal_local or malekal_remote"
                                 "fields in btg.cfg "))
@@ -71,7 +73,10 @@ class Malekal:
         if type in self.types and mod.allowedToSearch(self.search_method):
             self.search()
         else:
-            mod.display(self.module_name, "", "INFO", "Malekal module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "Malekal module not activated")
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -86,7 +91,7 @@ class Malekal:
         """
             Search IOC with HTTP request
         """
-        mod.display("%s_remote"%self.module_name,
+        mod.display("%s_remote" % self.module_name,
                     self.ioc,
                     "INFO",
                     string="Browsing in remote http")
@@ -99,12 +104,12 @@ class Malekal:
             base = "domaine="
         self.url = url+base+self.ioc
 
-        request = {'url' : self.url,
-                   'headers' : self.headers,
-                   'module' : self.module_name,
-                   'ioc' : self.ioc,
-                   'verbose' : self.verbose,
-                   'proxy' : self.proxy
+        request = {'url': self.url,
+                   'headers': self.headers,
+                   'module': self.module_name,
+                   'ioc': self.ioc,
+                   'verbose': self.verbose,
+                   'proxy': self.proxy
                    }
 
         json_request = json.dumps(request)
@@ -112,48 +117,50 @@ class Malekal:
 
     def localSearch(self):
         """ Search in local directory """
-        mod.display("%s_local"%self.module_name, string="Browsing in local directory")
+        mod.display("%s_local" % self.module_name,
+                    string="Browsing in local directory")
         if "malekal_files_path" in self.config:
             for root, dirs, files in os.walk(self.config["malekal_files_path"]):
-                path = root.split('/')
                 folder = os.path.basename(root)
                 for file in files:
                     if file == self.ioc:
-                        mod.display("%s_local"%self.module_name,
+                        mod.display("%s_local" % self.module_name,
                                     self.ioc,
                                     "FOUND",
-                                    "%s%s/%s"%(self.config["malekal_files_path"],
-                                               folder,
-                                               file))
+                                    "%s%s/%s" % (self.config["malekal_files_path"],
+                                                 folder,
+                                                 file))
                         return None
-            mod.display("%s_local"%self.module_name,
+            mod.display("%s_local" % self.module_name,
                         self.ioc,
                         message_type="NOT_FOUND",
                         string="Nothing found in Malekal_local")
             return None
         else:
-            mod.display("%s_local"%self.module_name,
+            mod.display("%s_local" % self.module_name,
                         self.ioc,
-                        message_type="ERROR",
-                        string="Check if you have malekal_files_path field in btg.cfg ")
+                        "ERROR",
+                        "Check if you have malekal_files_path field in btg.cfg ")
             return None
 
-def response_handler(response_text, response_status, module, ioc, server_id=None):
-    if response_status == 200 :
+
+def response_handler(response_text, response_status, module,
+                     ioc, server_id=None):
+    if response_status == 200:
         matches = findall("hash=([a-z0-9]{32})\"", response_text)
         if len(matches) >= 1:
-            mod.display("%s_remote"%module,
+            mod.display("%s_remote" % module,
                         ioc,
                         "FOUND",
                         "http://malwaredb.malekal.com/index.php?hash="+matches[0])
             return None
         else:
-            mod.display("%s_remote"%module,
+            mod.display("%s_remote" % module,
                         ioc,
                         "NOT_FOUND",
                         "Nothing found in Malekal_remote")
     else:
-        mod.display("%s_remote"%module,
+        mod.display("%s_remote" % module,
                     ioc,
-                    message_type="ERROR",
-                    string="Malekal connection status : %d" % (response_status))
+                    "ERROR",
+                    "Malekal connection status : %d" % (response_status))

@@ -18,14 +18,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import redis
 import json
 import time
 import uuid
 import os
-import sys
 import signal
-from rq import Connection, Queue, Worker
+from rq import Worker
+
 
 class cluster:
     def __init__():
@@ -36,8 +35,8 @@ class cluster:
         dictname = None
         with open(fp, 'r') as pf:
                 main_pid = pf.read().strip().splitlines()
-                lockname = "lock:%s"%(main_pid[0])
-                dictname = "dict:%s"%(main_pid[0])
+                lockname = "lock:%s" % (main_pid[0])
+                dictname = "dict:%s" % (main_pid[0])
                 pf.close()
         return lockname, dictname
 
@@ -62,10 +61,10 @@ class cluster:
             time.sleep(0.1)
 
     def add_cluster(ioc, modules, dictname, conn):
-        cluster = {'ioc':ioc,
-                   'modules':modules,
-                   'nb_module':len(modules),
-                   'messages':[]
+        cluster = {'ioc': ioc,
+                   'modules': modules,
+                   'nb_module': len(modules),
+                   'messages': []
                    }
         conn.lpush(dictname, json.dumps(cluster))
 
@@ -75,7 +74,7 @@ class cluster:
         bytes_clusters = conn.lrange(dictname, 0, -1)
 
         # Exceptions where module name logged isn't the same as module.py
-        if len(module.split("malekal"))>1:
+        if len(module.split("malekal")) > 1:
             module = "malekal"
         for bytes_cluster in bytes_clusters:
             try:
@@ -86,19 +85,20 @@ class cluster:
                     conn.lrem(dictname, 1, bytes_cluster)
                     print(c['ioc'], c['nb_module'])
                     json_cluster = json.dumps(c)
-                    conn.lpush(dictname, json.dumps(c))
+                    conn.lpush(dictname, json_cluster)
                     break
                 else:
                     c = None
             except:
                 c = None
-        unlocked = cluster.release_lock(conn, lockname, locked)
+        cluster.release_lock(conn, lockname, locked)
         return c
 
     def print_cluster(cluster, conn):
         if not cluster:
             return None
-        if len(cluster['modules'])==len(cluster['messages']) and cluster['nb_module']==0:
+        if len(cluster['modules']) == len(cluster['messages']) \
+           and cluster['nb_module'] == 0:
             for message in cluster['messages']:
                 if message['type'] == "FOUND":
                     print(message['string'])
@@ -143,36 +143,36 @@ class pidfile:
                 file_path = pidfile.exists_pidfile(dir_path)
                 if file_path == dir_path:
                     print('\033[38;5;10m'+"Previous BTG instance is over, we start processing\n"+'\033[0m')
-                    filename = "%s.pid"%pid
+                    filename = "%s.pid" % pid
                     file_path = os.path.join(dir_path, filename)
                     try:
                         with open(file_path, "w+") as pf:
                             try:
-                                pf.write('%d'%pid)
+                                pf.write('%d' % pid)
                             except:
-                                raise WriteError("Could not write in %s"%file_path)
+                                raise WriteError("Could not write in %s" % file_path)
                                 return None
                             finally:
                                 pf.close()
                     except:
-                        raise OpenError("Could not open %s"%file_path)
+                        raise OpenError("Could not open %s" % file_path)
                         return None
                     return file_path
             raise TimeoutError("We have reached maximum waiting time, BTG is closing ...\n")
             return None
         else:
-            filename = "%s.pid"%pid
+            filename = "%s.pid" % pid
             file_path = os.path.join(dir_path, filename)
             try:
                 with open(file_path, "w+") as pf:
                     try:
-                        pf.write('%d'%pid)
+                        pf.write('%d' % pid)
                     except:
-                        raise WriteFileError("Could not write in %s"%(file_path))
+                        raise WriteFileError("Could not write in %s" % (file_path))
                     finally:
                         pf.close()
             except:
-                raise OpenFileError("Could not open %s"%(file_path))
+                raise OpenFileError("Could not open %s" % (file_path))
         return file_path
 
 
@@ -197,8 +197,8 @@ class redis_utils:
             time.sleep(1)
         time.sleep(1)
 
-    def shutdown(processes_pid, working_going, failed_queue, lockname, dictname,
-                 redis_conn, sig_int=True):
+    def shutdown(processes_pid, working_going, failed_queue, lockname,
+                 dictname, redis_conn, sig_int=True):
         if not sig_int:
             redis_utils.graceful_shutdown(working_going)
 

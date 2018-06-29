@@ -22,14 +22,15 @@ import sys
 import os
 import signal
 import time
-from rq import Connection, Queue, Worker
+from rq import Connection, Queue
 from redis import Redis
 import redis
 
 from BTG.lib.redis_config import init_redis
-from BTG.lib.utils import pidfile, redis_utils, cluster
+from BTG.lib.utils import redis_utils, cluster
 from BTG.lib.io import module as mod
 from BTG.lib.io import colors
+
 
 class supervisor:
     def __init__():
@@ -42,23 +43,25 @@ class supervisor:
         try:
             os.kill(pid, 0)
         except ProcessLookupError:
-            return False # No such process
+            return False  # No such process
         except PermissionError:
-            return True # Operation not permitted (i.e., process exists)
+            return True  # Operation not permitted (i.e., process exists)
         else:
-            return True # no error, we can send a signal to the process
+            return True  # no error, we can send a signal to the process
 
     def observe_parent_process(main_pid, subprocesses_pid, pf, redis_conn,
-                               working_going, failed_queue, lockname, dictname):
-        starttime=time.time()
+                               working_going, failed_queue,
+                               lockname, dictname):
+        starttime = time.time()
         while supervisor.check_pid(main_pid):
             time.sleep(1.0 - ((time.time() - starttime) % 1.0))
 
         # Dad is dead, we must kill subprocesses and remove pidfile
-        print("\n%s%sBTG main process encountered an unexpected error"% (colors.BOLD, colors.FATAL_ERROR))
+        print("\n%s%sBTG main process encountered an unexpected error" % (colors.BOLD, colors.FATAL_ERROR))
         print("Closing the worker, and clearing pending jobs ...%s\n" % (colors.NORMAL))
         try:
-            redis_utils.shutdown(subprocesses_pid, working_going, failed_queue, lockname, dictname,
+            redis_utils.shutdown(subprocesses_pid, working_going, failed_queue,
+                                 lockname, dictname,
                                  redis_conn, sig_int=False)
         except:
             mod.display("HYPERVISOR",
@@ -67,13 +70,14 @@ class supervisor:
 
         try:
             os.remove(pf)
-        except FileNotFound:
+        except FileNotFoundError:
             pass
         except:
             mod.display("HYPERVISOR",
                         message_type="FATAL_ERROR",
-                        string="Could not delete %s, make sure to delete it for next usage" % fp)
+                        string="Could not delete %s, make sure to delete it for next usage" % pf)
         sys.exit()
+
 
 if __name__ == '__main__':
     try:
@@ -96,8 +100,9 @@ if __name__ == '__main__':
             os.killpg(main_pid, signal.SIGTERM)
 
         lockname, dictname = cluster.get_keys(pf)
-        supervisor.observe_parent_process(main_pid, subprocesses_pid, pf, redis_conn,
-                                          working_going, failed_queue, lockname, dictname)
+        supervisor.observe_parent_process(main_pid, subprocesses_pid, pf,
+                                          redis_conn, working_going,
+                                          failed_queue, lockname, dictname)
     except (KeyboardInterrupt, SystemExit):
         try:
             os.killpg(main_pid, signal.SIGTERM)

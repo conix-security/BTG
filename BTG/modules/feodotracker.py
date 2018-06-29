@@ -21,6 +21,7 @@
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class feodotracker():
     """
         This module performs a Safe Browsing Lookup to Google API
@@ -39,7 +40,10 @@ class feodotracker():
         if mod.allowedToSearch(self.search_method):
             self.search()
         else:
-            mod.display(self.module_name, "", "INFO", "FeodoTracker module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "FeodoTracker module not activated")
             return None
 
     def search(self):
@@ -58,8 +62,7 @@ class feodotracker():
             mod.display(self.module_name,
                         self.ioc,
                         "ERROR",
-                        "This IOC is of an unrecognized type: %s"%(self.type))
-
+                        "This IOC is of an unrecognized type: %s" % (self.type))
 
         content = Cache(self.module_name, url, path, self.search_method).content
         if content.find(self.ioc) == -1:

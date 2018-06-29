@@ -24,6 +24,7 @@ import random
 from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
 
+
 class metadefender:
     """
         This module performs a Safe Browsing Lookup to Google API
@@ -46,7 +47,10 @@ class metadefender:
         if mod.allowedToSearch(self.search_method):
             self.Search()
         else:
-            mod.display(self.module_name, "", "INFO", "MetaDefender module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "MetaDefender module not activated")
 
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in MetaDefender ...")
@@ -66,58 +70,59 @@ class metadefender:
             return None
 
         # URL building
-        self.url="https://api.metadefender.com/v2/hash/" + self.ioc
+        self.url = "https://api.metadefender.com/v2/hash/"+self.ioc
 
-        request = {'url' : self.url,
-                   'headers' : self.headers,
-                   'module' : self.module_name,
-                   'ioc' : self.ioc,
-                   'verbose' : self.verbose,
-                   'proxy' : self.proxy
+        request = {'url': self.url,
+                   'headers': self.headers,
+                   'module': self.module_name,
+                   'ioc': self.ioc,
+                   'verbose': self.verbose,
+                   'proxy': self.proxy
                    }
 
         json_request = json.dumps(request)
         store_request(self.queues, json_request)
 
-def response_handler(response_text, response_status, module, ioc, server_id=None):
-    if response_status == 200 :
+
+def response_handler(response_text, response_status,
+                     module, ioc, server_id=None):
+    if response_status == 200:
         url_result = "https://www.metadefender.com/results#!/hash/"
         try:
             json_response = json.loads(response_text)
         except:
             mod.display(module,
                         ioc,
-                        message_type="ERROR",
-                        string="MetaDefender json_response was not readable.")
+                        "ERROR",
+                        "MetaDefender json_response was not readable.")
             return None
         if ioc in json_response:
             if json_response[ioc] == "Not Found":
                 mod.display(module,
                             ioc,
-                            message_type="NOT_FOUND",
-                            string="Nothing found in MetaDefender")
+                            "NOT_FOUND",
+                            "Nothing found in MetaDefender")
         elif ioc.upper() in json_response:
             if json_response[ioc.upper()] == "Not Found":
                 mod.display(module,
                             ioc,
-                            message_type="NOT_FOUND",
-                            string="Nothing found in MetaDefender")
+                            "NOT_FOUND",
+                            "Nothing found in MetaDefender")
         elif json_response['scan_results']['scan_all_result_a'] == "Clear":
             mod.display(module,
                         ioc,
-                        message_type="FOUND",
-                        string=url_result+json_response['data_id'])
-        elif json_response['scan_results']['scan_all_result_a'] == "Infected" \
-            or json_response['scan_results']['scan_all_result_a'] == "Suspicious":
+                        "FOUND",
+                        url_result+json_response['data_id'])
+        elif json_response['scan_results']['scan_all_result_a'] == "Infected" or json_response['scan_results']['scan_all_result_a'] == "Suspicious":
             mod.display(module,
                         ioc,
-                        message_type="FOUND",
-                        string=url_result+json_response['data_id'])
+                        "FOUND",
+                        url_result+json_response['data_id'])
         else:
             mod.display(module,
                         ioc,
-                        message_type="ERROR",
-                        string="MetaDefender json_response was not as expected, API may has been updated.")
+                        "ERROR",
+                        "MetaDefender json_response was not as expected, API may has been updated.")
     else:
         mod.display(module,
                     ioc,

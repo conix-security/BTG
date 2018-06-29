@@ -29,6 +29,7 @@ from BTG.lib.io import module as mod
 
 warnings.filterwarnings("ignore")
 
+
 class Misp_Crawler:
     def __init__(self, ioc, type, config, queues):
         self.config = config

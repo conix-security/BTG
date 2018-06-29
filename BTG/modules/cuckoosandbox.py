@@ -56,7 +56,8 @@ class Cuckoosandbox:
 
         if mod.allowedToSearch(self.search_method):
             length = len(self.config['cuckoosandbox_api_url'])
-            if  length != len(self.config['cuckoosandbox_web_url']) and length <= 0:
+            if length != len(self.config['cuckoosandbox_web_url']) \
+               and length <= 0:
                 mod.display(self.module_name,
                             self.ioc,
                             "ERROR",
@@ -68,7 +69,10 @@ class Cuckoosandbox:
                 web_url = self.config['cuckoosandbox_web_url'][indice]
                 self.search(api_url, web_url, indice)
         else:
-            mod.display(self.module_name, "", "INFO", "Cuckoosandbox module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "Cuckoosandbox module not activated")
             return None
 
     def search(self, api_url, web_url, indice):
@@ -83,13 +87,13 @@ class Cuckoosandbox:
             elif self.type in ["SHA256"]:
                 url = "%s/files/view/sha256/%s" % (api_url, self.ioc)
 
-            request = {'url' : url,
-                       'headers' : self.headers,
-                       'module' : self.module_name,
-                       'ioc' : self.ioc,
-                       'verbose' : self.verbose,
-                       'proxy' : self.proxy,
-                       'server_id' : indice
+            request = {'url': url,
+                       'headers': self.headers,
+                       'module': self.module_name,
+                       'ioc': self.ioc,
+                       'verbose': self.verbose,
+                       'proxy':  self.proxy,
+                       'server_id': indice
                        }
             json_request = json.dumps(request)
             store_request(self.queues, json_request)
@@ -102,7 +106,7 @@ class Cuckoosandbox:
 
 def response_handler(response_text, response_status, module, ioc, server_id):
         web_url = cfg['cuckoosandbox_api_url'][server_id]
-        if response_status == 200 :
+        if response_status == 200:
             try:
                 json_response = json.loads(response_text)
             except:

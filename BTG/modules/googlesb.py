@@ -24,6 +24,7 @@ import random
 from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
 
+
 class googlesb():
     """
         This module performs a Safe Browsing Lookup to Google API
@@ -47,7 +48,10 @@ class googlesb():
         if mod.allowedToSearch(self.search_method):
             self.lookup_API()
         else:
-            mod.display(self.module_name, "", "INFO", "googlesb module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "googlesb module not activated")
 
     def lookup_API(self):
         mod.display(self.module_name, "", "INFO", "Search in Google Safe Browsing ...")
@@ -72,31 +76,31 @@ class googlesb():
         elif self.type in ["IPv4", "IPv6"]:
             threatType = "IP_RANGE"
             threatTypeEntry = "ip"
-        else :
+        else:
             threatType = "URL"
 
-        payload = {"threatInfo":
-                    {
-                    "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
-                    "platformTypes": ["ANY_PLATFORM", "ALL_PLATFORMS", "WINDOWS", "LINUX", "OSX", "ANDROID", "IOS"],
-                    "threatEntryTypes": [threatType],
-                    "threatEntries": [{threatType.lower(): str(self.ioc)}]
-                    }
-                  }
+        payload = {"threatInfo": {"threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+                                  "platformTypes": ["ANY_PLATFORM", "ALL_PLATFORMS", "WINDOWS", "LINUX", "OSX", "ANDROID", "IOS"],
+                                  "threatEntryTypes": [threatType],
+                                  "threatEntries": [{threatType.lower(): str(self.ioc)}]
+                                  }
+                   }
         self.data = json.dumps(payload)
-        request = {'url' : self.url,
-                   'headers' : self.headers,
-                   'data' : self.data,
-                   'module' : self.module_name,
-                   'ioc' : self.ioc,
-                   'verbose' : self.verbose,
-                   'proxy' : self.proxy
+        request = {'url': self.url,
+                   'headers': self.headers,
+                   'data': self.data,
+                   'module': self.module_name,
+                   'ioc': self.ioc,
+                   'verbose': self.verbose,
+                   'proxy': self.proxy
                    }
         json_request = json.dumps(request)
         store_request(self.queues, json_request)
 
-def response_handler(response_text, response_status, module, ioc, server_id=None):
-    if response_status == 200 :
+
+def response_handler(response_text, response_status, module,
+                     ioc, server_id=None):
+    if response_status == 200:
         try:
             json_response = json.loads(response_text)
         except:
@@ -109,7 +113,7 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
         if 'matches' in json_response:
             list_platform = set([])
             list_type = set([])
-            for m in json_response['matches'] :
+            for m in json_response['matches']:
                 list_type.add(m['threatType'])
                 list_platform.add(m['platformType'])
             mod.display(module,

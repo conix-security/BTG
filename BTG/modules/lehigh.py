@@ -22,6 +22,7 @@
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class Lehigh:
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -36,7 +37,10 @@ class Lehigh:
         if mod.allowedToSearch(self.search_method):
             self.search()
         else:
-            mod.display(self.module_name, "", "INFO", "Lehigh module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "Lehigh module not activated")
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -45,7 +49,8 @@ class Lehigh:
             "domains.txt"
         ]
         for path in paths:
-            content = Cache(self.module_name, url, path, self.search_method).content
+            content = Cache(self.module_name, url,
+                            path, self.search_method).content
             for line in content.split("\n"):
                 if line and line[0] != '#':
                     base = line.split("\t\t")[1]
@@ -53,7 +58,8 @@ class Lehigh:
                         mod.display(self.module_name,
                                     self.ioc,
                                     "FOUND",
-                                    "[%s] %s%s"%(base.split("\t")[1], url, path))
+                                    "[%s] %s%s" % (base.split("\t")[1],
+                                                   url, path))
                         return None
         mod.display(self.module_name,
                     self.ioc,

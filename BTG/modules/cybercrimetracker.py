@@ -22,6 +22,7 @@
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class Cybercrimetracker:
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -37,7 +38,10 @@ class Cybercrimetracker:
         if mod.allowedToSearch(self.search_method):
             self.search()
         else:
-            mod.display(self.module_name, "", "INFO", "Cybercrimetracker module not activated")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "INFO",
+                        "Cybercrimetracker module not activated")
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -51,7 +55,7 @@ class Cybercrimetracker:
             content = Cache(self.module_name, url, path, self.search_method).content
             for line in content.split("\n"):
                 if self.ioc in line:
-                    mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                    mod.display(self.module_name, self.ioc, "FOUND", "%s%s" % (url, path))
                     return None
         mod.display(self.module_name,
                     self.ioc,

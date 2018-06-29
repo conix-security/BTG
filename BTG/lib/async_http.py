@@ -22,10 +22,8 @@ import asyncio
 from aiohttp import ClientSession, BasicAuth
 import redis
 from redis import Redis
-from rq import Connection, Queue, Worker
-import re
+from rq import Connection, Queue
 import json
-from itertools import groupby
 
 from BTG.lib.worker_tasks import module_worker_response
 from BTG.lib.io import module as mod
@@ -42,7 +40,6 @@ config = Config.get_instance()
 
 # Pushing request:(url, module_name) into a redis_list
 def store_request(queues, request):
-    queue_1 = queues[0]
     queue_2 = queues[1]
     redis_host, redis_port, redis_password = init_redis()
     try:
@@ -58,7 +55,7 @@ def store_request(queues, request):
         mod.display("ASYNC_HTTP",
                     message_type="ERROR",
                     string="Cannot push request: %s to Redis\
-                    on queue: %s" % (request[0], queue))
+                    on queue: %s" % (request[0], queue_2))
 
 def pollout_requests(queue_2, nb_to_do):
     redis_host, redis_port, redis_password = init_redis()
@@ -106,7 +103,9 @@ async def fetch_get(url, session, headers, proxy, module, ioc, timeout, auth, se
                     message_type="ERROR",
                     string="Failed to connect to %s, server was probably too slow and request has been dropped out" % (url))
 
-async def fetch_post(url, session, headers, proxy, data, module, ioc, timeout, auth, server_id, verify):
+
+async def fetch_post(url, session, headers, proxy, data, module, ioc, timeout,
+                    auth, server_id, verify):
     try:
         async with session.post(url, data=data, headers=headers, proxy=proxy,
                                 timeout=timeout, auth=auth, ssl=verify) as response:
@@ -116,6 +115,7 @@ async def fetch_post(url, session, headers, proxy, data, module, ioc, timeout, a
                     ioc,
                     message_type="ERROR",
                     string="Failed to connect to %s" % (url))
+
 
 def filler(request):
     url = request['url']
@@ -137,7 +137,7 @@ def filler(request):
         # TODO
         # add other condition if any
         if type == "BASIC":
-            auth = BasicAuth(request['auth'][1][0],request['auth'][1][1])
+            auth = BasicAuth(request['auth'][1][0], request['auth'][1][1])
         else:
             auth = None
     else:
@@ -153,26 +153,28 @@ def filler(request):
     else:
         verify = None
 
-    return url,module_name,ioc,verbose,headers,proxy,auth,server_id,verify
+    return url, module_name, ioc, verbose, headers, proxy, auth, server_id, verify
+
 
 async def bound_fetch(sem, session, request, timeout):
-    url,module_name,ioc,verbose,headers,proxy,auth,server_id,verify = filler(request)
+    url, module_name, ioc, verbose, headers, proxy, auth, server_id, verify = filler(request)
     if verbose == "GET":
         # Getter function with semaphore.
         async with sem:
-            return await fetch_get(url, session, headers, proxy,
-                                   module_name, ioc, timeout, auth, server_id, verify)
+            return await fetch_get(url, session, headers, proxy, module_name,
+                                   ioc, timeout, auth, server_id, verify)
     elif verbose == "POST":
         data = request['data']
         # Getter function with semaphore.
         async with sem:
-            return await fetch_post(url, session, headers, proxy, data,
-                                    module_name, ioc, timeout, auth, server_id, verify)
+            return await fetch_post(url, session, headers, proxy, data, module_name,
+                                    ioc, timeout, auth, server_id, verify)
     else:
         mod.display(module_name,
                     ioc,
                     message_type="ERROR",
                     string="Associated HTTP verbose for %s, is neither GET nor POST" % (url))
+
 
 async def run(requests):
     tasks = []
@@ -189,10 +191,12 @@ async def run(requests):
     async with ClientSession() as session:
         for request in requests:
             # pass Semaphore and session to every GET request
-            task = asyncio.ensure_future(bound_fetch(sem, session, request, timeout))
+            task = asyncio.ensure_future(bound_fetch(sem, session,
+                                                     request, timeout))
             tasks.append(task)
         responses = asyncio.gather(*tasks)
         return await responses
+
 
 def request_poller(queue_1, queue_2, nb_to_do):
     requests = pollout_requests(queue_2, nb_to_do)
@@ -212,7 +216,7 @@ def request_poller(queue_1, queue_2, nb_to_do):
     for y in x:
         if y is not None:
             try:
-                job = q.enqueue(module_worker_response, args=(y) ,result_ttl=0)
+                q.enqueue(module_worker_response, args=(y), result_ttl=0)
             except:
                 mod.display("ASYNC_HTTP",
                             message_type="ERROR",
