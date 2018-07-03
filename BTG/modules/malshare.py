@@ -36,13 +36,8 @@ class Malshare():
         self.creation_date = "12-04-2017"
         self.type = type
         self.ioc = ioc
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name,
-                        self.ioc,
-                        "INFO",
-                        "Malshare module not activated")
+
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -58,19 +53,26 @@ class Malshare():
                                                url,
                                                path,
                                                self.search_method).content)
-                    safe_urls = []
+                    saved_urls = []
                     for malware_url in content["SOURCES"]:
-                        safe_urls.append(malware_url.replace("http", "hxxp"))
-                    mod.display(self.module_name,
-                                self.ioc,
-                                "FOUND",
-                                "%s | %s%s" % (safe_urls, url, path))
-                    return None
+                        saved_urls.append(malware_url.replace("http", "hxxp"))
+
+                    if not saved_urls:
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "NOT_FOUND",
+                                    "Nothing Found in Malshare feeds")
+                    else:
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "https://malshare.com/sample.php?action=detail&hash=" % self.ioc)
+                        return None
                 except:
                     mod.display(self.module_name,
                                 self.ioc,
-                                "NOT_FOUND",
-                                "Nothing Found in Malshare feeds")
+                                "ERROR",
+                                "Could not parse Malshare's json response")
         else:
             mod.display(self.module_name,
                         self.ioc,

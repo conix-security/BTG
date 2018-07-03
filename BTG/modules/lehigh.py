@@ -34,13 +34,8 @@ class Lehigh:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name,
-                        self.ioc,
-                        "INFO",
-                        "Lehigh module not activated")
+
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")

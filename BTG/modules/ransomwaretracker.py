@@ -23,6 +23,7 @@
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class Ransomwaretracker:
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -34,10 +35,8 @@ class Ransomwaretracker:
         self.creation_date = "12-04-2017"
         self.type = type
         self.ioc = ioc
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name, "", "INFO", "RansomwareTracker module not activated")
+
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -52,9 +51,9 @@ class Ransomwaretracker:
                     mod.display(self.module_name,
                                 self.ioc,
                                 "FOUND",
-                                "%s | %s%s"%(line.split(",")[2].replace('"', '', 2),
-                                             url,
-                                             paths[0]))
+                                "%s | %s%s" % (line.split(",")[2].replace('"', '', 2),
+                                               url,
+                                               paths[0]))
             except:
                 pass
 

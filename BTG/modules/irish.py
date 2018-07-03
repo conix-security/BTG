@@ -21,8 +21,8 @@
 
 import json
 
-from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
+from BTG.lib.io import module as mod
 
 
 class Irish():
@@ -41,13 +41,7 @@ class Irish():
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name,
-                        self.ioc,
-                        "INFO",
-                        "IRIS-H module not activated")
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")

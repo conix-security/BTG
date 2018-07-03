@@ -21,8 +21,8 @@
 import json
 import random
 
-from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
+from BTG.lib.io import module as mod
 
 
 class googlesb():
@@ -45,13 +45,7 @@ class googlesb():
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if mod.allowedToSearch(self.search_method):
-            self.lookup_API()
-        else:
-            mod.display(self.module_name,
-                        self.ioc,
-                        "INFO",
-                        "googlesb module not activated")
+        self.lookup_API()
 
     def lookup_API(self):
         mod.display(self.module_name, "", "INFO", "Search in Google Safe Browsing ...")

@@ -18,8 +18,8 @@
 
 import importlib
 
-from BTG.lib.io import module as mod
 from BTG.lib.config_parser import Config
+from BTG.lib.io import module as mod
 
 config = Config.get_instance()
 

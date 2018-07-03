@@ -22,8 +22,8 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import re
-import warnings
 import requests
+import warnings
 
 from BTG.lib.io import module as mod
 
@@ -34,17 +34,16 @@ class Misp_Crawler:
     def __init__(self, ioc, type, config, queues):
         self.config = config
         self.module_name = __name__.split(".")[-1]
-        self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
+        self.types = ["MD5", "SHA1", "domain", "IPv4",
+                      "IPv6", "URL", "SHA256", "SHA512"]
         self.search_method = "Online"
         self.description = "Crawl MISP searching for IOC"
         self.author = "Conix"
         self.creation_date = "21-03-2017"
         self.type = type
         self.ioc = ioc
-        if mod.allowedToSearch(self.search_method):
-            self.Search()
-        else:
-            mod.display(self.module_name, "", "INFO", "MISP_crawler module not activated")
+
+        self.Search()
 
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in misp crawler...")
@@ -58,8 +57,8 @@ class Misp_Crawler:
                         mod.display(self.module_name,
                                     self.ioc,
                                     "FOUND",
-                                    "Event: %s/events/view/%s"%(self.config["misp_crawler_url"],
-                                                                event))
+                                    "Event: %s/events/view/%s" % (self.config["misp_crawler_url"],
+                                                                  event))
                     else:
                         mod.display(self.module_name,
                                     self.ioc,
@@ -76,7 +75,7 @@ class Misp_Crawler:
                 "user_agent" in self.config and
                 "misp_crawler_verifycert" in self.config):
             response = s.get(
-                "%s/attributes/search"%self.config["misp_crawler_url"],
+                "%s/attributes/search" % self.config["misp_crawler_url"],
                 headers=self.config["user_agent"],
                 verify=self.config["misp_crawler_verifycert"]
             )
@@ -97,10 +96,10 @@ class Misp_Crawler:
                 'data[_Token][unlocked]': ''
             }
             s.headers.update(
-                {'referer': "%s/attributes/search"%self.config["misp_crawler_url"]}
+                {'referer': "%s/attributes/search" % self.config["misp_crawler_url"]}
             )
             response = s.post(
-                "%s/attributes/search"%self.config["misp_crawler_url"],
+                "%s/attributes/search" % self.config["misp_crawler_url"],
                 data=data, headers=self.config["user_agent"],
                 verify=self.config["misp_crawler_verifycert"]
             )
@@ -117,7 +116,7 @@ class Misp_Crawler:
                 "user_agent" in self.config and
                 "misp_crawler_verifycert" in self.config):
             response = s.get(
-                "%s/users/login"%self.config["misp_crawler_url"],
+                "%s/users/login" % self.config["misp_crawler_url"],
                 headers=self.config["user_agent"],
                 verify=self.config["misp_crawler_verifycert"]
             )
@@ -131,7 +130,7 @@ class Misp_Crawler:
                 'data[_Token][unlocked]': ''
             }
             response = s.post(
-                "%s/users/login"%self.config["misp_crawler_url"],
+                "%s/users/login" % self.config["misp_crawler_url"],
                 data=data,
                 headers=self.config["user_agent"],
                 verify=self.config["misp_crawler_verifycert"]
@@ -151,7 +150,8 @@ class Misp_Crawler:
         return events
 
     def getTokens(self, response):
-        token_key = re.search(r"data\[_Token\]\[key\]\" value=\"(.+)\" ", response).group(1)
+        token_key = re.search(r"data\[_Token\]\[key\]\" value=\"(.+)\" ",
+                              response).group(1)
         token_fields = re.search(r"data\[_Token\]\[fields\]\" value=\"(.+%3A)\"",
                                  response).group(1)
         return token_key, token_fields

@@ -20,20 +20,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys
 import json
 
+from BTG.lib.async_http import store_request
 from BTG.lib.config_parser import Config
 from BTG.lib.io import module as mod
-from BTG.lib.async_http import store_request
 
 cfg = Config.get_instance()
+
 
 class Misp:
     def __init__(self, ioc, type, config, queues):
         self.config = config
         self.module_name = __name__.split(".")[-1]
-        self.types = ["MD5", "SHA1", "domain", "IPv4", "IPv6", "URL", "SHA256", "SHA512"]
+        self.types = ["MD5", "SHA1", "domain", "IPv4",
+                      "IPv6", "URL", "SHA256", "SHA512"]
         self.search_method = "Onpremises"
         self.description = "Search IOC in MISP database"
         self.author = "Conix"
@@ -46,45 +47,43 @@ class Misp:
         self.proxy = self.config['proxy_host']
         self.verify = self.config['misp_verifycert']
 
-        if mod.allowedToSearch(self.search_method):
-            length = len(self.config['misp_url'])
-            if length != len(self.config['misp_key']) and length <= 0:
-                mod.display(self.module_name,
-                            message_type="ERROR",
-                            string="MISP fields in btg.cfg are missfilled, checkout commentaries.")
-                return None
-            for indice in range(len(self.config['misp_url'])):
-                misp_url = self.config['misp_url'][indice]
-                misp_key = self.config['misp_key'][indice]
-                self.Search(misp_url, misp_key, indice)
-        else:
-            mod.display(self.module_name, "", "INFO", "MISP module not activated")
+        length = len(self.config['misp_url'])
+        if length != len(self.config['misp_key']) and length <= 0:
+            mod.display(self.module_name,
+                        self.ioc,
+                        "ERROR",
+                        "MISP fields in btg.cfg are missfilled, checkout commentaries.")
             return None
+        for indice in range(len(self.config['misp_url'])):
+            misp_url = self.config['misp_url'][indice]
+            misp_key = self.config['misp_key'][indice]
+            self.Search(misp_url, misp_key, indice)
 
     def Search(self, misp_url, misp_key, indice):
         mod.display(self.module_name, "", "INFO", "Search in misp...")
 
         url = '%sattributes/restSearch/json' % (misp_url)
         self.headers['Authorization'] = misp_key
-        payload = {'value' : self.ioc, 'searchall' : 1}
+        payload = {'value': self.ioc, 'searchall': 1}
         data = json.dumps(payload)
 
-        request = {'url' : url,
-                   'headers' : self.headers,
-                   'data' : data,
-                   'module' : self.module_name,
-                   'ioc' : self.ioc,
-                   'verbose' : self.verbose,
-                   'proxy' : self.proxy,
-                   'verify' : self.verify,
-                   'server_id' : indice
+        request = {'url': url,
+                   'headers': self.headers,
+                   'data': data,
+                   'module': self.module_name,
+                   'ioc': self.ioc,
+                   'verbose': self.verbose,
+                   'proxy': self.proxy,
+                   'verify': self.verify,
+                   'server_id': indice
                    }
         json_request = json.dumps(request)
         store_request(self.queues, json_request)
 
+
 def response_handler(response_text, response_status, module, ioc, server_id):
     web_url = cfg['misp_url'][server_id]
-    if response_status == 200 :
+    if response_status == 200:
         try:
             json_response = json.loads(response_text)
         except:
@@ -103,16 +102,16 @@ def response_handler(response_text, response_status, module, ioc, server_id):
                     mod.display(module,
                                 ioc,
                                 "FOUND",
-                                "Event: %sevents/view/%s"%(web_url,
-                                                           event_id))
+                                "Event: %sevents/view/%s" % (web_url,
+                                                             event_id))
                     return None
             mod.display(module,
                         ioc,
                         "NOT_FOUND",
-                        "Nothing found in Misp:%s database"%(web_url))
+                        "Nothing found in Misp:%s database" % (web_url))
             return None
     else:
         mod.display(module,
                     ioc,
                     message_type="ERROR",
-                    string="Misp connection status : %d"%(response_status))
+                    string="Misp connection status : %d" % (response_status))

@@ -20,10 +20,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import requests
 import json
+import requests
 
 from BTG.lib.io import module as mod
+
 
 class Viper:
     def __init__(self, ioc, type, config, queues):
@@ -37,28 +38,27 @@ class Viper:
         self.type = type
         self.ioc = ioc
 
-        if mod.allowedToSearch(self.search_method):
-            length = len(self.config['viper_server'])
-            if  length != len(self.config['viper_api_key']) and length <= 0:
-                mod.display(self.module_name,
-                            message_type="ERROR",
-                            string="Viper fields in btg.cfg are missfilled, checkout commentaries.")
-                return None
-            for indice in range(len(self.config['viper_server'])):
-                server = self.config['viper_server'][indice]
-                api_key = self.config['viper_api_key'][indice]
-                self.Search(server,api_key)
-        else:
-            mod.display(self.module_name, "", "INFO", "Viper module not activated")
+        length = len(self.config['viper_server'])
+        if length != len(self.config['viper_api_key']) and length <= 0:
+            print("MAYBE")
+            mod.display(self.module_name,
+                        self.ioc,
+                        "ERROR",
+                        "Viper fields in btg.cfg are missfilled, checkout commentaries.")
+            return None
+        for indice in range(len(self.config['viper_server'])):
+            server = self.config['viper_server'][indice]
+            api_key = self.config['viper_api_key'][indice]
+            self.Search(server, api_key)
 
     def viper_api(self, server, api_key):
         """
         Viper API Connection
         """
         if self.type in ["MD5", "SHA1", "SHA256"]:
-            url = "%s/api/v3/project/default/malware/?search=%s" %(server, self.ioc)
+            url = "%s/api/v3/project/default/malware/?search=%s" % (server, self.ioc)
         if self.type in ["domain", "URL", "IPv4"]:
-            url = "%s/api/v3/project/default/note/?search=%s"%(server, self.ioc)
+            url = "%s/api/v3/project/default/note/?search=%s" % (server, self.ioc)
         headers = {'Authorization': 'Token %s' % api_key}
         response = requests.get(url,
                                 headers=headers,
@@ -70,27 +70,27 @@ class Viper:
                 return response_json
             else:
                 mod.display(self.module_name,
-                            seff.ioc,
+                            self.ioc,
                             message_type="NOT_FOUND",
                             string="Nothing found in Viper DB")
                 return None
         else:
             mod.display(self.module_name,
                         self.ioc,
-                        message_type="ERROR",
-                        string="Viper API connection status %d" % response.status_code)
+                        "ERROR",
+                        "Viper API connection status %d" % response.status_code)
             return None
 
     def checkToken(self, server, api_key):
-        headers = {'Authorization': 'Token %s'% api_key}
-        response = requests.get("%s/api/v3/test-auth/"%(server), headers=headers)
+        headers = {'Authorization': 'Token %s' % api_key}
+        response = requests.get("%s/api/v3/test-auth/" % (server),
+                                headers=headers)
         content = json.loads(response.text)
         try:
             if "Authentication validated successfully" in content["message"]:
                 return True
         except KeyError:
             return False
-
 
     def Search(self, server, api_key):
         mod.display(self.module_name, "", "INFO", "Search in Viper ...")
@@ -105,7 +105,7 @@ class Viper:
             else:
                 mod.display(self.module_name,
                             self.ioc,
-                            message_type=":",
+                            message_type="ERROR",
                             string="Please check if you have viper fields in btg.cfg")
                 return None
         except Exception as e:
@@ -115,19 +115,22 @@ class Viper:
         if result_json:
             if self.type in ["MD5", "SHA1", "SHA256"]:
                 result_json = result_json["results"][0]
-                id = " ID: %d |"%result_json["data"]["id"]
-                name  = " Filename: %s"%result_json["data"]["name"]
+                id = " ID: %d |" % result_json["data"]["id"]
+                name = " Filename: %s" % result_json["data"]["name"]
                 tag_final = ""
                 try:
                     for tag in result_json["data"]["tag_set"]:
                         if len(tag_final) == 0:
                             tag_final = tag["data"]["tag"]
                         else:
-                            tag_final = "%s, %s"%(tag_final, tag["data"]["tag"])
+                            tag_final = "%s, %s" % (tag_final, tag["data"]["tag"])
                 except:
-                    pass
+                    mod.display(self.module_name,
+                                self.ioc,
+                                message_type="NOT_FOUND",
+                                string="Nothing found in Viper DB")
                 if len(tag_final) != 0:
-                    tags = "Tags: %s |"%tag_final
+                    tags = "Tags: %s |" % tag_final
                 else:
                     tags = ""
                 mod.display(self.module_name,
@@ -140,20 +143,20 @@ class Viper:
                 for element in result_json["results"]:
                     for malware in element["data"]["malware_set"]:
                         mod.display(self.module_name,
-                                self.ioc,
-                                "FOUND",
-                                "ID: %s | Filename: %s | SHA1: %s" % (
-                                    malware["data"]["id"],
-                                    malware["data"]["name"],
-                                    malware["data"]["sha1"]))
+                                    self.ioc,
+                                    "FOUND",
+                                    "ID: %s | Filename: %s | SHA1: %s" % (
+                                        malware["data"]["id"],
+                                        malware["data"]["name"],
+                                        malware["data"]["sha1"]))
                         return None
             else:
                 mod.display(self.module_name,
-                            seff.ioc,
+                            self.ioc,
                             message_type="ERROR",
                             string="Json response from Viper is not as expected.")
         else:
             mod.display(self.module_name,
-                        seff.ioc,
+                        self.ioc,
                         message_type="NOT_FOUND",
                         string="Nothing found in Viper DB")

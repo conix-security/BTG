@@ -23,6 +23,7 @@ import csv
 from BTG.lib.io import module as mod
 from BTG.lib.cache import Cache
 
+
 class urlhaus():
     """
         This module performs a Safe Browsing Lookup to Google API
@@ -38,11 +39,7 @@ class urlhaus():
         self.type = type
         self.ioc = ioc
 
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name, "", "INFO", "URLhause module not activated")
-            return None
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Search in URLhause ...")
@@ -66,7 +63,7 @@ class urlhaus():
                             "ERROR",
                             "Could not parse CSV feed")
                 return None
-            for row in reader :
+            for row in reader:
                 if self.ioc in row:
                     mod.display(self.module_name,
                                 self.ioc,

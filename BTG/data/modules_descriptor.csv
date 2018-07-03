@@ -1,4 +1,5 @@
 name;types;method
+misp;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256, SHA512;Onpremises
 cuckoosandbox;MD5, SHA256;Onpremises
 cybercrimetracker;domain, IPv4, URL;Online
 dshield;domain;Online
@@ -14,7 +15,6 @@ malwaredomains;domain;Online
 malwareteks;domain;Online
 metadefender;MD5, SHA1, SHA256, SHA512;Online
 misp_crawler;MD5, SHA5, domain, IPv4,IPv6, URL, SHA256, SHA512;Online
-misp;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256, SHA512;Onpremises
 nothink;IPv4;Online
 openphish;domain, URL, IPv4;Online
 otx;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256;Online

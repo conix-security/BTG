@@ -21,32 +21,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys
+from base64 import b64decode
+from datetime import datetime
 from os import listdir, path, remove, setsid, getpid, chmod, makedirs
 from os.path import isfile, join, exists, isdir, dirname
-from base64 import b64decode
-import argparse
-import re
-import tldextract
-import time
-from datetime import datetime
-from rq import Connection, Queue
-import redis
 from redis import Redis
-import subprocess
-import validators
+from rq import Connection, Queue
 from string import Formatter
+import argparse
 import csv
+import re
+import redis
 import socket
+import subprocess
+import sys
+import time
+import tldextract
+import validators
 
-from BTG.lib.utils import cluster, pidfile, redis_utils
-from BTG.lib.io import module as mod
-from BTG.lib.io import logSearch
-from BTG.lib.io import errors as err
-from BTG.lib.io import colors
-from BTG.lib.worker_tasks import module_worker_request
-from BTG.lib.redis_config import init_redis, init_variables, number_of_worker
 from BTG.lib.config_parser import Config
+from BTG.lib.io import colors
+from BTG.lib.io import errors as err
+from BTG.lib.io import logSearch
+from BTG.lib.io import module as mod
+from BTG.lib.redis_config import init_redis, init_variables, number_of_worker
+from BTG.lib.utils import cluster, pidfile, redis_utils
+from BTG.lib.worker_tasks import module_worker_request
 
 config = Config.get_instance()
 version = "2.2"     # BTG version
@@ -93,7 +93,7 @@ class BTG():
             matching_list = Utils.gen_matching_type_modules_list(modules, type)
             cluster.add_cluster(argument, matching_list, dictname, conn)
             self.run(argument, type, matching_list, queues)
-
+        print("Every IOCs have been enqueued, BTG is processing ...\n")
 
     def extend_IOC(self, argument, observable_list):
         """
@@ -207,7 +207,7 @@ class Utils:
 
     def gen_enabled_modules_list(modules):
         """
-            List all activated modules
+            List all enabled modules
         """
         enabled_list = []
         for module in modules:
@@ -217,7 +217,7 @@ class Utils:
 
     def gen_matching_type_modules_list(modules, type):
         """
-            List all modules which can support a type
+            List all modules which can support a type and are allowed to research
         """
         matching_list = []
         script_dir = dirname(__file__)
@@ -232,18 +232,8 @@ class Utils:
                             if row:
                                 if module == row[0]:
                                     types = row[1].split(', ')
-                                    if type in types:
-                                        if module == "cuckoosandbox":
-                                            for url in config['cuckoosandbox_api_url']:
-                                                matching_list.append(module)
-                                        elif module == "viper":
-                                            for url in config['viper_server']:
-                                                matching_list.append(module)
-                                        elif module == "misp":
-                                            for url in config['misp_url']:
-                                                matching_list.append(module)
-                                        else:
-                                            matching_list.append(module)
+                                    if type in types and mod.allowedToSearch(row[2]):
+                                        matching_list.append(module)
                 except:
                     mod.display("MAIN",
                                 message_type="FATAL_ERROR",
@@ -258,8 +248,10 @@ class Utils:
             sys.exit()
         return matching_list
 
-    # Count errors encountered during execution
     def show_up_errors(start_time, end_time, modules):
+        """
+            Count errors encountered during execution
+        """
         enabled_list = Utils.gen_enabled_modules_list(modules)
         dict_list = []
         for module in enabled_list:
@@ -271,8 +263,8 @@ class Utils:
                     lines = f.read().strip().splitlines()
                 except:
                     mod.display("MAIN",
-                                message_type="FATAL_ERROR",
-                                string="Could not read %s, checkout your btg.cfg." % (log_error_file))
+                                "FATAL_ERROR",
+                                "Could not read %s, checkout your btg.cfg." % (log_error_file))
                     sys.exit()
                 finally:
                     f.close()
@@ -280,8 +272,8 @@ class Utils:
             return None
         except:
             mod.display("MAIN",
-                        message_type="FATAL_ERROR",
-                        string="Could not open %s, checkout your btg.cfg." % (log_error_file))
+                        "FATAL_ERROR",
+                        "Could not open %s, checkout your btg.cfg." % (log_error_file))
             sys.exit()
 
         regex = re.compile("(?<=\[).*?(?=\])")
@@ -293,7 +285,8 @@ class Utils:
             log_module = match[1]
             if log_time >= start_time and log_time <= end_time:
                 for dict in dict_list:
-                    if log_module == dict['module_name']:
+                    tmp = "%s%s%s" % (colors.MODULE, dict['module_name'], colors.NORMAL)
+                    if log_module == tmp:
                         dict["nb_error"] = dict["nb_error"] + 1
         return dict_list
 
@@ -470,7 +463,7 @@ def main(argv=None):
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
-                        string="Could not close subprocesses, here are their pid :"+"".join(['%s ' % i.pid for i in processes]))
+                        string="Could not close subprocesses, here are their pid :"+"".join(['%s ' % i for i in processes]))
             try:
                 remove(fp)
             except FileNotFoundError:

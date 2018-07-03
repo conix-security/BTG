@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-# import random
-# import redis
 import uuid
 
 from BTG.lib.config_parser import Config
@@ -45,28 +43,8 @@ def init_variables(redis_host, redis_port, redis_password, fp):
         Producing a random name for global variables : queues, lock, dict,
         thus we can run multiple instance of BTG
     """
-    # r = redis.StrictRedis(host=redis_host,
-    #                       port=redis_port, password=redis_password)
-    # random.seed()
-    # hash = hex(random.getrandbits(32))
-    # cond = True
-    # while cond:
-    #     temp = r.get(hash)
-    #     if temp is not None:
-    #         hash = hex(random.getrandbits(32))
-    #         continue
-    #     else:
-    #         cond = False
-    #         for i in range(1,2):
-    #             temp = r.get(hex(int(hash, base=16) + i))
-    #             if temp is not None:
-    #                 hash = hex(random.getrandbits(32))
-    #                 cond = True
-    #                 break
-    # working_queue = hex(int(hash, base=16) + 1)
-    # request_queue = hex(int(hash, base=16) + 2)
-    working_queue = 'rq-queue:'+uuid.uuid4()
-    request_queue = 'r-list:'+uuid.uuid4()
+    working_queue = 'rq-queue:'+str(uuid.uuid4())
+    request_queue = 'r-list:'+str(uuid.uuid4())
     lockname, dictname = cluster.get_keys(fp)
     return working_queue, request_queue, lockname, dictname
 

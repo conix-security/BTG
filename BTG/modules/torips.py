@@ -22,6 +22,7 @@
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class Torips:
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -33,10 +34,8 @@ class Torips:
         self.creation_date = "13-09-2016"
         self.type = type
         self.ioc = ioc
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name, "", "INFO", "TorIps module not activated")
+
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -48,7 +47,10 @@ class Torips:
         ]
         for path in paths:
             if self.ioc in Cache(self.module_name, url, path, self.search_method).content:
-                mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                mod.display(self.module_name,
+                            self.ioc,
+                            "FOUND",
+                            "%s%s" % (url, path))
                 return None
         mod.display(self.module_name,
                     self.ioc,

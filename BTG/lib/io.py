@@ -27,9 +27,9 @@ from platform import system
 import redis
 import sys
 
-from BTG.lib.utils import cluster, pidfile
-from BTG.lib.redis_config import init_redis
 from BTG.lib.config_parser import Config
+from BTG.lib.redis_config import init_redis
+from BTG.lib.utils import cluster, pidfile
 
 
 class module:
@@ -198,7 +198,7 @@ class errors:
                 print("\n--- ERRORS ---")
                 for output in outputs:
                     print(output)
-                    print("See %s for detailed errors" % (log_error_path))
+                print("See %s for detailed errors" % (log_error_path))
 
 
 class logSearch:
@@ -212,7 +212,7 @@ class logSearch:
         f = open(log_path, 'a')
         if args.file == "False":
             for ioc in args.observables:
-                f.write("%s %s\n"%(datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))
+                f.write("%s %s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), ioc))
             f.close()
         else:
             for file in args.observables:

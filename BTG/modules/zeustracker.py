@@ -24,6 +24,7 @@ import validators
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class Zeustracker:
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -35,10 +36,8 @@ class Zeustracker:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name, "", "INFO", "ZeusTracker module not activated")
+
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -59,7 +58,10 @@ class Zeustracker:
                 if path.split("=")[1] == "compromised":
                     if self.type == "URL":
                         if self.ioc == line:
-                            mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                            mod.display(self.module_name,
+                                        self.ioc,
+                                        "FOUND",
+                                        "%s%s" % (url, path))
                             return
                     else:
                         line = line.split("/")[0]
@@ -69,11 +71,17 @@ class Zeustracker:
                             pass
                 if self.type == "domain" and validators.domain(line.strip()):
                     if line.strip() == self.ioc:
-                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "%s%s" % (url, path))
                         return None
                 elif self.type == "IPv4" and validators.ipv4(line.strip()):
                     if line.strip() == self.ioc:
-                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "%s%s" % (url, path))
                         return None
         mod.display(self.module_name,
                     self.ioc,

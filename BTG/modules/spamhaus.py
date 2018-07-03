@@ -24,6 +24,7 @@ from netaddr import IPAddress, IPNetwork
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class Spamhaus:
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -35,10 +36,8 @@ class Spamhaus:
         self.creation_date = "20-03-2017"
         self.type = type
         self.ioc = ioc
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name, "", "INFO", "Spamhaus module not activated")
+
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -54,7 +53,10 @@ class Spamhaus:
                 try:
                     if line[0] != ';':
                         if IPAddress(self.ioc) in IPNetwork(line.split(" ")[0]):
-                            mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                            mod.display(self.module_name,
+                                        self.ioc,
+                                        "FOUND",
+                                        "%s%s" % (url, path))
                 except:
                     pass
 

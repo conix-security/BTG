@@ -23,6 +23,7 @@ import requests
 
 from BTG.lib.io import module as mod
 
+
 class Virusshare:
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -38,10 +39,7 @@ class Virusshare:
         self.verbose = "POST"
         self.headers = self.config["user_agent"]
 
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name, "", "INFO", "VirusShare module not activated")
+        self.search()
 
     def search_ioc(self):
         search_url = "https://virusshare.com/search.4n6"
@@ -67,48 +65,49 @@ class Virusshare:
             session.get(login_page, headers=header)
             authentification = session.post(login_url, data=auth)
             if authentification.status_code == 200:
-                result = session.post(search_url, data={'search':self.ioc , 'start': '0'})
+                result = session.post(search_url, data={'search': self.ioc,
+                                                        'start': '0'})
                 if result.status_code == 200:
                     return result.content
                 else:
-                    return ""
+                    return None
             else:
-                return ""
+                return None
 
         except:
             raise
-            return ""
+            return None
 
     def extract_information(self, data):
         '''
         Extract all information page from VirusShare
         '''
         try:
-            md5 = re.findall(r'(?<=<td>MD5<\/td><td>)[^<]*',data)
+            md5 = re.findall(r'(?<=<td>MD5<\/td><td>)[^<]*', data)
             if md5:
                 md5 = md5[0]
             else:
                 md5 = ""
 
-            sha1 = re.findall(r'(?<=<td>SHA1<\/td><td>)[^<]*',data)
+            sha1 = re.findall(r'(?<=<td>SHA1<\/td><td>)[^<]*', data)
             if sha1:
                 sha1 = sha1[0]
             else:
                 sha1 = ""
 
-            sha256 = re.findall(r'(?<=<td>SHA256<\/td><td>)[^<]*',data)
+            sha256 = re.findall(r'(?<=<td>SHA256<\/td><td>)[^<]*', data)
             if sha256:
                 sha256 = sha256[0]
             else:
                 sha256 = ""
 
-            file_type = re.findall(r'(?<=<td>File\ Type<\/td><td\ colspan=2>)[^<]*',data)
+            file_type = re.findall(r'(?<=<td>File\ Type<\/td><td\ colspan=2>)[^<]*', data)
             if file_type:
-                file_type = file_type[0].replace("\n","")
+                file_type = file_type[0].replace("\n", "")
             else:
                 file_type = ""
 
-            detections = re.findall(r'(?<=Detections<\/td><td\ colspan=2><pre>)[^<]*',data)
+            detections = re.findall(r'(?<=Detections<\/td><td\ colspan=2><pre>)[^<]*', data)
             if detections:
                 detections = detections[0]
             else:
@@ -118,7 +117,7 @@ class Virusshare:
                     'SHA1': sha1,
                     'SHA256': sha256,
                     'DETECTIONS': detections,
-                   }
+                    }
 
             return data
 
@@ -141,8 +140,11 @@ class Virusshare:
             else:
                 return False
         elif 'NO BOTS! NO SCRAPERS!' in data:
-              mod.display(self.module_name, self.ioc, "ERROR", "VirusShare login failed!")
-              return False
+            mod.display(self.module_name,
+                        self.ioc,
+                        "ERROR",
+                        "VirusShare login failed!")
+            return False
         else:
             return False
 

@@ -20,13 +20,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import random
-from time import sleep
-import ast
 import json
+import random
 
-from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
+from BTG.lib.io import module as mod
+
 
 class Virustotal:
     """
@@ -47,10 +46,7 @@ class Virustotal:
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name, "", "INFO", "VirusTotal module not activated")
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Search in VirusTotal ...")
@@ -76,13 +72,13 @@ class Virustotal:
                       "apikey": self.key,
                       "allinfo": 1
                       }
-        request = {"url" : self.url,
-                   "headers" : self.headers,
-                   "data" : parameters,
-                   "module" : self.module_name,
-                   "ioc" : self.ioc,
-                   "verbose" : self.verbose,
-                   "proxy" : self.proxy
+        request = {"url": self.url,
+                   "headers": self.headers,
+                   "data": parameters,
+                   "module": self.module_name,
+                   "ioc": self.ioc,
+                   "verbose": self.verbose,
+                   "proxy": self.proxy
                    }
         json_request = json.dumps(request)
         return json_request
@@ -92,35 +88,37 @@ class Virustotal:
         parameters = {"resource": self.ioc,
                       "apikey": self.key
                       }
-        request = {"url" : self.url,
-                   "headers" : self.headers,
-                   "data" : parameters,
-                   "module" : self.module_name,
-                   "ioc" : self.ioc,
-                   "verbose" : self.verbose,
-                   "proxy" : self.proxy
+        request = {"url": self.url,
+                   "headers": self.headers,
+                   "data": parameters,
+                   "module": self.module_name,
+                   "ioc": self.ioc,
+                   "verbose": self.verbose,
+                   "proxy": self.proxy
                    }
         json_request = json.dumps(request)
         return json_request
 
-def response_handler(response_text, response_status, module, ioc, server_id=None):
-    if response_status == 200 :
+
+def response_handler(response_text, response_status,
+                     module, ioc, server_id=None):
+    if response_status == 200:
         try:
             json_content = json.loads(response_text)
         except:
             mod.display(module,
                         ioc,
-                        message_type="ERROR",
-                        string="VirusTotal json_response was not readable.")
+                        "ERROR",
+                        "VirusTotal json_response was not readable.")
             return None
 
         if "positives" in json_content and json_content["positives"] > 0:
             mod.display(module,
                         ioc,
                         "FOUND",
-                        "Score: %d/%d | %s"%(json_content["positives"],
-                                             json_content["total"],
-                                             json_content["permalink"]))
+                        "Score: %d/%d | %s" % (json_content["positives"],
+                                               json_content["total"],
+                                               json_content["permalink"]))
         else:
             mod.display(module,
                         ioc,
@@ -129,6 +127,6 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
     else:
         mod.display(module,
                     ioc,
-                    message_type="ERROR",
-                    string="VirusTotal response.code_status : %d" % (response_status))
+                    "ERROR",
+                    "VirusTotal response.code_status : %d" % (response_status))
     return None

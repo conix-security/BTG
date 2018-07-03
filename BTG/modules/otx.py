@@ -20,10 +20,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import IndicatorTypes
 from OTXv2 import OTXv2
+import IndicatorTypes
 
 from BTG.lib.io import module as mod
+
 
 class Otx:
     def __init__(self, ioc, type, config, queues):
@@ -37,10 +38,7 @@ class Otx:
         self.type = type
         self.ioc = ioc
 
-        if mod.allowedToSearch(self.search_method):
-            self.Search()
-        else:
-            mod.display(self.module_name, "", "INFO", "Alienvault OTX module not activated")
+        self.Search()
 
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in Alienvault OTX ...")
@@ -83,7 +81,7 @@ class Otx:
                 mod.display(self.module_name,
                             self.ioc,
                             "FOUND",
-                            "Tags: %s| https://otx.alienvault.com/pulse/%s/"%(tags, _id))
+                            "Tags: %s| https://otx.alienvault.com/pulse/%s/" % (tags, _id))
         except:
             mod.display(self.module_name,
                         self.ioc,

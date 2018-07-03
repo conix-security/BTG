@@ -22,8 +22,9 @@
 import random
 import json
 
-from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
+from BTG.lib.io import module as mod
+
 
 class Vxstream:
     def __init__(self, ioc, type, config, queues):
@@ -44,10 +45,7 @@ class Vxstream:
                         'accept': 'application/json'}
         self.proxy = self.config["proxy_host"]
 
-        if mod.allowedToSearch(self.search_method):
-            self.vxstream_api()
-        else:
-            mod.display(self.module_name, "", "INFO", "VXstream module not activated")
+        self.vxstream_api()
 
     def vxstream_api(self):
         """
@@ -59,8 +57,8 @@ class Vxstream:
         else:
             mod.display(self.module_name,
                         self.ioc,
-                        message_type="ERROR",
-                        string="Check if you have vxstream_api_keys_secret field in btg.cfg")
+                        "ERROR",
+                        "Check if you have vxstream_api_keys_secret field in btg.cfg")
             return None
 
         if self.type in ["MD5", "SHA1", "SHA256"]:
@@ -75,20 +73,21 @@ class Vxstream:
             else:
                 self.data = "domain="+self.ioc
 
-        request = {'url' : self.url,
-                   'headers' : self.headers,
-                   'data' : self.data,
-                   'module' : self.module_name,
-                   'ioc' : self.ioc,
-                   'verbose' : self.verbose,
-                   'proxy' : self.proxy
+        request = {'url': self.url,
+                   'headers': self.headers,
+                   'data': self.data,
+                   'module': self.module_name,
+                   'ioc': self.ioc,
+                   'verbose': self.verbose,
+                   'proxy': self.proxy
                    }
         json_request = json.dumps(request)
         store_request(self.queues, json_request)
 
 
-def response_handler(response_text, response_status, module, ioc, server_id=None):
-    if response_status == 200 :
+def response_handler(response_text, response_status,
+                     module, ioc, server_id=None):
+    if response_status == 200:
         try:
             json_response = json.loads(response_text)
         except:
@@ -99,7 +98,7 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
             return None
 
         if "count" in json_response and "search_terms" in json_response:
-            if json_response["count"] > 0 :
+            if json_response["count"] > 0:
                 verdict = json_response["result"][0]["verdict"]
                 threat_score = json_response["result"][0]["threat_score"]
                 type = json_response["search_terms"][0]["id"]
@@ -126,6 +125,6 @@ def response_handler(response_text, response_status, module, ioc, server_id=None
     else:
         mod.display(module,
                     ioc,
-                    message_type="ERROR",
-                    string="VXstream API connection status %d" % response_status)
+                    "ERROR",
+                    "VXstream API connection status %d" % response_status)
         return None

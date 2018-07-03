@@ -21,8 +21,8 @@
 import json
 import random
 
-from BTG.lib.io import module as mod
 from BTG.lib.async_http import store_request
+from BTG.lib.io import module as mod
 
 
 class metadefender:
@@ -44,14 +44,8 @@ class metadefender:
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if mod.allowedToSearch(self.search_method):
-            self.Search()
-        else:
-            mod.display(self.module_name,
-                        self.ioc,
-                        "INFO",
-                        "MetaDefender module not activated")
-
+        self.Search()
+        
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in MetaDefender ...")
 

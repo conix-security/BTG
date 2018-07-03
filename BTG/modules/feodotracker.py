@@ -37,14 +37,7 @@ class feodotracker():
         self.type = type
         self.ioc = ioc
 
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name,
-                        self.ioc,
-                        "INFO",
-                        "FeodoTracker module not activated")
-            return None
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Search in FeodoTracker ...")

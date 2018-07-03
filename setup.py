@@ -17,16 +17,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import setuptools, sys, os, BTG
+import os
+import setuptools
+import sys
+
+import BTG
 
 _PATH = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(_PATH, 'BTG'))
 
-if not 'SUDO_USER' in os.environ:
-    CONFIG_PATH = os.path.expanduser("~/.config/BTG")
-else:
+if 'SUDO_USER' in os.environ:
     USER = os.environ['SUDO_USER']
     CONFIG_PATH = "/home/%s/.config/BTG" % USER
+else:
+    CONFIG_PATH = os.path.expanduser("~/.config/BTG")
 
 with open("README.rst", "r") as fh:
     long_description = fh.read()
@@ -49,13 +53,13 @@ setuptools.setup(
         'Intended Audience :: Information Technology',
         'Programming Language :: Python :: 3',
         'Topic :: Security',
-	    'Topic :: Internet',
+        'Topic :: Internet',
     ),
     package_data={'BTG': ["data/modules_descriptor.csv"]},
     include_package_data=True,
     data_files=[(CONFIG_PATH, ["BTG/config/btg.cfg"])],
     entry_points={
-        'console_scripts':[
+        'console_scripts': [
             'btg = BTG.BTG:main'
         ],
     },

@@ -20,6 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import validators
+
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
@@ -35,10 +36,8 @@ class Openphish:
         self.creation_date = "15-09-2016"
         self.type = type
         self.ioc = ioc
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name, "", "INFO", "OpenPhish module not activated")
+
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -55,15 +54,24 @@ class Openphish:
                     midle = None
                 if self.type == "URL":
                     if self.ioc in line:
-                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "%s%s" % (url, path))
                         return None
                 elif self.type == "IPv4" and validators.ipv4(midle):
                     if self.ioc == midle:
-                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "%s%s" % (url, path))
                         return None
                 elif self.type == "domain" and validators.domain(midle):
                     if midle == self.ioc:
-                        mod.display(self.module_name, self.ioc, "FOUND", "%s%s"%(url, path))
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "FOUND",
+                                    "%s%s" % (url, path))
                         return None
         mod.display(self.module_name,
                     self.ioc,

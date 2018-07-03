@@ -20,12 +20,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import json
 from platform import system
+import json
 
+from BTG.lib.async_http import store_request
 from BTG.lib.config_parser import Config
 from BTG.lib.io import module as mod
-from BTG.lib.async_http import store_request
 
 cfg = Config.get_instance()
 if system() != "Windows":
@@ -54,26 +54,19 @@ class Cuckoosandbox:
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if mod.allowedToSearch(self.search_method):
-            length = len(self.config['cuckoosandbox_api_url'])
-            if length != len(self.config['cuckoosandbox_web_url']) \
-               and length <= 0:
-                mod.display(self.module_name,
-                            self.ioc,
-                            "ERROR",
-                            "Cuckoosandbox fields in btg.cfg are missfilled, checkout commentaries.")
-                return None
-
-            for indice in range(len(self.config['cuckoosandbox_api_url'])):
-                api_url = self.config['cuckoosandbox_api_url'][indice]
-                web_url = self.config['cuckoosandbox_web_url'][indice]
-                self.search(api_url, web_url, indice)
-        else:
+        length = len(self.config['cuckoosandbox_api_url'])
+        if length != len(self.config['cuckoosandbox_web_url']) \
+           and length <= 0:
             mod.display(self.module_name,
                         self.ioc,
-                        "INFO",
-                        "Cuckoosandbox module not activated")
+                        "ERROR",
+                        "Cuckoosandbox fields in btg.cfg are missfilled, checkout commentaries.")
             return None
+
+        for indice in range(len(self.config['cuckoosandbox_api_url'])):
+            api_url = self.config['cuckoosandbox_api_url'][indice]
+            web_url = self.config['cuckoosandbox_web_url'][indice]
+            self.search(api_url, web_url, indice)
 
     def search(self, api_url, web_url, indice):
         mod.display(self.module_name, "", "INFO", "Searching...")

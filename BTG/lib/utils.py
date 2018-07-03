@@ -18,12 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+from rq import Worker
 import json
-import time
-import uuid
 import os
 import signal
-from rq import Worker
+import time
+import uuid
+
+from BTG.lib.config_parser import Config
+
+config = Config.get_instance()
 
 
 class cluster:
@@ -66,6 +70,13 @@ class cluster:
                    'nb_module': len(modules),
                    'messages': []
                    }
+        for module in modules:
+            if module == "cuckoosandbox":
+                cluster['nb_module'] = cluster['nb_module'] + len(config['cuckoosandbox_api_url']) - 1
+            elif module == "viper":
+                cluster['nb_module'] = cluster['nb_module'] + len(config['viper_server']) - 1
+            elif module == "misp":
+                cluster['nb_module'] = cluster['nb_module'] + len(config['misp_url']) - 1
         conn.lpush(dictname, json.dumps(cluster))
 
     def edit_cluster(ioc, module, message, conn, lockname, dictname):
@@ -83,7 +94,7 @@ class cluster:
                     c['nb_module'] = c['nb_module']-1
                     c['messages'].append(message)
                     conn.lrem(dictname, 1, bytes_cluster)
-                    print(c['ioc'], c['nb_module'])
+                    # print(c['ioc'], c['nb_module'])
                     json_cluster = json.dumps(c)
                     conn.lpush(dictname, json_cluster)
                     break
@@ -97,12 +108,14 @@ class cluster:
     def print_cluster(cluster, conn):
         if not cluster:
             return None
-        if len(cluster['modules']) == len(cluster['messages']) \
-           and cluster['nb_module'] == 0:
+        if cluster['nb_module'] == 0:
+            found = False
             for message in cluster['messages']:
                 if message['type'] == "FOUND":
+                    found = True
                     print(message['string'])
-            print('')
+            if found:
+                print('')
 
 
 class pidfile:

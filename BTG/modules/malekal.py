@@ -20,14 +20,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import os
 from platform import system
 from re import findall
 import json
+import os
 
+from BTG.lib.async_http import store_request
 from BTG.lib.config_parser import Config
 from BTG.lib.io import module as mod
-from BTG.lib.async_http import store_request
 
 cfg = Config.get_instance()
 if system() != "Windows":
@@ -70,7 +70,7 @@ class Malekal:
         self.headers = self.config["user_agent"]
         self.proxy = self.config["proxy_host"]
 
-        if type in self.types and mod.allowedToSearch(self.search_method):
+        if type in self.types:
             self.search()
         else:
             mod.display(self.module_name,
@@ -147,7 +147,7 @@ class Malekal:
 def response_handler(response_text, response_status, module,
                      ioc, server_id=None):
     if response_status == 200:
-        matches = findall("hash=([a-z0-9]{32})\"", response_text)
+        matches = findall(">([a-f0-9]{32})<", response_text)
         if len(matches) >= 1:
             mod.display("%s_remote" % module,
                         ioc,

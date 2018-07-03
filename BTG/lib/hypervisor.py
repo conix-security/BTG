@@ -18,18 +18,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import os
-import signal
-import time
-from rq import Connection, Queue
 from redis import Redis
+from rq import Connection, Queue
+import os
 import redis
+import signal
+import sys
+import time
 
+from BTG.lib.io import colors
+from BTG.lib.io import module as mod
 from BTG.lib.redis_config import init_redis
 from BTG.lib.utils import redis_utils, cluster
-from BTG.lib.io import module as mod
-from BTG.lib.io import colors
 
 
 class supervisor:
@@ -65,8 +65,8 @@ class supervisor:
                                  redis_conn, sig_int=False)
         except:
             mod.display("HYPERVISOR",
-                        message_type="FATAL_ERROR",
-                        string="Could not close subprocesses, here are their pid :"+"".join(['%s ' % i for i in subprocesses_pid]))
+                        "FATAL_ERROR",
+                        "Could not close subprocesses, here are their pid :"+"".join(['%s ' % i for i in subprocesses_pid]))
 
         try:
             os.remove(pf)
@@ -74,8 +74,8 @@ class supervisor:
             pass
         except:
             mod.display("HYPERVISOR",
-                        message_type="FATAL_ERROR",
-                        string="Could not delete %s, make sure to delete it for next usage" % pf)
+                        "FATAL_ERROR",
+                        "Could not delete %s, make sure to delete it for next usage" % pf)
         sys.exit()
 
 
@@ -95,8 +95,8 @@ if __name__ == '__main__':
                                            password=redis_password)
         except:
             mod.display("HYPERVISOR",
-                        message_type="FATAL_ERROR",
-                        string="Could not establish connection with Redis, check if you have redis_host, redis_port and maybe redis_password in /config/btg.cfg")
+                        "FATAL_ERROR",
+                        "Could not establish connection with Redis, check if you have redis_host, redis_port and maybe redis_password in /config/btg.cfg")
             os.killpg(main_pid, signal.SIGTERM)
 
         lockname, dictname = cluster.get_keys(pf)
@@ -108,4 +108,4 @@ if __name__ == '__main__':
             os.killpg(main_pid, signal.SIGTERM)
         except:
             pass
-        print("%sEverything is cleared, BTG is terminated\n%s"%(colors.FOUND,colors.NORMAL))
+        print("%sEverything is cleared, BTG is terminated\n%s" % (colors.FOUND, colors.NORMAL))

@@ -22,6 +22,7 @@
 from BTG.lib.cache import Cache
 from BTG.lib.io import module as mod
 
+
 class Sslblacklist():
     def __init__(self, ioc, type, config, queues):
         self.config = config
@@ -33,10 +34,8 @@ class Sslblacklist():
         self.creation_date = "12-04-2017"
         self.type = type
         self.ioc = ioc
-        if mod.allowedToSearch(self.search_method):
-            self.search()
-        else:
-            mod.display(self.module_name, "", "INFO", "SSLblacklist module not activated")
+
+        self.search()
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
@@ -51,7 +50,9 @@ class Sslblacklist():
                 if self.ioc in line:
                     infos = line.split(',')
                     mod.display(self.module_name,
-                                self.ioc, "FOUND", "%s | %s%s" % (infos[2], url, path))
+                                self.ioc,
+                                "FOUND",
+                                "%s | %s%s" % (infos[2], url, path))
                     return None
         mod.display(self.module_name,
                     self.ioc,

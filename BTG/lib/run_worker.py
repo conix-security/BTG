@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import sys
-from rq import Connection, Queue, Worker
 from redis import Redis
+from rq import Connection, Queue, Worker
+import sys
 
 from BTG.lib.redis_config import init_redis, init_worker
 

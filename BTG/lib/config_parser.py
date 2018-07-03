@@ -42,8 +42,7 @@ class Config():
     @staticmethod
     def _parse_config():
         conf = ConfigParser()
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        cfile= os.path.expanduser("~/.config/BTG/btg.cfg")
+        cfile = os.path.expanduser("~/.config/BTG/btg.cfg")
         if not os.path.isfile(cfile):
             print("BTG is not configured.\nPlease take care of config file : ~/.config/BTG/btg.cfg")
             exit(0)
