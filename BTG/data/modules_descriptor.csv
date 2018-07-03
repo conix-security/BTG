@@ -1,31 +1,31 @@
 name;types;method
 misp;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256, SHA512;Onpremises
 cuckoosandbox;MD5, SHA256;Onpremises
-cybercrimetracker;domain, IPv4, URL;Online
-dshield;domain;Online
-feodotracker;IPv4, domain;Online
+cybercrimetracker;domain, IPv4, URL;Cache
+dshield;domain;Cache
+feodotracker;IPv4, domain;Cache
 googlesb;URL, domain;Online
 irish;MD5, SHA256, SHA1;Online
-lehigh;domain;Online
+lehigh;domain;Cache
 malekal;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256, SHA512;Online
-malshare;MD5, SHA256, SHA1;Online
+malshare;MD5, SHA256, SHA1;Cache
 malwareconfig;MD5, SHA256, IPv4, IPv6, domain;Online
-malwaredomainlist;domain;Online
-malwaredomains;domain;Online
-malwareteks;domain;Online
+malwaredomainlist;domain;Cache
+malwaredomains;domain;Cache
+malwareteks;domain;Cache
 metadefender;MD5, SHA1, SHA256, SHA512;Online
 misp_crawler;MD5, SHA5, domain, IPv4,IPv6, URL, SHA256, SHA512;Online
-nothink;IPv4;Online
-openphish;domain, URL, IPv4;Online
+nothink;IPv4;Cache
+openphish;domain, URL, IPv4;Cache
 otx;MD5, SHA1, domain, IPv4, IPv6, URL, SHA256;Online
-ransomwaretracker;domain, URL, IPv4, IPv6;Online
-spamhaus;IPv4, IPv6;Online
-sslblacklist;SHA1;Online
-torips;IPv4;Online
-urlhaus;URL, domain;Online
+ransomwaretracker;domain, URL, IPv4, IPv6;Cache
+spamhaus;IPv4, IPv6;Cache
+sslblacklist;SHA1;Cache
+torips;IPv4;Cache
+urlhaus;URL, domain;Cache
 viper;MD5, SHA1, SHA256, URL, domain, IPv4;Onpremises
 virusshare;MD5, SHA1, SHA256;Online
 virustotal;MD5, SHA1, SHA256, URL, IPv4, domain;Online
 vxstream;MD5, SHA1, SHA256, domain, IPv4, IPv6, URL;Online
-vxvault;IPv4, domain, URL;Online
-zeustracker;domain, IPv4, URL;Online
+vxvault;IPv4, domain, URL;Cache
+zeustracker;domain, IPv4, URL;Cache

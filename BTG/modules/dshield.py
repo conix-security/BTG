@@ -46,7 +46,14 @@ class Dshield:
             "suspiciousdomains_High.txt"
         ]
         for path in paths:
-            content = Cache(self.module_name, url, path, self.search_method).content
+            try:
+                content = Cache(self.module_name, url, path, self.search_method).content
+            except NameError as e:
+                mod.display(self.module_name,
+                            self.ioc,
+                            "ERROR",
+                            e)
+                return None
             for line in content.split("\n"):
                 try:
                     if line[0] != '#':

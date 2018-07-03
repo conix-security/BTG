@@ -46,7 +46,14 @@ class Openphish:
             "feed.txt"
         ]
         for path in paths:
-            content = Cache(self.module_name, url, path, self.search_method).content
+            try:
+                content = Cache(self.module_name, url, path, self.search_method).content
+            except NameError as e:
+                mod.display(self.module_name,
+                            self.ioc,
+                            "ERROR",
+                            e)
+                return None
             for line in content.split("\n"):
                 try:
                     midle = line.split("//")[-1].split("/")[0]

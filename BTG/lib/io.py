@@ -127,7 +127,7 @@ class module:
         """
         if status == "Onpremises":
             '''
-            here the modules claims to be related to an on premises service
+            here the module claims to be related to an on premises service
             , i.e. being inside researcher nertwork, so we allow the lookup
 
             modules: misp, cuckoo
@@ -135,9 +135,17 @@ class module:
             return True
         elif status == "Online" and not config["offline"]:
             '''
-            the modules claims to be online, and user _do not_ asked the
-            lookup to be performed offline
-            thus it is allowed to perform if online
+            the module claims to be online,
+            and the user did not set on "offline" configuration,
+            so the module can perform his lookup
+            '''
+            return True
+        elif status == "Cache":
+            '''
+            the module claims to be online,
+            but it can store previous research in cache,
+            if the cache is up to date,
+            it can perform his request even if "offline"
             '''
             return True
         '''

@@ -44,7 +44,14 @@ class Ransomwaretracker:
         paths = [
             "csv"
         ]
-        content = Cache(self.module_name, url, paths[0], self.search_method).content
+        try:
+            content = Cache(self.module_name, url, paths[0], self.search_method).content
+        except NameError as e:
+            mod.display(self.module_name,
+                        self.ioc,
+                        "ERROR",
+                        e)
+            return None
         for line in content.split("\n"):
             try:
                 if self.ioc in line:

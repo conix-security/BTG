@@ -67,6 +67,7 @@ class BTG():
                         string="Cannot establish connection with Redis")
             sys.exit()
 
+        global observable_list
         queues = [working_queue, request_queue]
 
         if args.file == "False":
@@ -480,13 +481,24 @@ def main(argv=None):
         err.display(dict_list=errors_to_display)
         delta_time = Utils.strfdelta((end_time - start_time),
                                      "{H:02}h {M:02}m {S:02}s")
-        print("\nAll works done :\n   in %s" % (delta_time))
+        print("\nAll works done:\n   in %s" % (delta_time))
+        nb_IOC = len(observable_list)
+        nb_modules = len(enabled_modules)
+        if nb_IOC <= 1:
+            print("   for %d IOC" % (nb_IOC))
+        else:
+            print("   for %d IOCs" % (nb_IOC))
+        if nb_modules <= 1:
+            print("   with %d module enabled\n" % (nb_modules))
+        else:
+            print("   with %d modules enabled\n" % (nb_modules))
+
         try:
             remove(fp)
         except FileNotFoundError:
             pass
         except:
-            mod.display("UTILS",
+            mod.display("MAIN",
                         "FATAL_ERROR",
                         "Could not delete %s, make sure to delete it for next usage" % fp)
             sys.exit()

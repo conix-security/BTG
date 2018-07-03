@@ -53,7 +53,14 @@ class Zeustracker:
                     self.ioc = self.ioc.split("://")[1]
                 except:
                     pass
-            content = Cache(self.module_name, url, path, self.search_method).content
+            try:
+                content = Cache(self.module_name, url, path, self.search_method).content
+            except NameError as e:
+                mod.display(self.module_name,
+                            self.ioc,
+                            "ERROR",
+                            e)
+                return None
             for line in content.split("\n"):
                 if path.split("=")[1] == "compromised":
                     if self.type == "URL":

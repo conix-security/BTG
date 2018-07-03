@@ -130,7 +130,7 @@ class pidfile:
                 os.makedirs(abs_path)
                 os.chmod(abs_path, 0o770)
             except:
-                raise MakeDirError("Could not make directory :/tmp/BTG/data",)
+                raise MakeDirError("Could not make directory :/tmp/BTG/data")
         return abs_path
 
     # Check if pidfile exists and return his path
@@ -145,7 +145,7 @@ class pidfile:
         try:
             dir_path = pidfile.make_pidfile_dir()
         except:
-            raise MakeDirError("Could not make directory :/tmp/BTG/data",)
+            raise MakeDirError("Could not make directory :/tmp/BTG/data")
         file_path = pidfile.exists_pidfile(dir_path)
         if file_path != dir_path:
             # An instance of BTG has been found, we should wait to avoid conflict

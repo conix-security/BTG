@@ -50,9 +50,12 @@ class Cache:
         self.temp_file = "%s%s" % (self.temp_folder, self.new_filename)
 
         self.createModuleFolder()
-        if self.checkIfUpdate():
+        if self.checkIfNotUpdate():
             if mod.allowedToSearch(search_method):
                 self.downloadFile()
+            else:
+                raise NameError("Offline parameter is set on, cannot refresh outdated cache")
+                return None
         self.content = self.getContent()
 
     def getContent(self):
@@ -117,7 +120,7 @@ class Cache:
                         "ERROR",
                         "Response code: %s | %s" % (r.status_code, full_url))
 
-    def checkIfUpdate(self):
+    def checkIfNotUpdate(self):
         """
             True: Need to be updated
             False: Nothing to do

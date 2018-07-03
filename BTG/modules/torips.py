@@ -39,14 +39,22 @@ class Torips:
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
-        url = "http://torstatus.blutmagie.de/"
+        url = "https://torstatus.blutmagie.de/"
         paths = [
             "ip_list_all.php/Tor_ip_list_ALL.csv",
             "query_export.php/Tor_query_EXPORT.csv",
             "ip_list_exit.php/Tor_ip_list_EXIT.csv"
         ]
         for path in paths:
-            if self.ioc in Cache(self.module_name, url, path, self.search_method).content:
+            try:
+                content = Cache(self.module_name, url, path, self.search_method).content
+            except NameError as e:
+                mod.display(self.module_name,
+                            self.ioc,
+                            "ERROR",
+                            e)
+                return None
+            if self.ioc in content:
                 mod.display(self.module_name,
                             self.ioc,
                             "FOUND",

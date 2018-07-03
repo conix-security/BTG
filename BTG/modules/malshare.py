@@ -41,7 +41,7 @@ class Malshare():
 
     def search(self):
         mod.display(self.module_name, "", "INFO", "Searching...")
-        url = "http://malshare.com/"
+        url = "https://malshare.com/"
         if "malshare_api_key" in self.config:
             paths = [
                 "api.php?api_key=%s&action=details&hash=%s" % (self.config["malshare_api_key"],
@@ -49,10 +49,17 @@ class Malshare():
             ]
             for path in paths:
                 try:
-                    content = json.loads(Cache(self.module_name,
-                                               url,
-                                               path,
-                                               self.search_method).content)
+                    try:
+                        content = json.loads(Cache(self.module_name,
+                                                   url,
+                                                   path,
+                                                   self.search_method).content)
+                    except NameError as e:
+                        mod.display(self.module_name,
+                                    self.ioc,
+                                    "ERROR",
+                                    e)
+                        return None
                     saved_urls = []
                     for malware_url in content["SOURCES"]:
                         saved_urls.append(malware_url.replace("http", "hxxp"))
