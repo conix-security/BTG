@@ -61,6 +61,7 @@ class Ransomwaretracker:
                                 "%s | %s%s" % (line.split(",")[2].replace('"', '', 2),
                                                url,
                                                paths[0]))
+                    return None
             except:
                 pass
 

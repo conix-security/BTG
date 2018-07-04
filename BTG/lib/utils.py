@@ -94,7 +94,7 @@ class cluster:
                     c['nb_module'] = c['nb_module']-1
                     c['messages'].append(message)
                     conn.lrem(dictname, 1, bytes_cluster)
-                    # print(c['ioc'], c['nb_module'])
+                    print(c['ioc'], c['nb_module'])
                     json_cluster = json.dumps(c)
                     conn.lpush(dictname, json_cluster)
                     break
@@ -144,7 +144,7 @@ class pidfile:
     def store_pid_in_file(pid):
         try:
             dir_path = pidfile.make_pidfile_dir()
-        except NameError:
+        except:
             raise OSError("Could not make directory :/tmp/BTG/data")
         file_path = pidfile.exists_pidfile(dir_path)
         if file_path != dir_path:
@@ -164,7 +164,7 @@ class pidfile:
                                 pf.write('%d' % pid)
                             except:
                                 raise IOError("Could not write in %s" % file_path)
-                                return NoneOpenFileError
+                                return None
                             finally:
                                 pf.close()
                     except:

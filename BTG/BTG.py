@@ -87,10 +87,12 @@ class BTG():
                         f1.close()
 
         for argument in observable_list:
+            print("1", observable_list)
             type = self.checkType(argument)
             if "split_observable" in config and config["split_observable"]:
-                if type == "URL":
+                if type == "URL" or type == "domain":
                     self.extend_IOC(argument, observable_list)
+                print("2", observable_list)
             matching_list = Utils.gen_matching_type_modules_list(modules, type)
             cluster.add_cluster(argument, matching_list, dictname, conn)
             self.run(argument, type, matching_list, queues)
@@ -104,11 +106,13 @@ class BTG():
             # Cache search
             # TODO
             if "TLDE_cache" in config:
-                cache_extract = tldextract.TLDExtract(cache_file=config['TLDE_cache'])
+                cache_file = "%s%s" % (config['temporary_cache_path'], config['TLDE_cache'])
+                cache_extract = tldextract.TLDExtract(cache_file=cache_file)
                 extract = cache_extract(argument)
         else:
             # Live search
-            extract = tldextract.extract(argument)
+            no_cache_extract = tldextract.TLDExtract(cache_file=False)
+            extract = no_cache_extract(argument)
 
         try:
             registered_domain = extract.registered_domain
@@ -125,7 +129,7 @@ class BTG():
         domains = [registered_domain, suffix_domain, complete_domain]
 
         IPs = [None, None, None]
-        if "online" in config:
+        if not config["offline"]:
             for domain in domains:
                 try:
                     IP = socket.gethostbyname(domain)
@@ -317,13 +321,30 @@ class Utils:
             Define the arguments
         """
         parser = argparse.ArgumentParser(description='Observable to qualify')
-        parser.add_argument('observables', metavar='observable', type=str, nargs='+',
+        parser.add_argument('observables',
+                            metavar='observable',
+                            type=str, nargs='+',
                             help='Type: [URL,MD5,SHA1,SHA256,SHA512,IPv4,IPv6,domain] or a file containing one observable per line')
-        parser.add_argument("-d", "--debug", action="store_true", help="Display debug informations",)
-        parser.add_argument("-o", "--offline", action="store_true",
+        # TODO
+        # parser.add_argument("-d",
+        #                     "--debug",
+        #                     action="store_true",
+        #                     help="Display debug informations")
+        parser.add_argument("-o",
+                            "--offline",
+                            action="store_true",
                             help=("Set BTG in offline mode, meaning all modules"
                                   "described as online (i.e. VirusTotal) are desactivated"))
-        parser.add_argument("-s", "--silent", action="store_true", help="Disable MOTD")
+        parser.add_argument("-s",
+                            "--silent",
+                            action="store_true",
+                            help="Disable MOTD")
+        parser.add_argument("-e",
+                            "--extend",
+                            action="store_true",
+                            help=("Enable observable extension,"
+                                  "meaning BTG will try to find related observable,"
+                                  "for instance: domain -> subdomains"))
         return parser.parse_args()
 
     def cleanups_lock_cache(real_path):
@@ -400,10 +421,19 @@ def main(argv=None):
     else:
         args.file = "False"
     # Check if debug
-    if args.debug:
-        config["debug"] = True
+    # if args.debug:
+    #     config["debug"] = True
     if args.offline:
         config["offline"] = True
+    # Check if silent mode
+    if config["display_motd"] and not args.silent:
+        Utils.motd()
+    # Check if extend_IOC
+    if args.extend:
+        config["split_observable"] = True
+    else:
+        config["split_observable"] = False
+
     dir_path = path.dirname(path.realpath(__file__))
     if "modules_folder" in config and "temporary_cache_path" in config and "log_folder" in config:
         config["log_folder"] = path.join(dir_path, config["log_folder"])
@@ -414,8 +444,6 @@ def main(argv=None):
                     message_type="FATAL_ERROR",
                     string="Please check if you have log_folder, modules_folder and temporary_cache_path \
                             field in btg.cfg")
-    if config["display_motd"] and not args.silent:
-        Utils.motd()
 
     global working_queue, working_going, request_queue, failed_queue
     global lockname, dictname, fp

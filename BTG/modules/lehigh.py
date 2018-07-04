@@ -52,7 +52,7 @@ class Lehigh:
                             self.ioc,
                             "ERROR",
                             e)
-            return None
+                return None
             for line in content.split("\n"):
                 if line and line[0] != '#':
                     base = line.split("\t\t")[1]

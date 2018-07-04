@@ -31,15 +31,18 @@ from BTG.lib.redis_config import init_redis
 from BTG.lib.worker_tasks import module_worker_response
 
 config = Config.get_instance()
+
+
 # --------------------------------------------------------------------------- #
 #               Storage
 # --------------------------------------------------------------------------- #
 
 # In both following function, we are not using rq queue, because we are storing
 # raw data rq only take care of function stored as job
-
-# Pushing request:(url, module_name) into a redis_list
 def store_request(queues, request):
+    """
+        Pushing request:(url, module_name) into a redis_list
+    """
     queue_2 = queues[1]
     redis_host, redis_port, redis_password = init_redis()
     try:
@@ -47,15 +50,15 @@ def store_request(queues, request):
                               password=redis_password, db=0)
     except:
         mod.display("ASYNC_HTTP",
-                    message_type="ERROR",
-                    string="Could not establish connection with Redis in func store_request")
+                    "ERROR",
+                    "Could not establish connection with Redis in func store_request")
     try:
         r.rpush(queue_2, request)
     except:
         mod.display("ASYNC_HTTP",
-                    message_type="ERROR",
-                    string="Cannot push request: %s to Redis\
-                    on queue: %s" % (request[0], queue_2))
+                    "ERROR",
+                    "Cannot push request: %s to Redis on queue: %s" % (request[0], queue_2))
+
 
 def pollout_requests(queue_2, nb_to_do):
     redis_host, redis_port, redis_password = init_redis()
@@ -64,8 +67,8 @@ def pollout_requests(queue_2, nb_to_do):
                               password=redis_password, db=0)
     except:
         mod.display("ASYNC_HTTP",
-                    message_type="ERROR",
-                    string="Cannot establish connection with Redis in func pollout_requests")
+                    "ERROR",
+                    "Cannot establish connection with Redis in func pollout_requests")
     requests = []
     while len(requests) < nb_to_do:
         request = r.lpop(queue_2)
@@ -77,8 +80,11 @@ def pollout_requests(queue_2, nb_to_do):
                 requests.append(request)
     return requests
 
-# Because redis storage type isn't python-like
+
 def parse_redis_string(string):
+    """
+        Because redis storage type isn't python-like
+    """
     # quoted = re.compile("[^']*")
     request = string.decode("utf_8")
     try:
@@ -87,15 +93,19 @@ def parse_redis_string(string):
         request = None
     return request
 
+
 # --------------------------------------------------------------------------- #
 #               The following is managing the HTTP requests
 # --------------------------------------------------------------------------- #
-
-# code from aiohttp.readthedocs.io
-async def fetch_get(url, session, headers, proxy, module, ioc, timeout, auth, server_id, verify):
+async def fetch_get(url, session, headers, proxy, module, ioc,
+                    timeout, auth, server_id, verify):
+    """
+        code from aiohttp.readthedocs.io
+    """
     try:
         async with session.get(url, headers=headers, proxy=proxy,
-                               timeout=timeout, auth=auth, ssl=verify) as response:
+                               timeout=timeout,
+                               auth=auth, ssl=verify) as response:
             return await response.text(), response.status, module, ioc, server_id
     except:
         mod.display(module,
@@ -107,8 +117,9 @@ async def fetch_get(url, session, headers, proxy, module, ioc, timeout, auth, se
 async def fetch_post(url, session, headers, proxy, data, module, ioc, timeout,
                     auth, server_id, verify):
     try:
-        async with session.post(url, data=data, headers=headers, proxy=proxy,
-                                timeout=timeout, auth=auth, ssl=verify) as response:
+        async with session.post(url, data=data, headers=headers,
+                                proxy=proxy, timeout=timeout,
+                                auth=auth, ssl=verify) as response:
             return await response.text(), response.status, module, ioc, server_id
     except:
         mod.display(module,
@@ -190,7 +201,7 @@ async def run(requests):
     # per each request.
     async with ClientSession() as session:
         for request in requests:
-            # pass Semaphore and session to every GET request
+            # pass Semaphore and session to every request
             task = asyncio.ensure_future(bound_fetch(sem, session,
                                                      request, timeout))
             tasks.append(task)
@@ -205,8 +216,8 @@ def request_poller(queue_1, queue_2, nb_to_do):
             q = Queue(queue_1, connection=conn)
     except:
         mod.display("ASYNC_HTTP",
-                    message_type="ERROR",
-                    string="Could not establish connection with Redis, check if you have redis_host, \
+                    "ERROR",
+                    "Could not establish connection with Redis, check if you have redis_host, \
                     redis_port and maybe redis_password in /config/config.ini")
 
     loop = asyncio.get_event_loop()
@@ -219,5 +230,5 @@ def request_poller(queue_1, queue_2, nb_to_do):
                 q.enqueue(module_worker_response, args=(y), result_ttl=0)
             except:
                 mod.display("ASYNC_HTTP",
-                            message_type="ERROR",
-                            string="Could not enqueue job to Redis in func request_poller")
+                            "ERROR",
+                            "Could not enqueue job to Redis in func request_poller")
