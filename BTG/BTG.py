@@ -424,7 +424,7 @@ def main(argv=None):
     except Exception as e:
         mod.display("MAIN",
                     message_type="FATAL_ERROR",
-                    string=e.args[0])
+                    string=e)
         sys.exit()
 
     try:

@@ -130,7 +130,7 @@ class pidfile:
                 os.makedirs(abs_path)
                 os.chmod(abs_path, 0o770)
             except:
-                raise MakeDirError("Could not make directory :/tmp/BTG/data")
+                raise OSError("Could not make directory :/tmp/BTG/data")
         return abs_path
 
     # Check if pidfile exists and return his path
@@ -144,8 +144,8 @@ class pidfile:
     def store_pid_in_file(pid):
         try:
             dir_path = pidfile.make_pidfile_dir()
-        except:
-            raise MakeDirError("Could not make directory :/tmp/BTG/data")
+        except NameError:
+            raise OSError("Could not make directory :/tmp/BTG/data")
         file_path = pidfile.exists_pidfile(dir_path)
         if file_path != dir_path:
             # An instance of BTG has been found, we should wait to avoid conflict
@@ -163,12 +163,12 @@ class pidfile:
                             try:
                                 pf.write('%d' % pid)
                             except:
-                                raise WriteError("Could not write in %s" % file_path)
-                                return None
+                                raise IOError("Could not write in %s" % file_path)
+                                return NoneOpenFileError
                             finally:
                                 pf.close()
                     except:
-                        raise OpenError("Could not open %s" % file_path)
+                        raise IOError("Could not open %s" % file_path)
                         return None
                     return file_path
             raise TimeoutError("We have reached maximum waiting time, BTG is closing ...\n")
@@ -181,11 +181,11 @@ class pidfile:
                     try:
                         pf.write('%d' % pid)
                     except:
-                        raise WriteFileError("Could not write in %s" % (file_path))
+                        raise IOError("Could not write in %s" % (file_path))
                     finally:
                         pf.close()
             except:
-                raise OpenFileError("Could not open %s" % (file_path))
+                raise IOError("Could not open %s" % (file_path))
         return file_path
 
 
