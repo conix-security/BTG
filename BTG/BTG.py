@@ -87,12 +87,10 @@ class BTG():
                         f1.close()
 
         for argument in observable_list:
-            print("1", observable_list)
             type = self.checkType(argument)
             if "split_observable" in config and config["split_observable"]:
                 if type == "URL" or type == "domain":
                     self.extend_IOC(argument, observable_list)
-                print("2", observable_list)
             matching_list = Utils.gen_matching_type_modules_list(modules, type)
             cluster.add_cluster(argument, matching_list, dictname, conn)
             self.run(argument, type, matching_list, queues)
@@ -342,8 +340,8 @@ class Utils:
         parser.add_argument("-e",
                             "--extend",
                             action="store_true",
-                            help=("Enable observable extension,"
-                                  "meaning BTG will try to find related observable,"
+                            help=("Enable observable extension, "
+                                  "meaning BTG will try to find related observable, "
                                   "for instance: domain -> subdomains"))
         return parser.parse_args()
 

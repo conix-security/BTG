@@ -94,7 +94,6 @@ class cluster:
                     c['nb_module'] = c['nb_module']-1
                     c['messages'].append(message)
                     conn.lrem(dictname, 1, bytes_cluster)
-                    print(c['ioc'], c['nb_module'])
                     json_cluster = json.dumps(c)
                     conn.lpush(dictname, json_cluster)
                     break

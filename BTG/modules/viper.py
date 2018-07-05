@@ -40,7 +40,6 @@ class Viper:
 
         length = len(self.config['viper_server'])
         if length != len(self.config['viper_api_key']) and length <= 0:
-            print("MAYBE")
             mod.display(self.module_name,
                         self.ioc,
                         "ERROR",

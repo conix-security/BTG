@@ -75,11 +75,11 @@ class Malshare():
                                     "FOUND",
                                     "https://malshare.com/sample.php?action=detail&hash=" % self.ioc)
                         return None
-                except:
+                except Exception as e:
                     mod.display(self.module_name,
                                 self.ioc,
                                 "ERROR",
-                                "Could not parse Malshare's json response")
+                                e)
         else:
             mod.display(self.module_name,
                         self.ioc,
