@@ -343,6 +343,12 @@ class Utils:
                             help=("Enable observable extension, "
                                   "meaning BTG will try to find related observable, "
                                   "for instance: domain -> subdomains"))
+        parser.add_argument("-j",
+                            "--json",
+                            action="store_true",
+                            help="Asking for a JSON output to the given path, "
+                                 "at variable json_folder in btg.cfg. "
+                                 "Otherwise, default folder is /tmp/BTG/json")
         return parser.parse_args()
 
     def cleanups_lock_cache(real_path):
@@ -410,28 +416,64 @@ class Utils:
                 d[i], rem = divmod(rem, lst[i])
         return f.format(fmt, **d)
 
+    def save_json_output(json):
+        json_file ="%s.json" % datetime.now().strftime('[%d-%m-%Y %H:%M:%S]')
+        json_file_path = "%s/%s" % (json_folder, json_file)
+        try:
+            with open(json_file_path, "w+") as f:
+                try:
+                    f.write(json)
+                except:
+                    raise IOError("Could not write in %s" % json_file_path)
+                    return None
+                finally:
+                    f.close()
+        except:
+            raise IOError("Could not open %s" % json_file_path)
+            return None
+
+    def args_manager(args):
+        # Check if the parameter is a file or a list of observables
+        if exists(args.observables[0]):
+            args.file = "True"
+        else:
+            args.file = "False"
+        # Check if debug
+        # if args.debug:
+        #     config["debug"] = True
+        if args.offline:
+            config["offline"] = True
+        # Check if silent mode
+        if config["display_motd"] and not args.silent:
+            Utils.motd()
+        # Check if extend_IOC
+        if args.extend:
+            config["split_observable"] = True
+        else:
+            config["split_observable"] = False
+        # Check if JSON response query
+        global json_query, json_folder
+        if args.json:
+            if "json_folder" in config:
+                json_folder = config["json_folder"]
+            else:
+                json_folder = "/tmp/BTG/json"
+            if not isdir(json_folder):
+                try:
+                    makedirs(json_folder)
+                except:
+                    mod.display("MAIN",
+                                "FATAL_ERROR",
+                                "Unable to create %s directory. (Permission denied)" % json_folder)
+                    sys.exit()
+            json_query = True
+        else:
+            json_query = False
+
 
 def main(argv=None):
     args = Utils.parse_args()
-    # Check if the parameter is a file or a list of observables
-    if exists(args.observables[0]):
-        args.file = "True"
-    else:
-        args.file = "False"
-    # Check if debug
-    # if args.debug:
-    #     config["debug"] = True
-    if args.offline:
-        config["offline"] = True
-    # Check if silent mode
-    if config["display_motd"] and not args.silent:
-        Utils.motd()
-    # Check if extend_IOC
-    if args.extend:
-        config["split_observable"] = True
-    else:
-        config["split_observable"] = False
-
+    Utils.args_manager(args)
     dir_path = path.dirname(path.realpath(__file__))
     if "modules_folder" in config and "temporary_cache_path" in config and "log_folder" in config:
         config["log_folder"] = path.join(dir_path, config["log_folder"])
@@ -442,6 +484,7 @@ def main(argv=None):
                     message_type="FATAL_ERROR",
                     string="Please check if you have log_folder, modules_folder and temporary_cache_path \
                             field in btg.cfg")
+        sys.exit()
 
     global working_queue, working_going, request_queue, failed_queue
     global lockname, dictname, fp
@@ -477,6 +520,7 @@ def main(argv=None):
         modules = Utils.gen_module_list()
         enabled_modules = Utils.gen_enabled_modules_list(modules)
         start_time = datetime.now()
+
         BTG(args, enabled_modules)
         # waiting for all jobs to be done
         while True:
@@ -485,8 +529,14 @@ def main(argv=None):
             time.sleep(1)
 
         try:
-            redis_utils.shutdown(processes, working_going, failed_queue,
-                                 lockname, dictname, r, sig_int=False)
+            json_output = redis_utils.shutdown(processes, working_going,
+                                               failed_queue, lockname,
+                                               dictname, r, sig_int=False,
+                                               json_query=json_query)
+        except NameError as e:
+            mod.display("MAIN",
+                        message_type="ERROR",
+                        string=e)
         except:
             mod.display("MAIN",
                         message_type="FATAL_ERROR",
@@ -499,12 +549,19 @@ def main(argv=None):
                 mod.display("MAIN",
                             message_type="FATAL_ERROR",
                             string="Could not delete %s, make sure to delete it for next usage" % fp)
-                sys.exit()
             sys.exit()
 
         end_time = datetime.now()
         errors_to_display = Utils.show_up_errors(start_time, end_time, modules)
         err.display(dict_list=errors_to_display)
+        if json_query:
+            try:
+                Utils.save_json_output(json_output)
+            except Exception as e:
+                mod.display("MAIN",
+                            message_type="ERROR",
+                            string="Could not save json results: %s" % e)
+
         delta_time = Utils.strfdelta((end_time - start_time),
                                      "{H:02}h {M:02}m {S:02}s")
         print("\nAll works done:\n   in %s" % (delta_time))

@@ -108,4 +108,4 @@ if __name__ == '__main__':
             os.killpg(main_pid, signal.SIGTERM)
         except:
             pass
-        print("%sEverything is cleared, BTG is terminated\n%s" % (colors.FOUND, colors.NORMAL))
+        print("%sEverything is cleared, BTG is terminated,\nYou can press Enter to continue.%s" % (colors.FOUND, colors.NORMAL))

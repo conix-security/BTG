@@ -110,15 +110,15 @@ class Cache:
                 try:
                     remove("%s.lock" % self.temp_file)
                 except:
-                    raise No_such_file('Race concurency between multiple instance of BTG, \
-                                        cannot remove already deleted file')
-        elif self.module_name == "malshare" and r.status.code == 404:
+                    raise
+        elif self.module_name == "malshare" and r.status_code == 404:
             # When we have a 404 from malshare it is a valid negative response
-            raise malshare404('Hash not found on malshare, it is alright')
+            raise NameError('Hash not found on malshare, it is alright')
         else:
-            mod.display("%s.cache" % self.module_name,
-                        "ERROR",
-                        "Response code: %s | %s" % (r.status_code, full_url))
+            raise ValueError(r.status_code)
+            # mod.display("%s.cache" % self.module_name,
+            #             "ERROR",
+            #             "Response code: %s | %s" % (r.status_code, full_url))
 
     def checkIfNotUpdate(self):
         """

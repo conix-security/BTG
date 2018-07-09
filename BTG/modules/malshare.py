@@ -49,17 +49,10 @@ class Malshare():
             ]
             for path in paths:
                 try:
-                    try:
-                        content = json.loads(Cache(self.module_name,
-                                                   url,
-                                                   path,
-                                                   self.search_method).content)
-                    except NameError as e:
-                        mod.display(self.module_name,
-                                    self.ioc,
-                                    "ERROR",
-                                    e)
-                        return None
+                    content = json.loads(Cache(self.module_name,
+                                               url,
+                                               path,
+                                               self.search_method).content)
                     saved_urls = []
                     for malware_url in content["SOURCES"]:
                         saved_urls.append(malware_url.replace("http", "hxxp"))
@@ -75,11 +68,21 @@ class Malshare():
                                     "FOUND",
                                     "https://malshare.com/sample.php?action=detail&hash=" % self.ioc)
                         return None
-                except Exception as e:
+                except NameError:
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "NOT_FOUND",
+                                "Nothing Found in Malshare feeds")
+                except ValueError as e:
                     mod.display(self.module_name,
                                 self.ioc,
                                 "ERROR",
-                                e)
+                                "Malshare connection status : %s" % e)
+                except:
+                    mod.display(self.module_name,
+                                self.ioc,
+                                "ERROR",
+                                "Malshare's cache encountered an error while updating")
         else:
             mod.display(self.module_name,
                         self.ioc,

@@ -206,7 +206,7 @@ class errors:
                 print("\n--- ERRORS ---")
                 for output in outputs:
                     print(output)
-                print("See %s for detailed errors" % (log_error_path))
+                print("\nSee %s for detailed errors" % (log_error_path))
 
 
 class logSearch:

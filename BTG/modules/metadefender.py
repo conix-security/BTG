@@ -45,7 +45,7 @@ class metadefender:
         self.proxy = self.config["proxy_host"]
 
         self.Search()
-        
+
     def Search(self):
         mod.display(self.module_name, "", "INFO", "Search in MetaDefender ...")
 
@@ -102,6 +102,11 @@ def response_handler(response_text, response_status,
                             ioc,
                             "NOT_FOUND",
                             "Nothing found in MetaDefender")
+        elif json_response['scan_results']['scan_all_result_a'] == "No Threat Detected":
+            mod.display(module,
+                        ioc,
+                        "NOT_FOUND",
+                        "Nothing found in MetaDefender database")
         elif json_response['scan_results']['scan_all_result_a'] == "Clear":
             mod.display(module,
                         ioc,

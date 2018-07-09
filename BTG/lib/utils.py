@@ -21,6 +21,7 @@
 from rq import Worker
 import json
 import os
+import re
 import signal
 import time
 import uuid
@@ -83,7 +84,6 @@ class cluster:
         c = None
         locked = cluster.acquire_lock(conn, lockname)
         bytes_clusters = conn.lrange(dictname, 0, -1)
-
         # Exceptions where module name logged isn't the same as module.py
         if len(module.split("malekal")) > 1:
             module = "malekal"
@@ -115,6 +115,21 @@ class cluster:
                     print(message['string'])
             if found:
                 print('')
+
+    def get_clusters(dictname, conn):
+        bytes_clusters = conn.lrange(dictname, 0, -1)
+        outputs = []
+        for bytes_cluster in bytes_clusters:
+            outputs.append(json.loads(bytes_cluster.decode("utf-8")))
+
+        regex = r'\033.+?(?=m)m'
+        for output in outputs:
+            for message in output['messages']:
+                matches = re.findall(regex, message['string'])
+                for match in matches:
+                    message['string'] = message['string'].replace(match, '', 1)
+        json_output = json.dumps(outputs)
+        return json_output
 
 
 class pidfile:
@@ -210,7 +225,8 @@ class redis_utils:
         time.sleep(1)
 
     def shutdown(processes_pid, working_going, failed_queue, lockname,
-                 dictname, redis_conn, sig_int=True):
+                 dictname, redis_conn, sig_int=True, json_query=False):
+        ret = None
         if not sig_int:
             redis_utils.graceful_shutdown(working_going)
 
@@ -222,4 +238,11 @@ class redis_utils:
             os.killpg(pgrp, signal.SIGTERM)
         time.sleep(1)
         failed_queue.empty()
+        if json_query:
+            try:
+                ret = cluster.get_clusters(dictname, redis_conn)
+            except Exception as e:
+                raise NameError(e)
+
         cluster.remove_keys(redis_conn, lockname, dictname)
+        return ret
