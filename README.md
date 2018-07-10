@@ -14,7 +14,7 @@ Many knowledge-bases of malicious known activity (aka [IOC](https://en.wikipedia
 
 Thus CERT-Conix created a tool allowing analysts to qualify such elements searching many sources.
 
-[![asciicast](https://asciinema.org/a/04a88eeh3rt0v979cxiuk8kzc.png)](https://asciinema.org/a/04a88eeh3rt0v979cxiuk8kzc)
+[![asciicast](https://asciinema.org/a/BpWztU8lDtFd5cXLivVL83Px3.png)](https://asciinema.org/a/BpWztU8lDtFd5cXLivVL83Px3)
 
 
 #### Module list:
