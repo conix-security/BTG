@@ -1,0 +1,22 @@
+# Logging folder
+/logs
+/dumps
+
+# Python cache
+/__pycache__
+**.pyc
+
+# Config file edited
+/config/config.ini
+
+# .gitignore because I have to
+.gitignore
+
+# Local files
+API_keys
+/src
+modules_notes.ods
+/config/modules_descriptor.csv
+
+# In dev
+/modules/**_dev.py
