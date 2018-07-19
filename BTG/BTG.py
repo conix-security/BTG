@@ -431,6 +431,11 @@ class Utils:
         except:
             raise IOError("Could not open %s" % json_file_path)
             return None
+        try:
+            chmod(json_file_path, 0o666)
+        except:
+            raise IOError("Could not open %s" % json_file_path)
+            return None
 
     def args_manager(args):
         # Check if the parameter is a file or a list of observables

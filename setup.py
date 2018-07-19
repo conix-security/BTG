@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python 3
 # -*- coding: utf-8 -*-
 # Copyright (c) 2018 Conix Cybersecurity
 #
@@ -22,8 +22,7 @@ import setuptools
 import sys
 
 import BTG
-
-_PATH = os.path.dirname(__file__)
+_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(_PATH, 'BTG'))
 
 if 'SUDO_USER' in os.environ:
@@ -66,4 +65,4 @@ setuptools.setup(
 )
 
 os.chmod(CONFIG_PATH+"/btg.cfg", 0o666)
-os.chmod(_PATH+"BTG/data/modules_descriptor.csv", 0o666)
+os.chmod(_PATH+"/BTG/data/modules_descriptor.csv", 0o666)

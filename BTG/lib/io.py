@@ -80,7 +80,7 @@ class module:
                     log_path = log_folder + config["log_found_file"]
                     if not exists(log_path):
                         open(log_path, 'a+').close()
-                        chmod(log_path, 0o777)
+                        chmod(log_path, 0o666)
                     f = open(log_path, 'a')
                     f.write("%s%s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'),
                             output))
@@ -89,7 +89,7 @@ class module:
                     log_path = log_folder + config["log_error_file"]
                     if not exists(log_path):
                         open(log_path, 'a+').close()
-                        chmod(log_path, 0o777)
+                        chmod(log_path, 0o666)
                     f = open(log_path, 'a')
                     f.write("%s%s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'),
                             output))
@@ -112,7 +112,7 @@ class module:
                 log_path = log_folder + config["log_error_file"]
                 if not exists(log_path):
                     open(log_path, 'a+').close()
-                    chmod(log_path, 0o777)
+                    chmod(log_path, 0o666)
                 f = open(log_path, 'a')
                 f.write("%s%s\n" % (datetime.now().strftime('[%d-%m-%Y %H:%M:%S]'), output))
                 f.close()
@@ -216,7 +216,7 @@ class logSearch:
         log_path = log_folder + config["log_search_file"]
         if not exists(log_path):
             open(log_path, 'a').close()
-            chmod(log_path, 0o777)
+            chmod(log_path, 0o666)
         f = open(log_path, 'a')
         if args.file == "False":
             for ioc in args.observables:
