@@ -2,3 +2,6 @@
 /BTG.egg-info
 /build
 /dist
+
+# .gitignore because I have to
+.gitignore
