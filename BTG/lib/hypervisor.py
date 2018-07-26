@@ -40,14 +40,16 @@ class supervisor:
     def check_pid(pid):
         if pid < 0:
             return False
-        try:
-            os.kill(pid, 0)
-        except ProcessLookupError:
-            return False  # No such process
-        except PermissionError:
-            return True  # Operation not permitted (i.e., process exists)
         else:
-            return True  # no error, we can send a signal to the process
+            try:
+                os.kill(pid, 0)
+                return True  # no error, we can send a signal to the process
+            except ProcessLookupError as e:
+                print(e)
+                return False  # No such process
+            except PermissionError as e:
+                print(e)
+                return True  # Operation not permitted (i.e., process exists)
 
     def observe_parent_process(main_pid, subprocesses_pid, pf, redis_conn,
                                working_going, failed_queue,
