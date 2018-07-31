@@ -51,7 +51,7 @@ Thus CERT-Conix created a tool allowing analysts to qualify such elements search
 
 #### Installation
 ```
-sudo apt install python3 python3-pip git
+sudo apt install python3 python3-pip git redis-server
 git clone https://github.com/conix-security/BTG
 cd BTG
 sudo pip3 install -r requirements.txt
@@ -59,7 +59,6 @@ sudo python3 setup.py install
 vim ~/.config/BTG/btg.cfg
 ```
 Activate and fill licence key for modules you need to use.  
-NB : you need a redis-server to run BTG
 
 #### Usage
 ```
