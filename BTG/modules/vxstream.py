@@ -53,7 +53,14 @@ class Vxstream:
         """
 
         if 'vxstream_api_keys' in self.config:
-            self.headers['api-key'] = random.Random(self.ioc).choice(self.config['vxstream_api_keys'])
+            try:
+                self.headers['api-key'] = random.Random(self.ioc).choice(self.config['vxstream_api_keys'])
+            except:
+                mod.display(self.module_name,
+                            self.ioc,
+                            "ERROR",
+                            "Check if you have filled vxstream_api_keys_secret in btg.cfg")
+                return None
         else:
             mod.display(self.module_name,
                         self.ioc,

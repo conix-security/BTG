@@ -51,8 +51,15 @@ class metadefender:
 
         try:
             if 'metadefender_api_keys' in self.config:
-                api_key = random.Random(self.ioc).choice(self.config['metadefender_api_keys'])
-                self.headers['apikey'] = api_key
+                try:
+                    api_key = random.Random(self.ioc).choice(self.config['metadefender_api_keys'])
+                    self.headers['apikey'] = api_key
+                except:
+                    mod.display(self.module_name,
+                                self.ioc,
+                                message_type="ERROR",
+                                string="Check if you have filled metadefender_api_keys in btg.cfg")
+                    return None
             else:
                 mod.display(self.module_name,
                             self.ioc,

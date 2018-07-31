@@ -51,7 +51,14 @@ class googlesb():
         mod.display(self.module_name, "", "INFO", "Search in Google Safe Browsing ...")
 
         if 'googlesb_api_keys' in self.config:
-            api_key = random.Random(self.ioc).choice(self.config['googlesb_api_keys'])
+            try:
+                api_key = random.Random(self.ioc).choice(self.config['googlesb_api_keys'])
+            except:
+                mod.display(self.module_name,
+                            self.ioc,
+                            message_type="ERROR",
+                            string="Check if you have filled googlesb_api_keys in btg.cfg")
+                return None
         else:
             mod.display(self.module_name,
                         self.ioc,
