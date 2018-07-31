@@ -52,14 +52,21 @@ class Virustotal:
         mod.display(self.module_name, "", "INFO", "Search in VirusTotal ...")
         try:
             if "virustotal_api_keys" in self.config:
-                self.key = random.Random(self.ioc).choice(self.config["virustotal_api_keys"])
+                try:
+                    self.key = random.Random(self.ioc).choice(self.config["virustotal_api_keys"])
+                except:
+                    mod.display(self.module_name,
+                                message_type="ERROR",
+                                string="Check if you have filled virustotal_api_keys in btg.cfg")
+                    return None
             else:
                 mod.display(self.module_name,
                             message_type="ERROR",
                             string="Check if you have virustotal_api_keys field in btg.cfg")
+                return None
         except:
             mod.display(self.module_name, self.ioc, "ERROR", "Please provide your authkey.")
-            return
+            return None
         if self.type in ["URL", "domain", "IPv4"]:
             request = self.searchURL()
         else:
