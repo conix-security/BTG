@@ -87,13 +87,13 @@ class BTG():
                         f1.close()
 
         for argument in observable_list:
-            type = self.checkType(argument)
+            type = self.checkType(argument.lower())
             if "split_observable" in config and config["split_observable"]:
                 if type == "URL" or type == "domain":
-                    self.extend_IOC(argument, observable_list)
+                    self.extend_IOC(argument.lower(), observable_list)
             matching_list = Utils.gen_matching_type_modules_list(modules, type)
-            cluster.add_cluster(argument, matching_list, dictname, conn)
-            self.run(argument, type, matching_list, queues)
+            cluster.add_cluster(argument.lower(), matching_list, dictname, conn)
+            self.run(argument.lower(), type, matching_list, queues)
         print("Every IOCs have been enqueued, BTG is processing ...\n")
 
     def extend_IOC(self, argument, observable_list):
